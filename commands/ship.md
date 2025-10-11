@@ -2,6 +2,20 @@
 
 You are tasked with completing a feature implementation and preparing it for merge.
 
+---
+**⚠️  VALIDATION GATES ARE MANDATORY**
+
+This workflow enforces validation gates - not suggestions, but GATES:
+- Lint must be clean
+- Types must be correct
+- Tests must pass
+- Build must succeed
+
+If any gate fails: Fix → Re-run → Repeat until pass
+
+Do NOT treat validation as optional. These are blocking requirements.
+---
+
 ## Input
 The user will provide the path to a feature directory (e.g., `spec/active/auth/`).
 
@@ -18,11 +32,22 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
       - Detect from file paths in plan.md
     - Identify which validation commands to use
 
-2. **Pre-flight Check**
+2. **Pre-flight Validation Gate Check**
    Run /check first (programmatically):
-    - If critical failures: ABORT with message
-    - If warnings only: Note them but continue
-    - If all green: Proceed
+
+   **BLOCKING GATES** (MUST pass - cannot ship otherwise):
+    - If lint errors: ABORT with "❌ BLOCKING: Fix lint errors first"
+    - If type errors: ABORT with "❌ BLOCKING: Fix type errors first"
+    - If test failures: ABORT with "❌ BLOCKING: Fix failing tests first"
+    - If build failures: ABORT with "❌ BLOCKING: Fix build errors first"
+
+   **QUALITY WARNINGS** (can proceed, but should address):
+    - If console.log found: WARN with "⚠️  WARNING: Consider removing console.logs"
+    - If TODOs found: WARN with "⚠️  WARNING: Consider addressing TODOs"
+    - If skipped tests: WARN with "⚠️  WARNING: Consider enabling skipped tests"
+    - If bundle size high: WARN with "⚠️  WARNING: Consider optimizing bundle size"
+
+   **Only proceed if ALL BLOCKING GATES pass.**
 
 3. **Update Documentation**
    Check if any docs need updating:
@@ -137,18 +162,22 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
    4. Request review from: {team/person}
    ```
 
-## Validation Before Ship
-Must pass:
-- All tests passing
-- No type errors
-- Lint clean
-- Build successful
-- No uncommitted changes
+## Validation Gates Before Ship
 
-Can have warnings:
-- Small bundle size increase
-- Non-critical TODOs
-- Documentation updates pending
+**BLOCKING GATES** (Must pass - cannot ship):
+- ❌ All tests passing
+- ❌ No type errors
+- ❌ Lint clean
+- ❌ Build successful
+- ❌ No uncommitted changes
+
+**QUALITY WARNINGS** (Can have, should address):
+- ⚠️  Small bundle size increase
+- ⚠️  Non-critical TODOs
+- ⚠️  Documentation updates pending
+- ⚠️  console.log statements
+
+If any blocking gate fails, you MUST fix before shipping.
 
 ## Output Format
 
@@ -174,18 +203,27 @@ Success case:
 
 Failure case:
 ```
-❌ Cannot ship - Pre-release check failed
+❌ Cannot ship - BLOCKING GATES failed
 
-Critical issues found:
-- {Issue 1}
-- {Issue 2}
+BLOCKING issues found:
+- {Issue 1 - e.g., "5 type errors in src/components/"}
+- {Issue 2 - e.g., "3 test failures in auth.test.ts"}
+
+These are MANDATORY gates that block shipping:
+✅ Lint must be clean
+✅ Types must be correct
+✅ Tests must pass
+✅ Build must succeed
 
 Run /check to see full report
-Fix issues then try /ship again
+Fix all BLOCKING issues then try /ship again
 ```
 
 ## Error Handling
 - If uncommitted changes: Prompt to commit or stash first
 - If on main branch: Refuse to ship, must be on feature branch
-- If /check fails: Show specific failures and abort
+- If /check BLOCKING GATES fail: Show specific failures and ABORT (cannot ship)
+- If /check has warnings only: Show warnings but allow shipping
 - If no specs found: Error with path tried
+
+**Remember**: BLOCKING GATES are not negotiable. Fix them before shipping.

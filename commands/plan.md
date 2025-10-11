@@ -2,6 +2,20 @@
 
 You are tasked with creating a comprehensive implementation plan from a feature specification. This plan will guide the AI agent through implementation with enough context for autonomous execution.
 
+---
+**⚠️  VALIDATION GATES ARE MANDATORY**
+
+This workflow enforces validation gates - not suggestions, but GATES:
+- Lint must be clean
+- Types must be correct
+- Tests must pass
+- Build must succeed
+
+If any gate fails: Fix → Re-run → Repeat until pass
+
+Do NOT treat validation as optional. These are blocking requirements.
+---
+
 ## Input
 The user will provide the path to a specification file (e.g., `spec/active/auth/spec.md`).
 
@@ -85,6 +99,30 @@ The user will provide the path to a specification file (e.g., `spec/active/auth/
     - Store updates: {which stores, what changes}
     - Route changes: {if applicable}
     - Config updates: {constants, env vars}
+
+   ## VALIDATION GATES (MANDATORY)
+
+   **CRITICAL**: These are not suggestions - they are GATES that block progress.
+
+   After EVERY code change:
+   ```bash
+   # Gate 1: Syntax & Style
+   pnpm lint --fix
+
+   # Gate 2: Type Safety
+   pnpm typecheck
+
+   # Gate 3: Unit Tests
+   pnpm test {affected-tests}
+   ```
+
+   **Enforcement Rules**:
+   - If ANY gate fails → Fix immediately
+   - Re-run validation after fix
+   - Loop until ALL gates pass
+   - After 3 failed attempts → Stop and ask for help
+
+   **Do not proceed to next task until current task passes all gates.**
 
    ## Validation Sequence
    After each task:

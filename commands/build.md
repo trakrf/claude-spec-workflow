@@ -2,6 +2,20 @@
 
 You are tasked with implementing a feature based on the generated plan, with continuous validation and progress tracking.
 
+---
+**⚠️  VALIDATION GATES ARE MANDATORY**
+
+This workflow enforces validation gates - not suggestions, but GATES:
+- Lint must be clean
+- Types must be correct
+- Tests must pass
+- Build must succeed
+
+If any gate fails: Fix → Re-run → Repeat until pass
+
+Do NOT treat validation as optional. These are blocking requirements.
+---
+
 ## Input
 The user will provide the path to a feature directory (e.g., `spec/active/auth/`).
 
@@ -78,10 +92,13 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
    pnpm test {test-pattern}
    ```
 
-   d. **Handle Validation Results**
+   d. **Handle Validation Results** (STRICT ENFORCEMENT)
     - ✅ Pass: Log success, continue to next task
-    - ❌ Fail: Log error, attempt fix, re-validate
-    - 🔄 After 3 failed attempts: Log blocker, ask for help
+    - ❌ Fail: MUST fix immediately, re-run validation
+    - 🔄 Loop: Re-run until ALL gates pass
+    - 🛑 After 3 failed attempts: STOP - Log blocker, ask for help
+
+    **Remember**: Validation gates are BLOCKING. Cannot proceed until all pass.
 
    e. **Update Log**
    ```markdown
@@ -129,11 +146,25 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
    Ready for /check: {YES/NO}
    ```
 
-## Continuous Validation Rules
-- Run validation after EVERY file change
-- Never skip validation to "save time"
-- If validation fails, fix before proceeding
-- Log all validation attempts and results
+## VALIDATION GATES (MANDATORY - NOT OPTIONAL)
+
+**CRITICAL ENFORCEMENT RULES**:
+
+🚫 **NEVER** skip validation to "save time"
+🚫 **NEVER** proceed if validation fails
+🚫 **NEVER** commit code that doesn't pass gates
+
+✅ **ALWAYS** run validation after EVERY file change
+✅ **ALWAYS** fix failures before proceeding
+✅ **ALWAYS** re-run until ALL gates pass
+✅ **ALWAYS** log all validation attempts and results
+
+**Failure Handling**:
+- 1st failure: Fix and retry immediately
+- 2nd failure: Analyze error pattern, fix and retry
+- 3rd failure: STOP - Log blocker and ask for help
+
+These gates protect code quality. Treat them as mandatory, not suggestions.
 
 ## Error Recovery
 - On lint errors: Use --fix flag first
