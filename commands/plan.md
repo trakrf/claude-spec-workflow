@@ -246,7 +246,50 @@ The user will provide the path to a specification file (e.g., `spec/active/auth/
     - Find best practices for the specific technology
     - Identify common pitfalls and their solutions
 
-7. **Create Implementation Plan**
+7. **ULTRATHINK: Synthesize All Context into Coherent Plan**
+
+   **CRITICAL**: Before creating the plan, think deeply about everything you've learned.
+
+   **You now have**:
+   - The spec requirements and constraints
+   - User answers to clarifying questions
+   - Existing codebase patterns you found
+   - External research and best practices
+   - Complexity assessment and scope decision
+
+   **Spend time analyzing**:
+   - What is the SIMPLEST approach that meets all requirements?
+   - Which existing patterns should I follow vs adapt vs avoid?
+   - What are the critical path dependencies between tasks?
+   - Where are the highest-risk areas that need extra validation?
+   - What will trip up the implementation? (Common pitfalls from research)
+   - What context from research is essential to include in the plan?
+
+   **Ask yourself**:
+   - If I were implementing this myself, what would I want to know?
+   - What patterns did I find that make this easier?
+   - What gotchas from external research should I warn about?
+   - Are there any circular dependencies in my task breakdown?
+   - What's the atomic unit of work that can be validated independently?
+   - What would cause this plan to fail? How do I mitigate?
+
+   **Synthesis goal**: Create a plan that enables autonomous implementation by:
+   - Providing concrete patterns to follow (with file paths and line numbers)
+   - Breaking down into validatable atomic tasks
+   - Including critical context from research
+   - Anticipating and documenting pitfalls
+   - Enabling incremental progress with clear validation gates
+
+   **Red flags to check**:
+   - ❌ Tasks are vague ("implement feature X") - need concrete steps
+   - ❌ No reference to existing code patterns - plan will be generic
+   - ❌ Tasks depend on each other in unclear ways - will cause confusion
+   - ❌ No validation criteria per task - can't verify progress
+   - ❌ Missing context from research - will repeat known mistakes
+
+   **Output from this step**: Clear mental model of implementation approach, task sequencing, and validation strategy.
+
+8. **Create Implementation Plan**
    Save to `spec/active/{feature}/plan.md`:
 
    ```markdown
@@ -368,7 +411,7 @@ The user will provide the path to a specification file (e.g., `spec/active/auth/
    **Reasoning**: {Brief explanation of confidence score based on factors above}
    ```
 
-8. **Git Setup**
+9. **Git Setup**
    ```bash
    # Check current branch
    git branch --show-current

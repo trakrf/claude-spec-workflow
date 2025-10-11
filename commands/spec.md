@@ -23,7 +23,34 @@ Optional: Target feature name (e.g., `/spec auth-system`). If not provided, infe
     - **Constraints**: What limitations were mentioned?
     - **Validation**: How will we know it works?
 
-3. **Generate Draft Specification**
+3. **ULTRATHINK: Synthesize Conversation into Coherent Spec**
+
+   **CRITICAL**: Before drafting, think deeply about the conversation.
+
+   **Spend time analyzing**:
+   - What is the REAL problem vs symptoms discussed?
+   - What requirements were implicit vs explicit?
+   - What concerns were raised but not fully articulated?
+   - What patterns or examples illuminate the true intent?
+   - What edge cases were hinted at but not detailed?
+   - What tradeoffs were discussed (performance, complexity, maintainability)?
+
+   **Ask yourself**:
+   - Does this feature solve the root problem or just symptoms?
+   - Are there unstated assumptions I should make explicit?
+   - What would a "junior developer" misunderstand about this?
+   - What context will be essential 6 months from now?
+   - What validation will prove this actually works?
+
+   **Synthesis goal**: Transform exploratory conversation into actionable spec that:
+   - Captures intent, not just words
+   - Makes implicit requirements explicit
+   - Preserves critical context and decisions
+   - Provides clear success criteria
+
+   **Output from this step**: Mental model of the feature that's ready to formalize.
+
+4. **Generate Draft Specification**
    Create `spec/active/{feature}/spec.md`:
 
    ```markdown
@@ -66,23 +93,23 @@ Optional: Target feature name (e.g., `/spec auth-system`). If not provided, infe
     - Concern: "{issue raised}"
    ```
 
-4. **Present for Review**
+5. **Present for Review**
    Show the draft and ask:
    ```
    I've extracted this specification from our conversation.
    Please review and let me know what needs adjustment:
-   
+
    {show draft spec}
-   
+
    Edit directly or tell me what to change.
    ```
 
-5. **Interactive Refinement**
+6. **Interactive Refinement**
     - Accept edits from user
     - Update spec based on feedback
     - Repeat until user confirms
 
-6. **Finalize**
+7. **Finalize**
    When approved:
    ```bash
    mkdir -p spec/active/{feature}
