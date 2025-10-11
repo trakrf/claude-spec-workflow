@@ -13,9 +13,13 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
     - Read `log.md` if it exists (resuming work)
     - Note current task number from log
     - **Check for `spec/config.md`** - If it exists, read it for project-specific commands
-    - **Detect workspace** - If monorepo config, determine which workspace(s) this feature affects:
-      - Look at file paths mentioned in plan.md
-      - Check for explicit workspace in spec.md metadata
+    - **Detect project type**:
+      - **Monorepo**: If `spec/config.md` contains a `workspaces:` section
+      - **Single-stack**: If `spec/config.md` has flat config (e.g., `lint:`, `test:`)
+      - **No config**: Use sensible defaults
+    - **Detect workspace** (monorepo only):
+      - Check for explicit `Workspace: backend` in spec.md metadata
+      - Look at file paths mentioned in plan.md (e.g., `backend/internal/`)
       - User can override with `--workspace=backend` flag
 
 2. **Initialize Progress Log**

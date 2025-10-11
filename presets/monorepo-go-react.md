@@ -162,8 +162,13 @@ database:
 ## Usage Examples
 
 ```bash
-# Full monorepo validation
+# Full monorepo validation (all workspaces)
 /check
+
+# Workspace-specific validation (faster feedback during development)
+/check frontend      # Validates only frontend workspace
+/check backend       # Validates only backend workspace
+/check database      # Validates only database workspace
 
 # Workspace-specific build
 /build spec/active/auth-feature/ --workspace=backend

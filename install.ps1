@@ -25,8 +25,13 @@ if (-not (Test-Path $CLAUDE_COMMANDS_DIR)) {
 # Install commands
 Write-Host "📦 Installing commands..." -ForegroundColor Yellow
 Get-ChildItem -Path $REPO_COMMANDS_DIR -Filter "*.md" | ForEach-Object {
-    Copy-Item $_.FullName -Destination (Join-Path $CLAUDE_COMMANDS_DIR $_.Name) -Force
-    Write-Host "   ✓ Installed $($_.Name)" -ForegroundColor Green
+    $target = Join-Path $CLAUDE_COMMANDS_DIR $_.Name
+    if (Test-Path $target) {
+        Write-Host "   ↻ Updated $($_.Name)" -ForegroundColor Cyan
+    } else {
+        Write-Host "   ✓ Installed $($_.Name)" -ForegroundColor Green
+    }
+    Copy-Item $_.FullName -Destination $target -Force
 }
 
 # Project setup instructions

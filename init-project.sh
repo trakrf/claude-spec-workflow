@@ -6,7 +6,7 @@
 set -e
 
 PROJECT_DIR="${1:-.}"
-SCRIPT_DIR="$(dirname "$0")"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "🏗️  Initializing Spec-Driven Development"
 echo "======================================"

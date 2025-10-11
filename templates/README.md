@@ -37,17 +37,16 @@ This system combines the best practices from Context Engineering (Cole Medin), 3
 spec/
 ├── README.md          # This file
 ├── template.md        # Specification template
-├── plan.md           # /plan command
-├── build.md          # /build command
-├── check.md          # /check command
-├── ship.md           # /ship command
-├── active/           # Current work
-│   └── {feature}/    # One directory per feature
-│       ├── spec.md   # Feature specification
-│       ├── plan.md   # Generated implementation plan
-│       └── log.md    # Build progress log
-└── SHIPPED.md        # Log of completed features
+├── config.md          # Project-specific commands (optional)
+├── active/            # Current work
+│   └── {feature}/     # One directory per feature
+│       ├── spec.md    # Feature specification
+│       ├── plan.md    # Generated implementation plan
+│       └── log.md     # Build progress log
+└── SHIPPED.md         # Log of completed features
 ```
+
+**Note**: The slash commands (`/plan`, `/build`, `/check`, `/ship`, `/spec`) are installed globally in Claude's commands directory, not in your project.
 
 ## Philosophy
 
