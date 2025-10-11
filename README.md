@@ -178,6 +178,129 @@ The system uses workspace-specific validation commands automatically:
 3. **Validate Continuously** - Fix issues immediately, not in a big cleanup
 4. **Ship Clean** - Comprehensive checks ensure professional results
 
+## Complexity Assessment & Scope Protection
+
+The `/plan` command includes automatic scope analysis to prevent scope creep and protect you from common pitfalls.
+
+### The Problem We've All Experienced
+
+**The Pattern**:
+- **Hour 1**: "This is going great!"
+- **Hour 3**: "Wait, why is this test failing?"
+- **Hour 5**: "Which of the 15 changes broke this?"
+- **Hour 6**: "I should have split this up..."
+
+**Real story from the trenches**: One of our developers reviewed a 3,000-line PR diff until their eyes bled, spending hours trying to understand all the changes across multiple subsystems. They finally YOLO'd the merge. It worked, but the risk was enormous and the review was nearly impossible.
+
+### The Solution: Automatic Complexity Scoring
+
+The `/plan` command automatically calculates a **complexity score (0-10)** based on:
+
+- **File Impact**: How many files you're creating/modifying
+- **Subsystem Coupling**: How many different systems you're touching
+- **Task Estimate**: Total number of implementation steps
+- **New Dependencies**: External packages you're adding
+- **Pattern Novelty**: Whether you're using existing patterns or creating new ones
+
+**Threshold-based protection**:
+- **0-3 (LOW)**: ✅ Green light, well-scoped feature
+- **4-5 (MEDIUM-LOW)**: ⚠️ Suggested split, but manageable as-is
+- **6-10 (MEDIUM-HIGH to CRITICAL)**: 🛑 Mandatory split or explicit YOLO override required
+
+### How It Works
+
+When complexity >= 6, `/plan` will:
+
+1. **Show detailed complexity breakdown** with specific factors
+2. **Auto-suggest 2-3 phases** with estimated subtasks for each
+3. **Explain why splitting reduces risk** (better validation, reviewable PRs, incremental value)
+4. **Require explicit typed confirmation** to proceed with full scope
+
+**Example output**:
+
+```
+🛑 COMPLEXITY: 7/10 (HIGH)
+
+**Complexity Factors**:
+📁 File Impact: Creating 5 files, modifying 4 files (9 total)
+🔗 Subsystems: Touching 3 subsystems (UI, API, Database)
+🔢 Task Estimate: ~10 subtasks
+📦 Dependencies: 0 new packages
+🆕 Pattern Novelty: Following existing patterns
+
+**Why This Is Risky**:
+- Context overload: 10 subtasks is manageable but pushing limits
+- Validation isolation: Hard to isolate which of 10 steps caused failure
+- PR review difficulty: 9 files is unreviewable in single PR
+- Architectural pivot cost: If approach is wrong, significant time wasted
+- Token limit risks: Large context may hit AI limits
+
+**You know this feeling**:
+- Hour 1: "This is going great!"
+- Hour 3: "Wait, why is this test failing?"
+- Hour 5: "Which of the 10 changes broke this?"
+- Hour 6: "I should have split this up..."
+
+**RECOMMENDATION: SPLIT INTO PHASES**
+
+### Phase 1: Database Schema & Core Models (Complexity: 2/10) ✅
+**Start here** - Foundation that other phases depend on
+- Create database migrations
+- Add TypeScript types
+- Write database access layer tests
+**Estimated**: 3 subtasks
+**Can ship**: No - infrastructure only, but validates approach
+
+### Phase 2: API Endpoints (Complexity: 3/10) ⚠️
+**Do second** - Business logic implementation
+- Implement CRUD endpoints
+- Add request validation
+- Write API integration tests
+**Estimated**: 4 subtasks
+**Can ship**: Yes - provides functional backend
+
+### Phase 3: UI Components (Complexity: 3/10) ⚠️
+**Do last** - User-facing features
+- Create form components
+- Add data fetching hooks
+- Implement E2E tests
+**Estimated**: 6 subtasks
+**Can ship**: Yes - complete feature
+
+**Why Splitting Works**:
+✅ Each phase has meaningful validation gates (< 8 subtasks = debuggable)
+✅ Ship Phase 1, get feedback, adjust Phase 2 accordingly
+✅ PRs are reviewable size (Phase 1 = ~3 files vs 9 files)
+✅ If Phase 1 reveals issues, haven't wasted time on Phase 2/3
+✅ Incremental value delivery
+
+**Your Decision** (required):
+1. **Phase 1 only** - Generate full spec for Phase 1 (recommended)
+2. **Full roadmap** - Generate Phase 1 spec + Phase 2/3 outlines
+3. ⚠️ **YOLO OVERRIDE** - Proceed with full scope (not recommended)
+
+Please choose: 1, 2, or 3
+```
+
+**If you choose YOLO override** (option 3):
+
+The system will require you to type exactly: `"I understand the risks and want to proceed with full scope anyway"`
+
+This isn't to be annoying - it's to make scope decisions **deliberate** rather than default.
+
+### Why This Matters
+
+**For developers who self-select for quality**:
+
+If you're using a specification-driven methodology like this, you probably care deeply about code quality. The complexity assessment helps you maintain that standard by:
+
+- **Preventing context overload** that leads to bugs
+- **Ensuring reviewable PRs** that actually get reviewed
+- **Enabling incremental validation** so failures are easy to debug
+- **Protecting your time** from architectural pivots late in development
+
+**Bottom line**: The best time to split a feature is during planning, not at 2 AM when tests are failing and you can't remember which of 15 changes broke things.
+
 ## Project Structure
 
 After initialization, your project will have:

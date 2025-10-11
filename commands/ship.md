@@ -81,17 +81,77 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
    ```
 
 5. **Commit Changes**
+
+   Use **Conventional Commits** format for semantic versioning:
+
+   **Format**: `<type>(<scope>): <description>`
+
+   **Types**:
+   - `feat:` - New feature (triggers MINOR version bump)
+   - `fix:` - Bug fix (triggers PATCH version bump)
+   - `docs:` - Documentation only
+   - `refactor:` - Code change that neither fixes a bug nor adds a feature
+   - `perf:` - Performance improvement
+   - `test:` - Adding or fixing tests
+   - `chore:` - Maintenance tasks, deps updates
+
+   **Breaking changes**: Add `!` after type (triggers MAJOR version bump)
+   - Example: `feat!: redesign authentication API`
+
+   **Examples**:
+   ```bash
+   # New feature (most common)
+   git commit -m "feat(auth): add JWT token refresh mechanism
+
+   - Implement refresh token endpoint
+   - Add token rotation logic
+   - Update auth middleware to handle refresh
+
+   Closes #123"
+
+   # Bug fix
+   git commit -m "fix(validation): prevent empty form submission
+
+   - Add client-side validation for required fields
+   - Add server-side validation fallback
+   - Display error messages to user
+
+   Fixes #456"
+
+   # Breaking change
+   git commit -m "feat(api)!: redesign user profile endpoint
+
+   BREAKING CHANGE: /api/user response format changed from flat object to nested structure
+
+   - Nested address fields under 'address' object
+   - Phone numbers now array instead of single string
+   - Migration guide in docs/migrations/v2.md
+
+   Closes #789"
+
+   # Documentation
+   git commit -m "docs(readme): add installation instructions for Windows"
+
+   # Refactor
+   git commit -m "refactor(store): simplify user state management
+
+   - Remove redundant state fields
+   - Consolidate user actions
+   - No behavior changes"
+   ```
+
+   **Commit your changes**:
    ```bash
    # Stage all changes
    git add .
-   
-   # Create semantic commit
-   git commit -m "feat: {feature-description}
+
+   # Create conventional commit
+   git commit -m "{type}({scope}): {description}
 
    - {key change 1}
    - {key change 2}
    - {key change 3}
-   
+
    Closes #{issue-number}"
    ```
 
@@ -107,6 +167,16 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
      - {major change 1}
      - {major change 2}
    - **Validation**: ✅ All checks passed
+
+   ### Success Metrics
+   (Copy from spec.md and mark actual results)
+   - ✅ {Metric 1} - **Result**: {actual outcome}
+   - ✅ {Metric 2} - **Result**: {actual outcome}
+   - ⏳ {Metric 3} - **Result**: To be measured in production
+   - ❌ {Metric 4} - **Result**: Did not meet target, needs follow-up
+
+   **Overall Success**: {percentage}% of metrics achieved
+
    - **PR**: {pending|url}
    ```
 

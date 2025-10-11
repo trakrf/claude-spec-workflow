@@ -19,43 +19,234 @@ Do NOT treat validation as optional. These are blocking requirements.
 ## Input
 The user will provide the path to a specification file (e.g., `spec/active/auth/spec.md`).
 
+**IMPORTANT**: Before planning, you must:
+1. Read `spec/README.md` for workflow philosophy
+2. Assess complexity and scope
+3. Ask mandatory clarifying questions
+4. Wait for confirmation before generating detailed plan
+
 ## Process
 
-1. **Read and Understand**
-    - Read the specification file completely
-    - Extract: desired outcome, constraints, examples, validation criteria
-    - Identify any ambiguous requirements and note them
-    - **CRITICAL**: Ask clarifying questions before proceeding
+1. **Load Philosophy**
+   - **First: Read `spec/README.md`** to understand workflow standards
+   - This ensures consistency with project methodology
 
-2. **Research Codebase**
+2. **Read and Understand Specification**
+    - Read the specification file completely
+    - Extract: desired outcome, constraints, examples, validation criteria, success metrics
+    - Identify any ambiguous requirements and note them
+
+3. **COMPLEXITY ASSESSMENT** (MANDATORY GATE)
+
+   Calculate complexity score (0-10) based on:
+
+   **File Impact**:
+   - Files to create: 1-3 (1pt), 4-6 (2pts), 7-10 (3pts), 11+ (4pts)
+   - Files to modify: 0-2 (0pts), 3-5 (1pt), 6-10 (2pts), 11+ (3pts)
+
+   **Subsystem Coupling**:
+   - 1 subsystem (0pts), 2 subsystems (1pt), 3 subsystems (2pts), 4+ (3pts)
+
+   **Task Estimate**:
+   - < 8 subtasks (1pt), 8-12 (2pts), 13-18 (3pts), 19+ (4pts)
+
+   **Dependencies**:
+   - 0-1 new packages (0pts), 2-3 (1pt), 4+ (2pts)
+
+   **Pattern Novelty**:
+   - Existing patterns (0pts), Adapting patterns (1pt), New patterns (2pts)
+
+   **Total Score Interpretation**:
+   - **0-3: LOW** ✅ Green light, proceed
+   - **4-5: MEDIUM-LOW** ⚠️ Suggest split but allow proceed
+   - **6-10: MEDIUM-HIGH to CRITICAL** 🛑 Mandatory split or YOLO override
+
+   **If Score >= 6 → MANDATORY SPLIT**:
+
+   Present complexity breakdown:
+   ```
+   🛑 COMPLEXITY: {score}/10 (MEDIUM-HIGH/HIGH/CRITICAL)
+
+   **Complexity Factors**:
+   📁 File Impact: Creating {N} files, modifying {M} files ({total} files)
+   🔗 Subsystems: Touching {N} subsystems (list: UI, API, Database, etc.)
+   🔢 Task Estimate: ~{N} subtasks
+   📦 Dependencies: {N} new packages (list them)
+   🆕 Pattern Novelty: {existing/adapting/new}
+
+   **Why This Is Risky**:
+   - Context overload: {N} subtasks is difficult to track and debug
+   - Validation isolation: Hard to isolate which of {N} steps caused failure
+   - PR review difficulty: {total} files is unreviewable in single PR
+   - Architectural pivot cost: If approach is wrong, significant time wasted
+   - Token limit risks: Large context may hit AI limits
+
+   **You know this feeling**:
+   - Hour 1: "This is going great!"
+   - Hour 3: "Wait, why is this test failing?"
+   - Hour 5: "Which of the {N} changes broke this?"
+   - Hour 6: "I should have split this up..."
+
+   **RECOMMENDATION: SPLIT INTO PHASES**
+
+   ### Phase 1: {Name} (Complexity: {score}/10) ✅
+   **Start here** - {Why this first}
+   {Scope bullets}
+   **Estimated**: {N} subtasks
+   **Can ship**: {Yes/No} - {Why}
+
+   ### Phase 2: {Name} (Complexity: {score}/10) ⚠️
+   **Do second** - {Why this second}
+   {Scope bullets}
+   **Estimated**: {N} subtasks
+   **Can ship**: {Yes/No} - {Why}
+
+   ### Phase 3: {Name} (Complexity: {score}/10) ⚠️
+   **Do last** - {Why this last}
+   {Scope bullets}
+   **Estimated**: {N} subtasks
+   **Can ship**: {Yes/No} - {Why}
+
+   **Why Splitting Works**:
+   ✅ Each phase has meaningful validation gates (< 13 subtasks = debuggable)
+   ✅ Ship Phase 1, get feedback, adjust Phase 2 accordingly
+   ✅ PRs are reviewable size (Phase 1 = ~{N} files vs {total} files)
+   ✅ If Phase 1 reveals issues, haven't wasted time on Phase 2/3
+   ✅ Incremental value delivery
+
+   **Your Decision** (required):
+   1. **Phase 1 only** - Generate full spec for Phase 1 (recommended)
+   2. **Full roadmap** - Generate Phase 1 spec + Phase 2/3 outlines
+   3. ⚠️ **YOLO OVERRIDE** - Proceed with full scope (not recommended)
+
+   Please choose: 1, 2, or 3
+   ```
+
+   **If User Chooses 3 (YOLO OVERRIDE)**:
+   ```
+   ⚠️ YOLO MODE: HIGH-RISK OVERRIDE REQUESTED
+
+   You've chosen to proceed with full scope despite {score}/10 complexity.
+
+   **Risks You're Explicitly Accepting**:
+   - {N} subtasks to coordinate and track
+   - Validation gate failures hard to isolate
+   - PR will be {total}+ files - difficult to review
+   - If architectural approach is wrong, {N}+ hours wasted
+   - Context limit risks
+   - High probability of scope creep
+
+   **To proceed, type exactly**:
+   "I understand the risks and want to proceed with full scope anyway"
+
+   [WAIT for exact phrase]
+   ```
+
+   **If User Types Confirmation**:
+   ```
+   ✅ YOLO OVERRIDE CONFIRMED - Proceeding with full-scope plan
+
+   **On the record**: You've accepted high-risk, full-scope implementation.
+
+   **Mitigation**: Commit after every 3-5 subtasks, run gates frequently.
+
+   Generating comprehensive plan...
+   ```
+
+   **If Score 4-5 (MEDIUM-LOW)**:
+   ```
+   ⚠️ COMPLEXITY: {score}/10 (MEDIUM-LOW)
+
+   This is a substantial feature. I can suggest a split, but it's manageable as-is.
+
+   **Proceed with full spec or split?**
+   1. Proceed as-is (manageable)
+   2. Split into phases (safer)
+
+   Your choice:
+   ```
+
+   **If Score 0-3 (LOW)**:
+   ```
+   ✅ COMPLEXITY: {score}/10 (LOW)
+
+   Well-scoped feature. Proceeding to planning.
+   ```
+
+   **WAIT FOR USER DECISION**
+
+4. **Ask Mandatory Clarifying Questions** (REQUIRED GATE)
+
+   **CRITICAL**: You MUST ask clarifying questions before generating the plan.
+
+   **Do NOT skip this step**. Even if the spec seems clear, ask about:
+   - Ambiguous requirements or undefined behaviors
+   - Integration points not explicitly stated
+   - Technical tradeoffs (performance vs simplicity, etc.)
+   - Existing patterns to follow or avoid
+   - Edge cases not covered in spec
+   - Testing strategy and coverage expectations
+   - Error handling approach
+
+   **Format Requirements**:
+   - Use numbered/lettered lists for easy responses
+   - Group related questions by category
+   - Provide multiple-choice options where applicable (A/B/C choices)
+   - Make it easy for user to respond with "1a, 2, 3b" style answers
+
+   **Example template**:
+   ```
+   Before I create the implementation plan, I need clarification on:
+
+   **Requirements**:
+   1. {Specific ambiguous requirement from spec}
+      a) Option A: {interpretation}
+      b) Option B: {alternative interpretation}
+   2. {Question about scope boundary}
+
+   **Technical Approach**:
+   3. Should this follow the pattern in {similar-feature at path/to/file.ts}?
+      a) Yes, mirror that approach
+      b) No, use different pattern because {reason}
+   4. What's the priority tradeoff:
+      a) Performance (faster but more complex)
+      b) Simplicity (cleaner code but potentially slower)
+      c) Balance both
+
+   **Integration**:
+   5. How should this integrate with {existing-system}?
+   6. Should we modify {existing-component} or create new one?
+
+   **Edge Cases**:
+   7. How should we handle {edge case scenario}?
+      a) {Option A}
+      b) {Option B}
+   8. What's the expected behavior when {error condition}?
+
+   **Testing**:
+   9. What test coverage level is expected?
+      a) Unit tests only
+      b) Unit + Integration tests
+      c) Unit + Integration + E2E tests
+   10. Are there specific test scenarios you want covered?
+   ```
+
+   **WAIT FOR USER RESPONSES**
+
+   Incorporate all answers into the plan before proceeding to codebase research.
+
+5. **Research Codebase**
     - Search for similar patterns/features already implemented
     - Identify files that will need modification
     - Find relevant test patterns to follow
     - Note architectural decisions that impact implementation
 
-3. **Ask Clarifying Questions**
-   Before creating the plan, ask about any gaps or ambiguities:
-   ```
-   Before I create the implementation plan, I need to clarify:
-   
-   1. {Specific question about requirement}
-   2. {Question about integration point}
-   3. {Question about edge case handling}
-   
-   Also:
-   - Should this follow the pattern in {similar-feature}?
-   - What's the priority: {tradeoff A} or {tradeoff B}?
-   - Any specific performance constraints?
-   ```
-
-   Wait for responses and incorporate them into the plan.
-
-4. **External Research** (if needed)
+6. **External Research** (if needed)
     - Search for library documentation
     - Find best practices for the specific technology
     - Identify common pitfalls and their solutions
 
-4. **Create Implementation Plan**
+7. **Create Implementation Plan**
    Save to `spec/active/{feature}/plan.md`:
 
    ```markdown
@@ -66,10 +257,27 @@ The user will provide the path to a specification file (e.g., `spec/active/auth/
    ## Understanding
    {AI's interpretation of the requirements}
 
+   ## Relevant Files
+
+   **Reference Patterns** (existing code to follow):
+   - `{path/to/similar-feature.ts}` (lines {X-Y}) - {what pattern to follow}
+   - `{path/to/another-example.ts}` (lines {X-Y}) - {specific technique}
+   - `{path/to/test-example.test.ts}` - {test pattern to mirror}
+
+   **Files to Create**:
+   - `{path/to/new-component.tsx}` - {purpose and responsibility}
+   - `{path/to/new-service.ts}` - {purpose and responsibility}
+   - `{path/to/new-test.test.ts}` - {test coverage scope}
+
+   **Files to Modify**:
+   - `{path/to/existing.ts}` (lines ~{X-Y}) - {what changes and why}
+   - `{path/to/config.ts}` (add {what}) - {purpose of addition}
+   - `{path/to/routes.ts}` (integrate {what}) - {integration approach}
+
    ## Architecture Impact
-   - Files to create: {list with purposes}
-   - Files to modify: {list with specific changes}
-   - Dependencies to add: {if any}
+   - **Subsystems affected**: {list: e.g., UI, API, Database, Auth}
+   - **New dependencies**: {if any - list package names and versions}
+   - **Breaking changes**: {if any - describe impact}
 
    ## Task Breakdown
    ### Task 1: {Name}
@@ -137,9 +345,30 @@ The user will provide the path to a specification file (e.g., `spec/active/auth/
    pnpm test:run
    pnpm build
    ```
+
+   ## Plan Quality Assessment
+
+   **Complexity Score**: {score}/10 ({LOW/MEDIUM-LOW/MEDIUM-HIGH/HIGH/CRITICAL})
+   **Confidence Score**: {score}/10 ({LOW/MEDIUM/HIGH})
+
+   **Confidence Factors**:
+   ✅ Clear requirements from spec
+   ✅ Similar patterns found in codebase at {paths}
+   ✅ All clarifying questions answered
+   ✅ Existing test patterns to follow at {paths}
+   ⚠️ New pattern - no existing reference
+   ⚠️ External dependency uncertainty ({package-name})
+   ⚠️ Multiple subsystem integration required
+   🛑 Critical risk: {description}
+
+   **Assessment**: {One sentence summary of implementation confidence}
+
+   **Estimated one-pass success probability**: {percentage}%
+
+   **Reasoning**: {Brief explanation of confidence score based on factors above}
    ```
 
-5. **Git Setup**
+8. **Git Setup**
    ```bash
    # Check current branch
    git branch --show-current
@@ -158,6 +387,12 @@ Report to user:
 ✅ Implementation plan created for {feature}
 📁 Location: spec/active/{feature}/plan.md
 🌿 Branch: feature/{feature-name}
+
+📊 ASSESSMENT:
+   Complexity: {score}/10 ({LOW/MEDIUM/HIGH/CRITICAL})
+   Confidence: {score}/10 ({LOW/MEDIUM/HIGH})
+   One-pass success probability: {percentage}%
+
 📋 Tasks: {N} identified
 ⚡ Ready to build: /build spec/active/{feature}/
 ```
