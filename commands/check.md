@@ -2,6 +2,20 @@
 
 You are tasked with comprehensively validating that the codebase is ready for a pull request.
 
+---
+**⚠️  VALIDATION GATES ARE MANDATORY**
+
+This workflow enforces validation gates - not suggestions, but GATES:
+- Lint must be clean
+- Types must be correct
+- Tests must pass
+- Build must succeed
+
+If any gate fails: Fix → Re-run → Repeat until pass
+
+Do NOT treat validation as optional. These are blocking requirements.
+---
+
 ## Input
 Optional: Workspace name for monorepo projects (e.g., `/check frontend`, `/check backend`)
 - If no argument provided: validates entire codebase (all workspaces in monorepo)
@@ -230,6 +244,27 @@ Branch: {current-branch}
 - **READY**: All validations pass, no critical issues
 - **READY WITH WARNINGS**: Validations pass but quality issues exist
 - **NOT READY**: Any validation fails or critical issues found
+
+## VALIDATION GATE ENFORCEMENT
+
+**CRITICAL - BLOCKING GATES**:
+These MUST pass before merge - they are not negotiable:
+- ❌ Lint errors → BLOCKING (cannot ship)
+- ❌ Type errors → BLOCKING (cannot ship)
+- ❌ Test failures → BLOCKING (cannot ship)
+- ❌ Build failures → BLOCKING (cannot ship)
+
+**QUALITY WARNINGS**:
+These should be addressed but don't block merge:
+- ⚠️  console.log statements → WARNING (should fix)
+- ⚠️  TODO comments → WARNING (should address)
+- ⚠️  Skipped tests → WARNING (should enable)
+- ⚠️  Bundle size increase → WARNING (should optimize)
+
+**DECISION RULE**:
+- ANY blocking gate fails → Status: **NOT READY** (cannot ship until fixed)
+- All gates pass + warnings → Status: **READY WITH WARNINGS** (can ship, should fix)
+- All gates pass + no warnings → Status: **READY** (ship it!)
 
 ## Output Format
 
