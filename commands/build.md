@@ -41,13 +41,59 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
    Create/append to `spec/active/{feature}/log.md`:
    ```markdown
    # Build Log: {Feature Name}
-   
+
    ## Session: {timestamp}
    Starting task: {N}
    Total tasks: {total}
    ```
 
-3. **Execute Tasks Sequentially**
+3. **ULTRATHINK: Plan Implementation Approach**
+
+   **CRITICAL**: Before writing any code, think deeply about the implementation strategy.
+
+   **You now have**:
+   - Full spec with requirements and success metrics
+   - Detailed plan with task breakdown
+   - Reference patterns from plan (file paths and line numbers)
+   - Validation commands from config
+   - Progress log if resuming work
+
+   **Spend time analyzing**:
+   - What is the logical sequence to implement these tasks?
+   - Which tasks are foundational vs dependent?
+   - What patterns from the plan should I follow exactly?
+   - Where might I deviate from the plan (and why)?
+   - What validation failures are most likely? How to prevent?
+   - What's my rollback strategy if a task fails validation repeatedly?
+
+   **Ask yourself**:
+   - If I implement Task 1, will it be easy to validate before Task 2?
+   - Are there any tasks that would be easier in a different order?
+   - What existing code patterns must I match for consistency?
+   - What's the minimal implementation that passes the first validation gate?
+   - Where should I be conservative vs innovative?
+   - What would cause validation gates to fail? How do I avoid that?
+
+   **Think about validation strategy**:
+   - After which tasks should I commit? (Every 3-5 tasks recommended)
+   - What tests exist that I need to keep passing?
+   - What new tests do I need to write first (TDD approach)?
+   - How do I validate each task incrementally before moving on?
+
+   **Red flags to check**:
+   - ❌ Trying to do too much in one task - break it down further
+   - ❌ Not clear what "done" looks like for a task - define validation
+   - ❌ Skipping existing patterns from plan - follow them unless you have a reason
+   - ❌ No clear rollback point if validation fails - plan incremental commits
+   - ❌ Unclear how to test incrementally - risks big bang integration
+
+   **Output from this step**: Clear mental model of:
+   - Exact implementation sequence
+   - Validation strategy for each task
+   - Commit points for incremental progress
+   - Patterns to follow from existing code
+
+4. **Execute Tasks Sequentially**
    For each task in plan.md:
 
    a. **Log Task Start**
@@ -109,12 +155,12 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
    Completed: {timestamp}
    ```
 
-4. **Create/Update Tests**
+5. **Create/Update Tests**
     - For new functions: Create corresponding test file
     - For modifications: Update existing tests
     - Run tests to ensure they pass
 
-5. **Code Cleanup** (MANDATORY BEFORE COMMIT)
+6. **Code Cleanup** (MANDATORY BEFORE COMMIT)
 
    **CRITICAL**: Clean all temporary development artifacts before final validation.
 
@@ -136,7 +182,7 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
 
    **If found**: Remove them before proceeding to final validation.
 
-6. **Full Test Suite** (BLOCKING GATE - CANNOT SKIP)
+7. **Full Test Suite** (BLOCKING GATE - CANNOT SKIP)
 
    **CRITICAL**: You MUST run the complete test suite before committing.
 
@@ -178,7 +224,7 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
    - You may have broken something indirectly
    - Fix the issue or ask for help
 
-7. **Summary Report**
+8. **Summary Report**
    Append to log.md:
    ```markdown
    ## Summary

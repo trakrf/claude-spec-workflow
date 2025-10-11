@@ -196,6 +196,51 @@ Optional: Workspace name for monorepo projects (e.g., `/check frontend`, `/check
    pnpm audit
    ```
 
+6. **ULTRATHINK: Interpret Results and Provide Guidance**
+
+   **CRITICAL**: Before generating the report, think about what the results mean.
+
+   **You now have**:
+   - Validation results (lint, types, tests, build, e2e, security)
+   - Code quality metrics (console.log, TODOs, skipped tests)
+   - Bundle size analysis
+   - Git status
+   - Divergence from main
+
+   **Spend time analyzing**:
+   - What is the REAL severity of each issue?
+   - Are there patterns in the failures (e.g., all in one file)?
+   - Which issues are quick fixes vs significant work?
+   - What would a reviewer notice immediately?
+   - Are quality warnings masking deeper issues?
+   - Is the bundle size increase justified?
+
+   **Ask yourself**:
+   - If this PR landed in production, what's the actual risk?
+   - Are test failures in new code or existing code?
+   - Do type errors indicate a design problem?
+   - Are console.logs debugging artifacts or intentional logging?
+   - Which warnings should absolutely be fixed vs can wait?
+   - Is there a "smell" suggesting something deeper is wrong?
+
+   **Think about the report**:
+   - What's the one-sentence summary of readiness?
+   - What specific actions would make this PR ready?
+   - Should I recommend splitting this PR if it's too big?
+   - What context helps the developer fix issues quickly?
+
+   **Prioritize issues**:
+   - **BLOCKING**: Must fix before ship (security, test failures, build breaks)
+   - **HIGH**: Should fix before ship (type errors, critical TODOs)
+   - **MEDIUM**: Consider fixing (code quality, warnings)
+   - **LOW**: Nice to have (minor optimizations, info-level issues)
+
+   **Output from this step**: Clear understanding of:
+   - Overall PR readiness (READY/NOT READY/READY WITH WARNINGS)
+   - Specific actionable fixes needed
+   - Priority order for addressing issues
+   - Context that helps developer fix issues quickly
+
 ## Generate Report
 
 Create a formatted report:

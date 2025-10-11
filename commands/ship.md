@@ -49,14 +49,61 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
 
    **Only proceed if ALL BLOCKING GATES pass.**
 
-3. **Update Documentation**
+3. **ULTRATHINK: Final Coherence and Completeness Check**
+
+   **CRITICAL**: Before finalizing, think deeply about the overall feature.
+
+   **You've now completed**:
+   - All implementation tasks from plan
+   - All validation gates passed
+   - Code cleanup done
+
+   **Spend time analyzing**:
+   - Does this implementation actually solve the original problem from the spec?
+   - Are all success metrics from spec.md achievable with this code?
+   - What documentation needs updating beyond code comments?
+   - Are there any rough edges that will confuse users?
+   - What would make a reviewer question this PR?
+   - Is there anything that works but feels "wrong"?
+
+   **Ask yourself**:
+   - If I deployed this to production right now, what would break?
+   - What obvious questions will reviewers ask? Can I address them proactively?
+   - Are there any TODOs that should be fixed before shipping vs after?
+   - Does the commit message accurately reflect what changed?
+   - Will the success metrics I'm claiming actually be true?
+   - Is there any "clever" code that needs explanation?
+
+   **Think about documentation**:
+   - README changes - are they clear for new users?
+   - API documentation - are new endpoints/functions documented?
+   - Migration guide - does anything break existing usage?
+   - Configuration - are new env vars or settings documented?
+
+   **Think about the PR**:
+   - What's the story I'm telling in the PR description?
+   - What context from the spec should I include?
+   - What testing did I do that gives me confidence?
+   - What areas might need extra scrutiny from reviewers?
+
+   **Red flags to check**:
+   - ❌ Success metrics in spec can't actually be measured - need to revise claims
+   - ❌ Breaking changes not documented - will surprise users
+   - ❌ "It works on my machine" - did I test the full workflow?
+   - ❌ Commit message is vague - reviewers won't understand intent
+   - ❌ TODO comments for core functionality - should finish before shipping
+   - ❌ Feels rushed or incomplete - take time to polish
+
+   **Output from this step**: Confidence that this feature is production-ready and the PR tells a clear story.
+
+4. **Update Documentation**
    Check if any docs need updating:
     - README.md - new features or setup changes
     - API documentation - new endpoints
     - Configuration docs - new env vars
     - CHANGELOG.md - if it exists
 
-4. **Clean Up Code**
+5. **Clean Up Code**
    If /check found minor issues, use config-specific commands:
 
    **For monorepo:**
@@ -80,7 +127,7 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
    pnpm lint --fix
    ```
 
-5. **Commit Changes**
+6. **Commit Changes**
 
    Use **Conventional Commits** format for semantic versioning:
 
@@ -155,7 +202,7 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
    Closes #{issue-number}"
    ```
 
-6. **Update Shipped Log**
+7. **Update Shipped Log**
    Create/append to `spec/SHIPPED.md`:
    ```markdown
    ## {Feature Name}
@@ -180,7 +227,7 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
    - **PR**: {pending|url}
    ```
 
-7. **Archive Feature Directory**
+8. **Archive Feature Directory**
    ```bash
    # Remove the active feature directory
    rm -rf spec/active/{feature}/
@@ -193,13 +240,13 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
    git commit -m "chore: archive {feature} specs"
    ```
 
-8. **Push Branch**
+9. **Push Branch**
    ```bash
    # Push to remote
    git push -u origin feature/{name}
    ```
 
-9. **Create Pull Request**
+10. **Create Pull Request**
    Either:
    a. Use GitHub CLI if available:
    ```bash
