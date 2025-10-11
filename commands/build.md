@@ -22,6 +22,7 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
 ## Process
 
 1. **Load Context**
+    - **First: Read `spec/README.md`** for workflow philosophy and standards
     - Read `spec.md` for requirements
     - Read `plan.md` for implementation strategy
     - Read `log.md` if it exists (resuming work)
@@ -113,28 +114,71 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
     - For modifications: Update existing tests
     - Run tests to ensure they pass
 
-5. **Final Validation**
-   After all tasks, use commands from `spec/config.md` if available:
+5. **Code Cleanup** (MANDATORY BEFORE COMMIT)
+
+   **CRITICAL**: Clean all temporary development artifacts before final validation.
+
+   **Search and remove**:
+   - `console.log()`, `console.debug()`, `console.error()` (except intentional logging)
+   - `debugger;` statements
+   - Commented-out code blocks (unless marked with TODO/FIXME)
+   - Temporary test files or debug files
+   - Dead code and unused imports
+   - TODO comments for completed tasks
+
+   **Verify cleanup**:
+   ```bash
+   # Search for common debug patterns
+   grep -r "console\\.log" {affected-files}
+   grep -r "debugger" {affected-files}
+   grep -r "TODO.*TEMP" {affected-files}
+   ```
+
+   **If found**: Remove them before proceeding to final validation.
+
+6. **Full Test Suite** (BLOCKING GATE - CANNOT SKIP)
+
+   **CRITICAL**: You MUST run the complete test suite before committing.
+
+   **This is NOT optional**. Do not commit without running ALL tests.
+
+   Use commands from `spec/config.md` if available:
    ```bash
    # Use project-specific commands from spec/config.md
-   {config.test.command}
-   {config.build.command}
-   {config.typecheck.command}
+   {config.test.command}     # MUST pass 100%
+   {config.build.command}    # MUST succeed
+   {config.typecheck.command} # MUST be clean
    ```
 
    Or defaults if no config:
    ```bash
-   # Full test suite
+   # Full test suite (BLOCKING - must pass 100%)
    pnpm test:run
 
-   # Build check
+   # Build check (BLOCKING - must succeed)
    pnpm build
 
-   # Type check entire project
+   # Type check entire project (BLOCKING - must be clean)
    pnpm typecheck
    ```
 
-6. **Summary Report**
+   **Enforcement**:
+   - ✅ 100% tests passing → Proceed to commit
+   - ❌ ANY test failing → Fix immediately, re-run full suite
+   - ❌ Build fails → Fix immediately, re-run full suite
+   - ❌ Type errors → Fix immediately, re-run typecheck
+
+   **Do NOT**:
+   - Skip failing tests as "technical debt"
+   - Commit with "tests mostly passing"
+   - Rationalize that "these tests were already failing"
+
+   **If tests fail that weren't touched by your changes**:
+   - STOP and investigate
+   - You may have broken something indirectly
+   - Fix the issue or ask for help
+
+7. **Summary Report**
    Append to log.md:
    ```markdown
    ## Summary
