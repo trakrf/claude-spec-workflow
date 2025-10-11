@@ -6,7 +6,8 @@
 set -e
 
 CLAUDE_COMMANDS_DIR="$HOME/.config/claude/commands"
-REPO_COMMANDS_DIR="$(dirname "$0")/commands"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_COMMANDS_DIR="$SCRIPT_DIR/commands"
 
 echo "🚀 Installing Claude Spec Workflow Commands"
 echo "=========================================="
@@ -29,8 +30,13 @@ echo "📦 Installing commands..."
 for cmd in "$REPO_COMMANDS_DIR"/*.md; do
     if [ -f "$cmd" ]; then
         filename=$(basename "$cmd")
-        cp "$cmd" "$CLAUDE_COMMANDS_DIR/$filename"
-        echo "   ✓ Installed $filename"
+        target="$CLAUDE_COMMANDS_DIR/$filename"
+        if [ -f "$target" ]; then
+            echo "   ↻ Updated $filename"
+        else
+            echo "   ✓ Installed $filename"
+        fi
+        cp "$cmd" "$target"
     fi
 done
 

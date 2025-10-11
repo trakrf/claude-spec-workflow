@@ -3,21 +3,31 @@
 You are tasked with comprehensively validating that the codebase is ready for a pull request.
 
 ## Input
-No input required - validates current state of the codebase.
+Optional: Workspace name for monorepo projects (e.g., `/check frontend`, `/check backend`)
+- If no argument provided: validates entire codebase (all workspaces in monorepo)
+- If workspace provided: validates only that specific workspace
 
 ## Process
 
 1. **Load Project Configuration**
     - Check for `spec/config.md` in project root
     - If exists, read validation commands from config
-    - **Detect monorepo** - Check if config has `workspaces` section
-    - If not exists, use sensible defaults and inform user
+    - **Detect project type**:
+      - **Monorepo**: If `spec/config.md` contains a `workspaces:` section
+      - **Single-stack**: If `spec/config.md` has flat config (e.g., `lint:`, `test:`, `build:`)
+      - **No config**: Use sensible defaults and inform user
+    - **Handle workspace argument** (if provided):
+      - Verify workspace exists in config
+      - If monorepo and workspace is valid, set target to that workspace only
+      - If not monorepo and workspace provided, warn that workspace argument is ignored
+      - If workspace invalid, list available workspaces
 
 2. **Run Comprehensive Validation Suite**
 
    **For Monorepo** (if config has `workspaces` section):
 
-   Validate each workspace in the order specified by `check_order`:
+   If workspace argument provided, validate only that workspace.
+   Otherwise, validate each workspace in the order specified by `check_order`:
 
    ```bash
    # For each workspace (e.g., database, backend, frontend)
@@ -222,7 +232,8 @@ Branch: {current-branch}
 - **NOT READY**: Any validation fails or critical issues found
 
 ## Output Format
-Display summary to user:
+
+**For full validation (no workspace specified):**
 ```
 🔍 Pre-Release Check Complete
 
@@ -232,4 +243,14 @@ Display summary to user:
 {If not ready: "❌ {N} issues must be fixed before PR"}
 {If warnings: "⚠️  {N} warnings to consider"}
 {If ready: "✅ Ready to ship with /ship"}
+```
+
+**For workspace-specific validation:**
+```
+🔍 Workspace Check: {workspace}
+
+{Show validation results for that workspace}
+
+📊 Status: {PASS/FAIL/WARNINGS}
+⚡ Faster feedback - full validation with /check (no args)
 ```

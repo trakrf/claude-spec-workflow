@@ -56,7 +56,7 @@ cd claude-spec-workflow
    # Edit spec.md with your requirements
    ```
 
-   See `examples/auth-feature/spec.md` for a complete example.
+   See `examples/profile-feature/spec.md` for a complete example.
 
 2. **Generate implementation plan**
    ```
@@ -153,6 +153,7 @@ For monorepos with multiple tech stacks (like Go backend + React frontend):
    ```bash
    /build spec/active/auth/   # Detects backend workspace from spec
    /check                      # Validates all workspaces (database → backend → frontend)
+   /check backend              # Validates only backend workspace (faster feedback)
    ```
 
 The system uses workspace-specific validation commands automatically:
@@ -207,6 +208,113 @@ your-project/
 ```
 
 This removes the Claude commands but leaves your project spec directories intact.
+
+## Troubleshooting
+
+### Installation Issues
+
+**Commands not showing up in Claude Code**
+- Verify installation path:
+  - macOS/Linux: `~/.config/claude/commands/`
+  - Windows: `%APPDATA%\claude\commands\`
+- Restart Claude Code after installation
+- Check file permissions: `ls -la ~/.config/claude/commands/`
+
+**Permission denied errors**
+- Make scripts executable: `chmod +x *.sh`
+- Check directory permissions: `mkdir -p ~/.config/claude/commands`
+
+### Command Execution Issues
+
+**`/plan` or `/build` can't find spec directory**
+- Ensure you're in the project root
+- Check `spec/` directory exists: `ls -la spec/`
+- Run `./init-project.sh` if spec directory is missing
+
+**Commands run out of order**
+- Recommended flow: `/spec` → `/plan` → `/build` → `/check` → `/ship`
+- If missing plan.md, run `/plan` first
+- If missing spec.md, create it or use `/spec`
+
+**Validation commands fail**
+- Missing `spec/config.md`: Commands will use defaults
+- Check default commands work: `pnpm lint`, `pnpm test`, etc.
+- Run `./init-stack.sh <preset-name>` to create config
+- Verify commands in config match your project setup
+
+### Git Issues
+
+**Not on a feature branch**
+- `/plan` creates a branch automatically
+- Or create manually: `git checkout -b feature/your-feature`
+- Never run `/ship` from main/master branch
+
+**Uncommitted changes block `/ship`**
+- Commit or stash changes first
+- `/ship` requires clean working directory
+- Check status: `git status`
+
+### Monorepo Issues
+
+**Workspace not detected**
+- Add `Workspace: backend` to spec.md metadata
+- Or use explicit flag: `/build spec/active/feature/ --workspace=backend`
+- Verify workspace exists in `spec/config.md`
+
+**Wrong commands run for workspace**
+- Check `spec/config.md` has correct workspace sections
+- Verify workspace-specific validation commands
+- Test commands manually in workspace directory
+
+### Configuration Issues
+
+**Config not being read**
+- Ensure file is named exactly `spec/config.md` (not `config.yaml`)
+- Check file is in project root, not inside spec/active/
+- Verify YAML syntax (indentation matters)
+
+**Commands in config don't work**
+- Test commands manually first
+- Check for typos in command paths
+- Verify package.json scripts exist (for npm/pnpm projects)
+
+### Workflow Issues
+
+**Spec too vague, plan is generic**
+- Add more specific technical requirements
+- Include code examples and patterns
+- Reference similar features in your codebase
+- Define clear validation criteria
+
+**Build fails validation repeatedly**
+- Check linter and test output carefully
+- Fix issues incrementally, don't skip validation
+- Review log.md for patterns in failures
+- Consider if spec needs clarification
+
+**`/check` finds unexpected issues**
+- Review code quality patterns in config
+- Some warnings are informational only
+- Fix critical issues, decide on warnings
+- Update config if checks don't fit your workflow
+
+### Cross-Platform Issues
+
+**Windows path errors**
+- Use forward slashes in commands: `/plan spec/active/feature/spec.md`
+- PowerShell scripts require execution policy: `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`
+
+**Symlink issues on Unix**
+- Scripts now handle symlinks correctly (v1.0.0+)
+- If issues persist, use absolute paths
+
+### Getting Help
+
+Still stuck?
+1. Check existing issues: https://github.com/trakrf/claude-spec-workflow/issues
+2. Review TESTING.md for validation procedures
+3. See CONTRIBUTING.md for reporting bugs
+4. Include error messages and system details in reports
 
 ## Credits
 

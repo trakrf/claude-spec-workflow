@@ -1,5 +1,8 @@
 # Spec Workflow Configuration
 
+> **Note**: This is a template with placeholders shown in `[brackets]`. Replace them with your actual commands.
+> The `/build`, `/check`, and `/ship` commands read this file to determine how to validate your project.
+
 ## Project Type
 **Stack**: [your-stack-name]
 **Package Manager**: [npm|pnpm|yarn|pip|cargo|go|etc]

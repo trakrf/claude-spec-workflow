@@ -9,7 +9,13 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
 
 1. **Load Configuration**
     - Check for `spec/config.md` in project root
-    - **Detect workspace** (if monorepo) - Read from spec.md metadata or detect from file paths
+    - **Detect project type**:
+      - **Monorepo**: If `spec/config.md` contains a `workspaces:` section
+      - **Single-stack**: If `spec/config.md` has flat config (e.g., `lint:`, `test:`)
+      - **No config**: Use sensible defaults
+    - **Detect workspace** (monorepo only):
+      - Read `Workspace:` from spec.md metadata
+      - Detect from file paths in plan.md
     - Identify which validation commands to use
 
 2. **Pre-flight Check**
