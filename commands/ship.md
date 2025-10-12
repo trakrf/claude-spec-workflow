@@ -239,26 +239,21 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
    - **PR**: {pending|url}
    ```
 
-8. **Archive Feature Directory**
+   Commit SHIPPED.md update:
    ```bash
-   # Remove the active feature directory
-   rm -rf spec/active/{feature}/
-
-   # Stage the removal
-   git add spec/active/{feature}/
    git add spec/SHIPPED.md
-
-   # Commit the cleanup
-   git commit -m "chore: archive {feature} specs"
+   git commit -m "docs: record {feature} in SHIPPED.md"
    ```
 
-9. **Push Branch**
+   **Note**: The spec directory (`spec/active/{feature}/`) remains in place through PR review. It will be archived when starting the next feature via `/plan`.
+
+8. **Push Branch**
    ```bash
    # Push to remote
    git push -u origin feature/{name}
    ```
 
-10. **Create Pull Request**
+9. **Create Pull Request**
    Either:
    a. Use GitHub CLI if available:
    ```bash
