@@ -187,10 +187,10 @@ The system uses workspace-specific validation commands automatically:
 | Command | Purpose | When to Use |
 |---------|---------|-------------|
 | `/spec` | Convert conversation to specification | After exploring an idea interactively |
-| `/plan` | Generate implementation plan | When you have a clear spec |
+| `/plan` | Archive previous and generate implementation plan | When you have a clear spec |
 | `/build` | Execute the plan | After plan is approved |
 | `/check` | Validate everything | Before creating PR |
-| `/ship` | Complete and archive | When ready to merge |
+| `/ship` | Complete and PR | When ready to merge |
 
 ## Workflow Philosophy
 
