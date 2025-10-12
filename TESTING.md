@@ -5,7 +5,7 @@ Manual test procedures to validate Claude Spec Workflow functionality.
 ## Prerequisites
 - Claude Code installed and running
 - Git installed
-- Bash (macOS/Linux) or PowerShell (Windows)
+- Bash shell (Git Bash on Windows, native on macOS/Linux)
 
 ## Installation Tests
 
@@ -25,23 +25,7 @@ cd claude-spec-workflow
 ls -la ~/.claude/commands/ | grep -E "(spec|plan|build|check|ship)\.md"
 ```
 
-### Test 2: Fresh Installation (Windows)
-```powershell
-cd claude-spec-workflow
-.\install.ps1
-```
-
-**Expected:**
-- Commands copied to `%APPDATA%\claude\commands\`
-- Success message displayed
-- All 5 commands listed
-
-**Verify:**
-```powershell
-Get-ChildItem "$env:APPDATA\claude\commands\" | Where-Object { $_.Name -match "(spec|plan|build|check|ship)\.md" }
-```
-
-### Test 3: Re-installation (Idempotency)
+### Test 2: Re-installation (Idempotency)
 Run installation script again.
 
 **Expected:**
@@ -49,9 +33,9 @@ Run installation script again.
 - Commands updated/overwritten
 - Warning or confirmation message
 
-### Test 4: Uninstallation
+### Test 3: Uninstallation
 ```bash
-./uninstall.sh  # or .\uninstall.ps1
+./uninstall.sh
 ```
 
 **Expected:**
@@ -61,7 +45,7 @@ Run installation script again.
 
 ## Project Initialization Tests
 
-### Test 5: Initialize New Project
+### Test 4: Initialize New Project
 ```bash
 mkdir /tmp/test-project
 cd /tmp/test-project
@@ -257,14 +241,14 @@ In monorepo with workspace in spec metadata:
 ## Cross-Platform Tests
 
 ### Test 18: Windows Path Handling
-On Windows, test with backslashes:
+On Windows (Git Bash), test with forward slashes:
 ```
-/plan spec\active\test-feature\spec.md
+/plan spec/active/test-feature/spec.md
 ```
 
 **Expected:**
-- Commands handle both forward and backslashes
-- No path errors
+- Commands work correctly in Git Bash
+- Forward slashes handled properly
 
 ### Test 19: Symlink Handling (Unix)
 ```bash

@@ -38,9 +38,21 @@ Think of it as "the best of both worlds, with training wheels" - structured enou
 - 🚀 **Clean Shipping** - Automated archival and git workflow
 - 🔧 **Stack Agnostic** - Works with TypeScript, Python, Go, and more via presets
 
-## Installation
+## Prerequisites
 
-### macOS / Linux
+**All Platforms:**
+- Git installed
+- Bash shell
+
+**Platform-Specific Setup:**
+- **macOS/Linux**: Native bash support ✓
+- **Windows**: Requires Git Bash or WSL2
+  - [Install Git for Windows](https://git-scm.com/download/win) (includes Git Bash)
+  - [Install WSL2](https://docs.microsoft.com/en-us/windows/wsl/install)
+
+**Why bash?** This tool executes validation commands through bash (as defined in `spec/stack.md`). Git Bash or WSL2 provides the bash environment needed for installation and operation.
+
+## Installation
 
 ```bash
 # Clone the repository
@@ -57,22 +69,7 @@ cd claude-spec-workflow
 ./init-project.sh /path/to/your/project python-fastapi
 ```
 
-### Windows (PowerShell)
-
-```powershell
-# Clone the repository
-git clone https://github.com/trakrf/claude-spec-workflow
-cd claude-spec-workflow
-
-# Install commands globally
-.\install.ps1
-
-# Initialize a project with default preset (TypeScript + React + Vite)
-.\init-project.ps1 C:\path\to\your\project
-
-# Or initialize with a specific preset
-.\init-project.ps1 C:\path\to\your\project python-fastapi
-```
+**Windows users**: Run these commands in Git Bash or WSL2 terminal.
 
 ## Quick Start
 
@@ -128,22 +125,12 @@ The workflow adapts to your project's tech stack through `spec/stack.md`, which 
 
 Presets are automatically applied during project initialization:
 
-**macOS / Linux:**
 ```bash
 # Default preset (typescript-react-vite)
 ./init-project.sh /path/to/your/project
 
 # Specific preset
 ./init-project.sh /path/to/your/project python-fastapi
-```
-
-**Windows (PowerShell):**
-```powershell
-# Default preset (typescript-react-vite)
-.\init-project.ps1 C:\path\to\your\project
-
-# Specific preset
-.\init-project.ps1 C:\path\to\your\project python-fastapi
 ```
 
 ### Changing Your Stack
@@ -387,14 +374,8 @@ your-project/
 
 ## Uninstalling
 
-**macOS / Linux:**
 ```bash
 ./uninstall.sh
-```
-
-**Windows (PowerShell):**
-```powershell
-.\uninstall.ps1
 ```
 
 This removes the Claude commands but leaves your project spec directories intact.
@@ -491,9 +472,10 @@ This removes the Claude commands but leaves your project spec directories intact
 
 ### Cross-Platform Issues
 
-**Windows path errors**
-- Use forward slashes in commands: `/plan spec/active/feature/spec.md`
-- PowerShell scripts require execution policy: `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`
+**Windows setup**
+- Use Git Bash or WSL2 terminal for all commands
+- Use forward slashes in paths: `/plan spec/active/feature/spec.md`
+- If using Git Bash: Right-click in directory → "Git Bash Here"
 
 **Symlink issues on Unix**
 - Scripts now handle symlinks correctly (v1.0.0+)
