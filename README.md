@@ -50,8 +50,11 @@ cd claude-spec-workflow
 # Install commands globally
 ./install.sh
 
-# Initialize a project (optional)
+# Initialize a project with default preset (TypeScript + React + Vite)
 ./init-project.sh /path/to/your/project
+
+# Or initialize with a specific preset
+./init-project.sh /path/to/your/project python-fastapi
 ```
 
 ### Windows (PowerShell)
@@ -64,8 +67,11 @@ cd claude-spec-workflow
 # Install commands globally
 .\install.ps1
 
-# Initialize a project (optional)
+# Initialize a project with default preset (TypeScript + React + Vite)
 .\init-project.ps1 C:\path\to\your\project
+
+# Or initialize with a specific preset
+.\init-project.ps1 C:\path\to\your\project python-fastapi
 ```
 
 ## Quick Start
@@ -105,26 +111,12 @@ cd claude-spec-workflow
 
 ## Stack Configuration
 
-The workflow adapts to your project's tech stack through `spec/config.md`.
-
-### Quick Setup with Presets
-
-**macOS / Linux:**
-```bash
-cd your-project
-~/path/to/claude-spec-workflow/init-stack.sh typescript-react-vite
-```
-
-**Windows (PowerShell):**
-```powershell
-cd your-project
-C:\path\to\claude-spec-workflow\init-stack.ps1 typescript-react-vite
-```
+The workflow adapts to your project's tech stack through `spec/stack.md`, which is created automatically when you initialize a project.
 
 ### Available Presets
 
 **Single-Stack:**
-- `typescript-react-vite` - React + TypeScript + Vite + pnpm
+- `typescript-react-vite` - React + TypeScript + Vite + npm (default)
 - `nextjs-app-router` - Next.js App Router + TypeScript
 - `python-fastapi` - Python + FastAPI + pytest
 - `go-standard` - Go with standard library or frameworks
@@ -132,27 +124,79 @@ C:\path\to\claude-spec-workflow\init-stack.ps1 typescript-react-vite
 **Monorepo:**
 - `monorepo-go-react` - Go backend + React/Vite frontend + TimescaleDB
 
-### Custom Configuration
+### Using a Preset
 
-Create your own stack config:
+Presets are automatically applied during project initialization:
+
+**macOS / Linux:**
 ```bash
-./init-stack.sh custom  # Creates spec/config.md template
+# Default preset (typescript-react-vite)
+./init-project.sh /path/to/your/project
+
+# Specific preset
+./init-project.sh /path/to/your/project python-fastapi
 ```
 
-Then edit `spec/config.md` with your project's commands:
-```yaml
-lint:
-  command: your-lint-command
-  autofix: your-lint-fix-command
+**Windows (PowerShell):**
+```powershell
+# Default preset (typescript-react-vite)
+.\init-project.ps1 C:\path\to\your\project
 
-test:
-  command: your-test-command
-
-build:
-  command: your-build-command
+# Specific preset
+.\init-project.ps1 C:\path\to\your\project python-fastapi
 ```
 
-The commands `/build`, `/check`, and `/ship` automatically use these settings.
+### Changing Your Stack
+
+To change your stack configuration, you have two options:
+
+1. **Edit spec/stack.md directly** - Customize validation commands to match your setup
+2. **Re-run init-project with a different preset** - Overwrites with new preset (prompts for confirmation)
+
+```bash
+# Switch to a different preset
+./init-project.sh . go-standard
+```
+
+### Custom Stack Configuration
+
+If your stack doesn't match any preset, use `templates/stack-template.md` as a guide:
+
+```bash
+# Copy the template to see the format
+cp templates/stack-template.md spec/stack.md
+```
+
+Then edit `spec/stack.md` with your validation commands:
+
+```markdown
+# Stack: My Custom Stack
+
+> **Package Manager**: your-package-manager
+> **Test Runner**: your-test-runner
+
+## Lint
+\```bash
+your-lint-command --fix
+\```
+
+## Typecheck
+\```bash
+your-typecheck-command
+\```
+
+## Test
+\```bash
+your-test-command
+\```
+
+## Build
+\```bash
+your-build-command
+\```
+```
+
+The commands `/build`, `/check`, and `/ship` automatically read and use these commands.
 
 ### Monorepo Support
 
@@ -160,7 +204,7 @@ For monorepos with multiple tech stacks (like Go backend + React frontend):
 
 1. **Initialize with monorepo preset:**
    ```bash
-   ./init-stack.sh monorepo-go-react
+   ./init-project.sh . monorepo-go-react
    ```
 
 2. **Add workspace metadata to specs:**
@@ -177,10 +221,10 @@ For monorepos with multiple tech stacks (like Go backend + React frontend):
    /check backend              # Validates only backend workspace (faster feedback)
    ```
 
-The system uses workspace-specific validation commands automatically:
-- Backend changes use `go test`, `golangci-lint`
-- Frontend changes use `pnpm test`, `pnpm lint`
-- Database changes validate migrations
+The system uses workspace-specific validation commands from `spec/stack.md`:
+- Backend changes use commands from `## Workspace: backend` section
+- Frontend changes use commands from `## Workspace: frontend` section
+- Database changes use commands from `## Workspace: database` section
 
 ## Commands
 
@@ -332,6 +376,7 @@ your-project/
     │       ├── spec.md   # Requirements
     │       ├── plan.md   # Implementation plan (generated)
     │       └── log.md    # Progress tracking (generated)
+    ├── stack.md          # Validation commands for your tech stack
     ├── template.md       # Spec template for new features
     ├── README.md         # Workflow documentation
     └── SHIPPED.md        # Archive of completed features
@@ -379,10 +424,10 @@ This removes the Claude commands but leaves your project spec directories intact
 - If missing spec.md, create it or use `/spec`
 
 **Validation commands fail**
-- Missing `spec/config.md`: Commands will use defaults
-- Check default commands work: `pnpm lint`, `pnpm test`, etc.
-- Run `./init-stack.sh <preset-name>` to create config
-- Verify commands in config match your project setup
+- Missing `spec/stack.md`: Commands will error and ask you to run init-project.sh
+- Check validation commands work: `npm run lint`, `npm test`, etc.
+- Run `./init-project.sh . <preset-name>` to create or update stack.md
+- Verify commands in spec/stack.md match your project setup
 
 ### Git Issues
 
@@ -400,25 +445,26 @@ This removes the Claude commands but leaves your project spec directories intact
 
 **Workspace not detected**
 - Add `Workspace: backend` to spec.md metadata
-- Or use explicit flag: `/build spec/active/feature/ --workspace=backend`
-- Verify workspace exists in `spec/config.md`
+- Or detect from file paths in plan.md
+- Verify workspace exists in `spec/stack.md` as `## Workspace: backend`
 
 **Wrong commands run for workspace**
-- Check `spec/config.md` has correct workspace sections
+- Check `spec/stack.md` has correct workspace sections
 - Verify workspace-specific validation commands
 - Test commands manually in workspace directory
 
 ### Configuration Issues
 
-**Config not being read**
-- Ensure file is named exactly `spec/config.md` (not `config.yaml`)
-- Check file is in project root, not inside spec/active/
-- Verify YAML syntax (indentation matters)
+**Stack config not being read**
+- Ensure file is named exactly `spec/stack.md`
+- Check file is in spec/ directory (not inside spec/active/)
+- Verify markdown format with bash code blocks
 
-**Commands in config don't work**
+**Commands in stack.md don't work**
 - Test commands manually first
 - Check for typos in command paths
-- Verify package.json scripts exist (for npm/pnpm projects)
+- Verify package.json scripts exist (for npm/pnpm/yarn projects)
+- Commands should be in bash code blocks under section headers (## Lint, ## Test, etc.)
 
 ### Workflow Issues
 

@@ -34,15 +34,27 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
 ## Process
 
 1. **Load Configuration**
-    - Check for `spec/config.md` in project root
+    - **Read `spec/stack.md`** for validation commands (required)
     - **Detect project type**:
-      - **Monorepo**: If `spec/config.md` contains a `workspaces:` section
-      - **Single-stack**: If `spec/config.md` has flat config (e.g., `lint:`, `test:`)
-      - **No config**: Use sensible defaults
+      - **Monorepo**: If `spec/stack.md` contains `## Workspace:` sections
+      - **Single-stack**: If `spec/stack.md` has only top-level commands
     - **Detect workspace** (monorepo only):
-      - Read `Workspace:` from spec.md metadata
+      - Read `Workspace:` from spec.md metadata in feature directory
       - Detect from file paths in plan.md
-    - Identify which validation commands to use
+    - Identify which validation commands to use from appropriate section
+
+    If `spec/stack.md` not found, show error and stop:
+    ```
+    ❌ Stack not configured
+
+    This workflow requires stack configuration. Run:
+      init-project.sh . [preset]
+
+    This creates spec/stack.md with validation commands.
+    Available presets: typescript-react-vite, python-fastapi, go-standard, monorepo-go-react
+
+    Cannot proceed without spec/stack.md.
+    ```
 
 2. **Pre-flight Validation Gate Check**
    Run /check first (programmatically):
@@ -116,28 +128,25 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
     - CHANGELOG.md - if it exists
 
 5. **Clean Up Code**
-   If /check found minor issues, use config-specific commands:
+   If /check found minor issues that can be auto-fixed:
 
-   **For monorepo:**
+   **Read Lint command from `spec/stack.md`:**
+   - For monorepo: Use the Lint command from the appropriate `## Workspace:` section
+   - For single-stack: Use the top-level Lint command
+   - Run with `--fix` flag to auto-correct issues
+
    ```bash
-   # Use workspace-specific lint fix
-   {config.workspaces.{workspace}.validation.lint.autofix}
+   # Example for single-stack (read actual command from spec/stack.md):
+   npm run lint --fix
+
+   # Example for monorepo (read from workspace section):
+   cd backend && npm run lint --fix
    ```
 
-   **For single-stack project:**
-   ```bash
-   # Use project lint fix
-   {config.lint.autofix}
-   ```
-
-   **Or defaults:**
-   ```bash
-   # Remove console.logs (TypeScript)
-   find src -name "*.ts" -o -name "*.tsx" | xargs sed -i '/console\.log/d'
-
-   # Final lint with fix
-   pnpm lint --fix
-   ```
+   **Manual cleanup if needed**:
+   - Remove debug console.log statements
+   - Remove commented-out code blocks
+   - Address any TODO comments for completed work
 
 6. **Commit Changes**
 

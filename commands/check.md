@@ -36,40 +36,46 @@ Optional: Workspace name for monorepo projects (e.g., `/check frontend`, `/check
 ## Process
 
 1. **Load Project Configuration**
-    - Check for `spec/config.md` in project root
-    - If exists, read validation commands from config
+    - **Read `spec/stack.md`** for validation commands (required)
     - **Detect project type**:
-      - **Monorepo**: If `spec/config.md` contains a `workspaces:` section
-      - **Single-stack**: If `spec/config.md` has flat config (e.g., `lint:`, `test:`, `build:`)
-      - **No config**: Use sensible defaults and inform user
+      - **Monorepo**: If `spec/stack.md` contains `## Workspace:` sections
+      - **Single-stack**: If `spec/stack.md` has only top-level commands
     - **Handle workspace argument** (if provided):
-      - Verify workspace exists in config
-      - If monorepo and workspace is valid, set target to that workspace only
-      - If not monorepo and workspace provided, warn that workspace argument is ignored
-      - If workspace invalid, list available workspaces
+      - If monorepo and workspace specified, validate only that workspace
+      - If not monorepo and workspace provided, warn that argument is ignored
+      - If workspace invalid, list available workspaces from spec/stack.md
+
+    If `spec/stack.md` not found, show error and stop:
+    ```
+    ❌ Stack not configured
+
+    This workflow requires stack configuration. Run:
+      init-project.sh . [preset]
+
+    This creates spec/stack.md with validation commands.
+    Available presets: typescript-react-vite, python-fastapi, go-standard, monorepo-go-react
+
+    Cannot proceed without spec/stack.md.
+    ```
 
 2. **Run Comprehensive Validation Suite**
 
-   **For Monorepo** (if config has `workspaces` section):
+   **Read commands from `spec/stack.md`:**
+
+   **For Monorepo** (if spec/stack.md has `## Workspace:` sections):
 
    If workspace argument provided, validate only that workspace.
-   Otherwise, validate each workspace in the order specified by `check_order`:
+   Otherwise, validate each workspace in order listed:
 
    ```bash
-   # For each workspace (e.g., database, backend, frontend)
+   # For each workspace section in spec/stack.md
    echo "=== Validating Workspace: {workspace} ==="
 
-   # Linting
-   {config.workspaces.{workspace}.validation.lint.command}
-
-   # Type checking (if applicable)
-   {config.workspaces.{workspace}.validation.typecheck.command}
-
-   # Tests
-   {config.workspaces.{workspace}.validation.test.command}
-
-   # Build (if applicable)
-   {config.workspaces.{workspace}.validation.build.command}
+   # Run commands from that workspace's section:
+   # - Lint
+   # - Typecheck (if present)
+   # - Test
+   # - Build (if present)
 
    # Track results per workspace
    ```
@@ -84,181 +90,28 @@ Optional: Workspace name for monorepo projects (e.g., `/check frontend`, `/check
    Overall: READY WITH WARNINGS
    ```
 
-   **For Single-Stack Project** (if `spec/config.md` exists without workspaces):
+   **For Single-Stack** (if spec/stack.md has only top-level commands):
+
    ```bash
-   # Linting
    echo "=== Linting ==="
-   {config.lint.command}
-   LINT_STATUS=$?
-
-   # Type checking
-   echo "=== Type Checking ==="
-   {config.typecheck.command}
-   TYPE_STATUS=$?
-
-   # Unit tests
-   echo "=== Unit Tests ==="
-   {config.test.command}
-   TEST_STATUS=$?
-
-   # Build
-   echo "=== Build ==="
-   {config.build.command}
-   BUILD_STATUS=$?
-
-   # E2E tests (if configured)
-   if [ -f "{config.e2e.exists_if}" ]; then
-     echo "=== E2E Tests ==="
-     {config.e2e.command}
-     E2E_STATUS=$?
-   fi
-   ```
-
-   **Otherwise, detect stack and use appropriate defaults:**
-
-   **Stack Detection**:
-   - If `package.json` exists → Node/TypeScript project
-   - If `Cargo.toml` exists → Rust project
-   - If `go.mod` exists → Go project
-   - If `pyproject.toml` or `requirements.txt` exists → Python project
-   - Otherwise → Error with init-stack guidance
-
-   **Node/TypeScript defaults**:
-   ```bash
-   # Detect package manager (pnpm > npm > yarn)
-   echo "=== Linting ==="
-   if command -v pnpm &> /dev/null; then
-     pnpm lint
-     LINT_STATUS=$?
-   elif command -v npm &> /dev/null; then
-     npm run lint
-     LINT_STATUS=$?
-   elif command -v yarn &> /dev/null; then
-     yarn lint
-     LINT_STATUS=$?
-   fi
-
-   echo "=== Type Checking ==="
-   if command -v pnpm &> /dev/null; then
-     pnpm typecheck
-     TYPE_STATUS=$?
-   elif command -v npm &> /dev/null; then
-     npm run typecheck
-     TYPE_STATUS=$?
-   fi
-
-   echo "=== Unit Tests ==="
-   if command -v pnpm &> /dev/null; then
-     pnpm test:run
-   elif command -v npm &> /dev/null; then
-     npm test
-   elif command -v yarn &> /dev/null; then
-     yarn test
-   fi
-   TEST_STATUS=$?
-
-   echo "=== Build ==="
-   if command -v pnpm &> /dev/null; then
-     pnpm build
-   elif command -v npm &> /dev/null; then
-     npm run build
-   fi
-   BUILD_STATUS=$?
-
-   # E2E tests (if configured)
-   if [ -f "playwright.config.ts" ] || [ -f "cypress.config.ts" ]; then
-     echo "=== E2E Tests ==="
-     if command -v pnpm &> /dev/null; then
-       pnpm test:e2e
-     elif command -v npm &> /dev/null; then
-       npm run test:e2e
-     fi
-     E2E_STATUS=$?
-   fi
-   ```
-
-   **Rust defaults**:
-   ```bash
-   echo "=== Linting (clippy) ==="
-   cargo clippy -- -D warnings
+   # Run Lint command from spec/stack.md
    LINT_STATUS=$?
 
    echo "=== Type Checking ==="
-   cargo check --all
+   # Run Typecheck command from spec/stack.md (if present)
    TYPE_STATUS=$?
 
    echo "=== Unit Tests ==="
-   cargo test --all
+   # Run Test command from spec/stack.md
    TEST_STATUS=$?
 
    echo "=== Build ==="
-   cargo build --release
+   # Run Build command from spec/stack.md
    BUILD_STATUS=$?
-   ```
 
-   **Go defaults**:
-   ```bash
-   echo "=== Linting ==="
-   if command -v golangci-lint &> /dev/null; then
-     golangci-lint run
-   else
-     go vet ./...
-   fi
-   LINT_STATUS=$?
-
-   echo "=== Type Checking ==="
-   go build ./...
-   TYPE_STATUS=$?
-
-   echo "=== Unit Tests ==="
-   go test ./...
-   TEST_STATUS=$?
-
-   echo "=== Build ==="
-   go build -o bin/ ./...
-   BUILD_STATUS=$?
-   ```
-
-   **Python defaults**:
-   ```bash
-   echo "=== Linting ==="
-   if command -v ruff &> /dev/null; then
-     ruff check .
-   else
-     flake8 .
-   fi
-   LINT_STATUS=$?
-
-   echo "=== Type Checking ==="
-   if command -v mypy &> /dev/null; then
-     mypy .
-     TYPE_STATUS=$?
-   fi
-
-   echo "=== Unit Tests ==="
-   pytest
-   TEST_STATUS=$?
-
-   echo "=== Build ==="
-   if [ -f "pyproject.toml" ]; then
-     python -m build
-     BUILD_STATUS=$?
-   else
-     BUILD_STATUS=0  # Skip build for apps
-   fi
-   ```
-
-   **If cannot detect**:
-   ```
-   ❌ No spec/config.md found and cannot detect project type
-
-   Please create stack configuration:
-   - Run: init-stack.sh typescript-react-vite
-   - Or: init-stack.sh python-fastapi
-   - Or: init-stack.sh go-standard
-   - Or: init-stack.sh custom (then edit spec/config.md)
-
-   Cannot proceed without validation commands.
+   echo "=== E2E Tests ==="
+   # Run E2E command from spec/stack.md (if present)
+   E2E_STATUS=$?
    ```
 
 3. **Code Quality Checks**
