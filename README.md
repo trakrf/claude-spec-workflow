@@ -154,8 +154,8 @@ To change your stack configuration, you have two options:
 2. **Re-run init-project with a different preset** - Overwrites with new preset (prompts for confirmation)
 
 ```bash
-# Switch to a different preset
-./init-project.sh . go-standard
+# From your project directory, switch to a different preset
+/path/to/claude-spec-workflow/init-project.sh . go-standard
 ```
 
 ### Custom Stack Configuration
@@ -204,7 +204,8 @@ For monorepos with multiple tech stacks (like Go backend + React frontend):
 
 1. **Initialize with monorepo preset:**
    ```bash
-   ./init-project.sh . monorepo-go-react
+   # From your project directory
+   /path/to/claude-spec-workflow/init-project.sh . monorepo-go-react
    ```
 
 2. **Add workspace metadata to specs:**
@@ -416,7 +417,7 @@ This removes the Claude commands but leaves your project spec directories intact
 **`/plan` or `/build` can't find spec directory**
 - Ensure you're in the project root
 - Check `spec/` directory exists: `ls -la spec/`
-- Run `./init-project.sh` if spec directory is missing
+- Run `/path/to/claude-spec-workflow/init-project.sh .` if spec directory is missing
 
 **Commands run out of order**
 - Recommended flow: `/spec` → `/plan` → `/build` → `/check` → `/ship`
@@ -426,7 +427,7 @@ This removes the Claude commands but leaves your project spec directories intact
 **Validation commands fail**
 - Missing `spec/stack.md`: Commands will error and ask you to run init-project.sh
 - Check validation commands work: `npm run lint`, `npm test`, etc.
-- Run `./init-project.sh . <preset-name>` to create or update stack.md
+- Run `/path/to/claude-spec-workflow/init-project.sh . <preset-name>` to create or update stack.md
 - Verify commands in spec/stack.md match your project setup
 
 ### Git Issues
