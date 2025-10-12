@@ -50,13 +50,13 @@ _No unreleased changes yet. See README.md Roadmap section for planned features._
 
 ## [0.2.0] - 2025-10-12
 
-> **BREAKING CHANGE**: Stack configuration system rewritten. Achieves 60-93% token reduction per command invocation.
+> Stack configuration system rewritten. Achieves 60-93% token reduction per command invocation.
 
 ### Changed
 
-- **BREAKING**: Replaced `spec/config.md` (YAML format) with `spec/stack.md` (Markdown with bash code blocks)
-- **BREAKING**: Removed `init-stack.sh` and `init-stack.ps1` scripts - functionality consolidated into `init-project`
-- **BREAKING**: Commands now require `spec/stack.md` and error with helpful message if missing
+- Replaced `spec/config.md` (YAML format) with `spec/stack.md` (Markdown with bash code blocks)
+- Removed `init-stack.sh` and `init-stack.ps1` scripts - functionality consolidated into `init-project`
+- Commands now require `spec/stack.md` and error with helpful message if missing
 - Removed ~800 lines of inline stack conditionals from `/build`, `/check`, `/ship` commands
 - Commands now load only 100-250 lines instead of 1500+ lines (60-93% token reduction)
 - `init-project.sh` and `init-project.ps1` now accept `[target-path] [preset]` arguments
