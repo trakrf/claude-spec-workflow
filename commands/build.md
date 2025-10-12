@@ -139,16 +139,80 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
    {config.test.pattern}
    ```
 
-   **Otherwise**, use defaults:
+   **Otherwise**, detect stack and use appropriate defaults:
+
+   **Stack Detection**:
+   - If `package.json` exists → Node/TypeScript project
+   - If `Cargo.toml` exists → Rust project
+   - If `go.mod` exists → Go project
+   - If `pyproject.toml` or `requirements.txt` exists → Python project
+   - Otherwise → Error with init-stack guidance
+
+   **Node/TypeScript defaults**:
    ```bash
-   # Syntax check
-   pnpm lint {file} --fix
+   # Detect package manager (pnpm > npm > yarn)
+   if command -v pnpm &> /dev/null; then
+     pnpm lint {file} --fix
+     pnpm typecheck
+     pnpm test {test-pattern}
+   elif command -v npm &> /dev/null; then
+     npm run lint -- {file} --fix
+     npm run typecheck
+     npm test {test-pattern}
+   elif command -v yarn &> /dev/null; then
+     yarn lint {file} --fix
+     yarn typecheck
+     yarn test {test-pattern}
+   fi
+   ```
 
-   # Type check
-   pnpm typecheck
+   **Rust defaults**:
+   ```bash
+   cargo clippy --fix --allow-dirty -- -D warnings
+   cargo check
+   cargo test {test-pattern}
+   ```
 
-   # Run relevant tests
-   pnpm test {test-pattern}
+   **Go defaults**:
+   ```bash
+   # If golangci-lint available, else use go vet
+   if command -v golangci-lint &> /dev/null; then
+     golangci-lint run --fix
+   else
+     go vet ./...
+   fi
+   go build ./...
+   go test {test-pattern}
+   ```
+
+   **Python defaults**:
+   ```bash
+   # Use ruff if available, else flake8
+   if command -v ruff &> /dev/null; then
+     ruff check --fix {file}
+   else
+     flake8 {file}
+   fi
+
+   # Type check if mypy available
+   if command -v mypy &> /dev/null; then
+     mypy {file}
+   fi
+
+   pytest {test-pattern} -v
+   ```
+
+   **If cannot detect**:
+   ```
+   ❌ No spec/config.md found and cannot detect project type
+
+   Please create stack configuration:
+   - Run: init-stack.sh typescript-react-vite
+   - Or: init-stack.sh python-fastapi
+   - Or: init-stack.sh go-standard
+   - Or: init-stack.sh custom (then edit spec/config.md)
+
+   Cannot proceed without validation commands.
    ```
 
    d. **Handle Validation Results** (STRICT ENFORCEMENT)
@@ -208,16 +272,42 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
    {config.typecheck.command} # MUST be clean
    ```
 
-   Or defaults if no config:
+   Or detect stack and use appropriate defaults:
+
+   **Node/TypeScript**:
    ```bash
-   # Full test suite (BLOCKING - must pass 100%)
-   pnpm test:run
+   # Detect package manager
+   if command -v pnpm &> /dev/null; then
+     pnpm test:run
+     pnpm build
+     pnpm typecheck
+   elif command -v npm &> /dev/null; then
+     npm test
+     npm run build
+     npm run typecheck
+   fi
+   ```
 
-   # Build check (BLOCKING - must succeed)
-   pnpm build
+   **Rust**:
+   ```bash
+   cargo test --all
+   cargo build --release
+   cargo check --all
+   ```
 
-   # Type check entire project (BLOCKING - must be clean)
-   pnpm typecheck
+   **Go**:
+   ```bash
+   go test ./...
+   go build ./...
+   ```
+
+   **Python**:
+   ```bash
+   pytest
+   # Build only if package (skip for apps)
+   if [ -f "pyproject.toml" ]; then
+     python -m build
+   fi
    ```
 
    **Enforcement**:
