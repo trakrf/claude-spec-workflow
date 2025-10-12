@@ -16,13 +16,13 @@ cd claude-spec-workflow
 ```
 
 **Expected:**
-- Commands copied to `~/.config/claude/commands/`
+- Commands copied to `~/.claude/commands/`
 - Success message displayed
 - All 5 commands listed (spec, plan, build, check, ship)
 
 **Verify:**
 ```bash
-ls -la ~/.config/claude/commands/ | grep -E "(spec|plan|build|check|ship)\.md"
+ls -la ~/.claude/commands/ | grep -E "(spec|plan|build|check|ship)\.md"
 ```
 
 ### Test 2: Fresh Installation (Windows)

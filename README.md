@@ -405,14 +405,14 @@ This removes the Claude commands but leaves your project spec directories intact
 
 **Commands not showing up in Claude Code**
 - Verify installation path:
-  - macOS/Linux: `~/.config/claude/commands/`
+  - macOS/Linux: `~/.claude/commands/`
   - Windows: `%APPDATA%\claude\commands\`
 - Restart Claude Code after installation
-- Check file permissions: `ls -la ~/.config/claude/commands/`
+- Check file permissions: `ls -la ~/.claude/commands/`
 
 **Permission denied errors**
 - Make scripts executable: `chmod +x *.sh`
-- Check directory permissions: `mkdir -p ~/.config/claude/commands`
+- Check directory permissions: `mkdir -p ~/.claude/commands`
 
 ### Command Execution Issues
 

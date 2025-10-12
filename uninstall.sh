@@ -5,7 +5,7 @@
 
 set -e
 
-CLAUDE_COMMANDS_DIR="$HOME/.config/claude/commands"
+CLAUDE_COMMANDS_DIR="$HOME/.claude/commands"
 COMMANDS=("spec.md" "plan.md" "build.md" "check.md" "ship.md")
 
 echo "🗑️  Uninstalling Claude Spec Workflow Commands"
