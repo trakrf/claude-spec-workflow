@@ -504,6 +504,24 @@ Still stuck?
 3. See CONTRIBUTING.md for reporting bugs
 4. Include error messages and system details in reports
 
+## Roadmap
+
+### Upcoming Features
+
+**v0.3.0**:
+- Rewrite README.md and other docs as needed into my own voice
+- Additional stack presets (Rust, Ruby on Rails, Bun, etc.)
+- Enhanced error messages and validation feedback
+- Performance profiling and optimization
+
+**Future**:
+- Package manager distribution (Homebrew, npm)
+- Integration tests for workflow validation
+- Video walkthrough tutorials
+- Community preset library (users share configs via PRs)
+- Improved monorepo workspace detection
+- Interactive preset creation wizard
+
 ## Credits
 
 This specification-driven development system synthesizes ideas from:
