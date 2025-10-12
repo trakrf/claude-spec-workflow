@@ -42,9 +42,8 @@ Thank you for your interest in contributing! This project is an evolving methodo
    cd /tmp/test-project
    git init
 
-   # Initialize with spec workflow
-   ~/claude-spec-workflow/init-project.sh .
-   ~/claude-spec-workflow/init-stack.sh typescript-react-vite
+   # Initialize with spec workflow (includes stack preset)
+   ~/claude-spec-workflow/init-project.sh . typescript-react-vite
 
    # Create a test spec
    mkdir -p spec/active/test-feature

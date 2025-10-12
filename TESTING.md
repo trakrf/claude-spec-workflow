@@ -83,35 +83,37 @@ ls -la spec/
 cat .gitignore | grep "spec/active/\*/log.md"
 ```
 
-### Test 6: Initialize Stack Configuration
+### Test 6: Initialize with Different Preset
 ```bash
 cd test-project
-~/path/to/claude-spec-workflow/init-stack.sh typescript-react-vite
+~/path/to/claude-spec-workflow/init-project.sh . python-fastapi
 ```
 
 **Expected:**
-- `spec/config.md` created
-- Contains TypeScript/React/Vite commands
+- `spec/stack.md` updated with Python/FastAPI preset
+- Contains pytest, ruff, mypy commands
 - Success message displayed
+- Prompts for confirmation if files exist
 
 **Verify:**
 ```bash
-cat spec/config.md | grep "pnpm"
+cat spec/stack.md | grep "pytest"
+cat spec/stack.md | grep "ruff"
 ```
 
-### Test 7: List Available Presets
+### Test 7: View Available Presets
 ```bash
-~/path/to/claude-spec-workflow/init-stack.sh
+~/path/to/claude-spec-workflow/init-project.sh . invalid-preset
 ```
 
 **Expected:**
+- Error message about invalid preset
 - Lists all available presets:
   - typescript-react-vite
   - nextjs-app-router
   - python-fastapi
   - go-standard
   - monorepo-go-react
-- Shows usage instructions
 
 ## Command Workflow Tests
 
@@ -170,29 +172,29 @@ git branch | grep "feature/test-feature"
 cat spec/active/test-feature/log.md
 ```
 
-### Test 11: /check Command (No Config)
-In a project without `spec/config.md`:
+### Test 11: /check Command (No Stack Config)
+In a project without `spec/stack.md`:
 ```
 /check
 ```
 
 **Expected:**
-- Uses default commands
-- Reports what commands were attempted
+- Error message: "❌ Stack not configured"
+- Suggests running init-project.sh with preset
+- Shows available presets
+- Does not proceed without stack.md
+
+### Test 12: /check Command (With Stack Config)
+In a project with `spec/stack.md`:
+```
+/check
+```
+
+**Expected:**
+- Reads stack.md for validation commands
+- Runs lint, typecheck, test, build commands
 - Shows comprehensive validation report
 - Indicates PR readiness status
-
-### Test 12: /check Command (With Config)
-In a project with `spec/config.md`:
-```
-/check
-```
-
-**Expected:**
-- Reads config file
-- Uses project-specific commands
-- Validates based on config
-- Reports results per validation type
 
 ### Test 13: /ship Command
 ```
@@ -300,10 +302,10 @@ For each preset, verify commands are correct:
 ```bash
 # Test TypeScript preset
 cd typescript-react-project
-~/claude-spec-workflow/init-stack.sh typescript-react-vite
-pnpm lint  # Should work
-pnpm typecheck  # Should work
-pnpm test:run  # Should work
+~/path/to/claude-spec-workflow/init-project.sh . typescript-react-vite
+npm run lint  # Should work
+npm run typecheck  # Should work
+npm test  # Should work
 ```
 
 Repeat for all presets with appropriate projects.
@@ -311,13 +313,14 @@ Repeat for all presets with appropriate projects.
 ### Test 23: Monorepo Configuration
 ```bash
 cd monorepo-project
-~/claude-spec-workflow/init-stack.sh monorepo-go-react
+~/path/to/claude-spec-workflow/init-project.sh . monorepo-go-react
 ```
 
 **Verify:**
+- `spec/stack.md` created with monorepo format
 - All three workspaces defined (database, backend, frontend)
-- Each has validation commands
-- `check_order` is correct
+- Each workspace has validation commands
+- Workspace sections use `## Workspace: [name]` headers
 
 ## Regression Tests
 
