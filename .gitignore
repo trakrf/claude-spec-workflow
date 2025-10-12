@@ -12,3 +12,6 @@ Thumbs.db
 
 # Testing
 .spec/
+
+# Spec workflow logs
+spec/active/*/log.md
