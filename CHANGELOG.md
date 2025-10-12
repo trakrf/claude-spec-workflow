@@ -94,9 +94,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Planned
-- Additional stack presets (Rust, Ruby, Java)
+### Planned for v0.2.0
+- **Interactive `/init-stack` command** - Conversational stack configuration
+  - Ask clarifying questions about project type, languages, frameworks
+  - Generate custom `spec/validation.md` for any stack combination
+  - Elegant monorepo support (configure each workspace interactively)
+  - Community preset library (users share configs via PRs)
+  - Eliminates need to maintain preset files
 - Package manager distribution (Homebrew, npm)
 - Integration tests for workflow validation
 - Video walkthrough tutorials
-- Interactive complexity calculator tool
