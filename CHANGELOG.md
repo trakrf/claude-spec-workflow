@@ -5,10 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] - 2025-10-11
+## [0.1.0] - 2025-10-11
+
+> **Pre-release for dogfooding**: This version represents the initial implementation of the claude-spec-workflow system. It will be validated through real-world use on production projects (trakrf/platform) for 1-2 weeks before the v1.0.0 public release.
 
 ### Added
-- Core specification-driven development workflow with 5 slash commands:
+
+**Core Workflow System**:
+- Specification-driven development workflow with 5 slash commands:
   - `/spec` - Convert conversations to formal specifications
   - `/plan` - Generate implementation plans with clarifying questions
   - `/build` - Execute plans with continuous validation
@@ -24,95 +28,69 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Monorepo (Go backend + React frontend + TimescaleDB)
 - Template system for specs, configs, and documentation
 - Example specification: User Profile Editing feature (frontend-focused, accessible)
-- Comprehensive README with installation and usage instructions
-- MIT License
 
-### Documentation
-- Installation guides for macOS, Linux, and Windows
-- Quick start guide with step-by-step workflow
-- Stack configuration examples for single-stack and monorepo projects
-- Workspace-aware validation for monorepo projects
-- Contributing guidelines and testing documentation
-
-## [1.1.0] - 2025-10-11
-
-### Added
-
-**Scope Protection & Planning Enhancements**:
+**Scope Protection & Quality Gates**:
 - **Automatic complexity assessment** (0-10 scoring) in `/plan` command
   - Evaluates file impact, subsystem coupling, task count, dependencies, and pattern novelty
-  - Mandatory split for features scoring >= 6/10
-  - Auto-suggests 2-3 phases with individual complexity scores
-  - YOLO override requires explicit typed confirmation
+  - Recommends split for features scoring 6-10/10
+  - Optional phase breakdown generation
+  - Simple y/n override confirmation
 - **Mandatory clarifying questions** gate before plan generation
-  - Cannot skip - ensures thorough requirement understanding
   - Structured with numbered/lettered lists for easy responses
   - Categorized by: requirements, technical approach, integration, edge cases, testing
-- **Quality/confidence scoring** added to implementation plans
-  - 1-10 confidence score with HIGH/MEDIUM/LOW rating
-  - Confidence factors breakdown (clear requirements, similar patterns, uncertainties)
+- **Quality/confidence scoring** in implementation plans
+  - 1-10 confidence score with confidence factors breakdown
   - Estimated one-pass success probability percentage
-- **Relevant Files section** in plan templates
-  - Reference patterns (existing code to follow)
-  - Files to create (with purposes)
-  - Files to modify (with specific changes)
+- **ULTRATHINK strategic thinking checkpoints** in all 5 commands
+  - Deep analysis before key decisions
+  - Pattern-based approach synthesis
+  - Risk assessment and mitigation planning
 
 **Validation Gate Enforcement**:
-- **Upgraded validation terminology** from "rules" to "MANDATORY GATES"
-  - Added 🚫 NEVER / ✅ ALWAYS enforcement language
-  - Explicit BLOCKING vs WARNINGS distinction
+- **Mandatory validation gates** (BLOCKING requirements):
+  - Lint must be clean
+  - Types must be correct
+  - Tests must pass
+  - Build must succeed
   - "Fix → Re-run → Repeat until pass" loop requirement
 - **Full test suite gate** before any commit in `/build`
   - BLOCKING requirement - cannot skip
-  - Must pass 100% of tests (no "technical debt" rationalization)
-  - Build must succeed, types must be clean
+  - Must pass 100% of tests
 - **Code cleanup gate** before final validation
   - Mandatory removal of console.log, debugger, commented code
-  - Grep-based verification step
-  - Dead code and unused imports cleanup
+
+**Stack-Agnostic Support**:
+- Auto-detection and defaults for Node/TypeScript, Rust, Go, Python
+- Stack-aware validation commands and patterns
+- Workspace-aware validation for monorepo projects
 
 **Success Metrics & Tracking**:
-- **Success Metrics section** added to spec template
-  - Measurable criteria defined upfront in spec.md
-  - Tracked in SHIPPED.md with actual results
-  - Overall success percentage calculation
-- **Conventional Commits format** in `/ship` command
-  - Detailed examples for feat, fix, docs, refactor, perf, test, chore
-  - Breaking change syntax (feat!, fix!)
-  - Semantic versioning integration
+- Success Metrics section in spec template
+- Tracked in SHIPPED.md with actual results
+- Overall success percentage calculation
+- Conventional Commits format with semantic versioning
 
-**Documentation**:
-- **Complexity Assessment & Scope Protection** section in README
-  - Real-world 3,000-line PR story
-  - Detailed scoring methodology
-  - Phase split examples with rationale
-  - "Why This Matters" explanation for quality-focused developers
-- **spec/README.md** reference requirement in `/plan` and `/build`
-  - Ensures workflow philosophy is consistently followed
+**Role-Based Personas**:
+- Senior Product Engineer for `/spec` (requirements clarity)
+- Senior Software Architect for `/plan` (design decisions)
+- Senior Software Engineer for `/build` (clean implementation)
+- Senior Test Engineer for `/check` (quality assessment)
+- Tech Lead for `/ship` (production readiness)
 
-### Changed
-- Enhanced `/plan` command with multi-gate workflow:
-  1. Load Philosophy (spec/README.md)
-  2. Read Specification
-  3. Complexity Assessment → WAIT for decision
-  4. Ask Mandatory Clarifying Questions → WAIT for answers
-  5. Research Codebase
-  6. External Research (if needed)
-  7. Create Implementation Plan
-  8. Git Setup
-- Enhanced `/build` command steps:
-  - Added spec/README.md loading
-  - Added code cleanup step (step 5)
-  - Enhanced full test suite requirements (step 6)
-  - Renumbered summary report (step 7)
-- Enhanced `/ship` SHIPPED.md format with success metrics section
-- Upgraded all commands with consistent validation gates terminology
+**Spec Lifecycle Management**:
+- Automatic archival of shipped features during `/plan`
+- Simple y/n archive prompts
+- SHIPPED.md tracking with date, commit, and success metrics
 
 ### Documentation
-- Added comprehensive complexity assessment examples in README
-- Added conventional commit examples in ship.md
-- Updated all command documentation with new gate terminology
-- Added troubleshooting sections for validation and workflow issues
+- Comprehensive README with installation and usage instructions
+- Installation guides for macOS, Linux, and Windows
+- Quick start guide with step-by-step workflow
+- Stack configuration examples for single-stack and monorepo projects
+- Complexity assessment methodology and examples
+- Conventional commit format examples
+- Troubleshooting sections for validation and workflow issues
+- MIT License
 
 ## [Unreleased]
 
