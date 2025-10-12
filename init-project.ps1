@@ -20,9 +20,31 @@ param(
 $ErrorActionPreference = "Stop"
 
 $SCRIPT_DIR = $PSScriptRoot
+$DEFAULT_PRESET = "typescript-react-vite"
+
+# Handle 'default' literal
+if ($Preset -eq "default") {
+    $Preset = $DEFAULT_PRESET
+}
+
+# Check if PRESET is a file path (contains / or \)
+if ($Preset -match '[/\\]') {
+    # It's a path, use it directly
+    $presetFile = $Preset
+    # Add .md extension if not present
+    if ($presetFile -notmatch '\.md$') {
+        $presetFile = "$presetFile.md"
+    }
+} else {
+    # It's a preset name, look in presets directory
+    # Strip .md extension if user provided it
+    if ($Preset -match '\.md$') {
+        $Preset = $Preset -replace '\.md$', ''
+    }
+    $presetFile = Join-Path $SCRIPT_DIR "presets\$Preset.md"
+}
 
 # Validate preset exists
-$presetFile = Join-Path $SCRIPT_DIR "presets\$Preset.md"
 if (-not (Test-Path $presetFile)) {
     Write-Host "❌ Error: Preset '$Preset' not found" -ForegroundColor Red
     Write-Host ""

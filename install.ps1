@@ -3,7 +3,7 @@
 
 $ErrorActionPreference = "Stop"
 
-$CLAUDE_COMMANDS_DIR = "$env:APPDATA\claude\commands"
+$CLAUDE_COMMANDS_DIR = "$env:USERPROFILE\.claude\commands"
 $REPO_COMMANDS_DIR = Join-Path $PSScriptRoot "commands"
 
 Write-Host "🚀 Installing Claude Spec Workflow Commands" -ForegroundColor Cyan
@@ -38,14 +38,17 @@ Get-ChildItem -Path $REPO_COMMANDS_DIR -Filter "*.md" | ForEach-Object {
 Write-Host ""
 Write-Host "📋 Project Setup Instructions:" -ForegroundColor Cyan
 Write-Host "------------------------------" -ForegroundColor Cyan
-Write-Host "In your project directory, create:"
+Write-Host "Initialize the spec workflow in your project:"
 Write-Host ""
-Write-Host "  mkdir spec\active -Force"
-Write-Host "  New-Item spec\SHIPPED.md -ItemType File"
+Write-Host "  .\init-project.ps1 C:\path\to\your-project [preset]"
 Write-Host ""
-Write-Host "Optionally, copy templates:"
-Write-Host "  Copy-Item $(Join-Path $PSScriptRoot 'templates\spec-template.md') spec\template.md"
-Write-Host "  Copy-Item $(Join-Path $PSScriptRoot 'templates\README.md') spec\README.md"
+Write-Host "Available presets:"
+Get-ChildItem -Path (Join-Path $PSScriptRoot "presets") -Filter "*.md" | ForEach-Object {
+    Write-Host "  - $($_.BaseName)"
+}
+Write-Host ""
+Write-Host "Example:"
+Write-Host "  .\init-project.ps1 ~\my-app default"
 Write-Host ""
 
 Write-Host "✅ Installation complete!" -ForegroundColor Green
