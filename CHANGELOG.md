@@ -94,11 +94,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Planned for v0.3.0
+- Rewrite README.md and other docs as needed into my own voice
+- Additional stack presets (Rust, Ruby on Rails, Bun, etc.)
+- Enhanced error messages and validation feedback
+- Performance profiling and optimization
+
 ### Planned for Future Releases
 - Package manager distribution (Homebrew, npm)
 - Integration tests for workflow validation
 - Video walkthrough tutorials
 - Community preset library (users share configs via PRs)
+- Improved monorepo workspace detection
+- Interactive preset creation wizard
 
 ## [0.2.0] - 2025-10-12
 
