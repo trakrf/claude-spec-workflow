@@ -43,12 +43,69 @@ The user will provide the path to a specification file (e.g., `spec/active/auth/
    - **First: Read `spec/README.md`** to understand workflow standards
    - This ensures consistency with project methodology
 
-2. **Read and Understand Specification**
+2. **Archive Shipped Features** (Workspace Cleanup)
+
+   **Check for completed features to archive**:
+
+   For each directory in `spec/active/*`:
+   - Read `spec/SHIPPED.md`
+   - If feature exists in SHIPPED.md → it's been shipped, archive it
+   - If feature NOT in SHIPPED.md → still active, leave it
+
+   **For each shipped feature found**:
+   ```
+   📦 Found shipped feature to archive:
+
+   Feature: {feature-name}
+   Shipped: {date from SHIPPED.md}
+   PR: {pr-number from SHIPPED.md}
+   Location: spec/active/{feature-name}/
+
+   Archive this spec?
+   a) Move to spec/archive/{feature-name}/ (keep for reference)
+   b) Delete (SHIPPED.md + git history has full record)
+   c) Skip for now (leave in spec/active/)
+
+   Your choice: _
+   ```
+
+   **If user chooses (a) - Move to archive**:
+   ```bash
+   mkdir -p spec/archive
+   mv spec/active/{feature-name} spec/archive/{feature-name}
+   git add spec/active/{feature-name} spec/archive/{feature-name}
+   git commit -m "chore: archive {feature-name} spec (shipped in PR #{pr})"
+   ```
+
+   **If user chooses (b) - Delete**:
+   ```bash
+   rm -rf spec/active/{feature-name}
+   git add spec/active/{feature-name}
+   git commit -m "chore: remove {feature-name} spec (shipped in PR #{pr})"
+   ```
+
+   **If user chooses (c) - Skip**:
+   ```
+   ⏭️  Skipping archive of {feature-name}
+
+   Note: You can archive later manually or it will be prompted next time you run /plan
+   ```
+
+   **If multiple shipped features found**: Prompt for each one sequentially.
+
+   **If no shipped features found in spec/active/**:
+   ```
+   ✅ Workspace clean - no shipped features to archive
+
+   Proceeding to planning...
+   ```
+
+3. **Read and Understand Specification**
     - Read the specification file completely
     - Extract: desired outcome, constraints, examples, validation criteria, success metrics
     - Identify any ambiguous requirements and note them
 
-3. **COMPLEXITY ASSESSMENT** (MANDATORY GATE)
+4. **COMPLEXITY ASSESSMENT** (MANDATORY GATE)
 
    Calculate complexity score (0-10) based on:
 
@@ -187,7 +244,7 @@ The user will provide the path to a specification file (e.g., `spec/active/auth/
 
    **WAIT FOR USER DECISION**
 
-4. **Ask Mandatory Clarifying Questions** (REQUIRED GATE)
+5. **Ask Mandatory Clarifying Questions** (REQUIRED GATE)
 
    **CRITICAL**: You MUST ask clarifying questions before generating the plan.
 
@@ -247,18 +304,18 @@ The user will provide the path to a specification file (e.g., `spec/active/auth/
 
    Incorporate all answers into the plan before proceeding to codebase research.
 
-5. **Research Codebase**
+6. **Research Codebase**
     - Search for similar patterns/features already implemented
     - Identify files that will need modification
     - Find relevant test patterns to follow
     - Note architectural decisions that impact implementation
 
-6. **External Research** (if needed)
+7. **External Research** (if needed)
     - Search for library documentation
     - Find best practices for the specific technology
     - Identify common pitfalls and their solutions
 
-7. **ULTRATHINK: Synthesize All Context into Coherent Plan**
+8. **ULTRATHINK: Synthesize All Context into Coherent Plan**
 
    **CRITICAL**: Before creating the plan, think deeply about everything you've learned.
 
@@ -301,7 +358,7 @@ The user will provide the path to a specification file (e.g., `spec/active/auth/
 
    **Output from this step**: Clear mental model of implementation approach, task sequencing, and validation strategy.
 
-8. **Create Implementation Plan**
+9. **Create Implementation Plan**
    Save to `spec/active/{feature}/plan.md`:
 
    ```markdown
@@ -423,7 +480,7 @@ The user will provide the path to a specification file (e.g., `spec/active/auth/
    **Reasoning**: {Brief explanation of confidence score based on factors above}
    ```
 
-9. **Git Setup**
+10. **Git Setup**
    ```bash
    # Check current branch
    git branch --show-current
