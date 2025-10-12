@@ -517,6 +517,7 @@ Still stuck?
 - Enhanced error messages and validation feedback
 - Performance profiling and optimization
 - Investigate @ includes to DRY up slash commands (reduce repetition across command files)
+- Project maturity config to control documentation verbosity (dogfooding=minimal docs, production=migration guides)
 
 **Future**:
 - Package manager distribution (Homebrew, npm)
