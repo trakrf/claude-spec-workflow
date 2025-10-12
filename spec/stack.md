@@ -1,5 +1,7 @@
 # Stack: Shell Scripts (Bash/POSIX)
 
+**Maturity**: Alpha - Velocity over stability. Breaking changes expected.
+
 > **Linter**: shellcheck
 > **Formatter**: shfmt
 > **Test Runner**: bats-core (optional)
