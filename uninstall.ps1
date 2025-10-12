@@ -3,7 +3,7 @@
 
 $ErrorActionPreference = "Stop"
 
-$CLAUDE_COMMANDS_DIR = "$env:APPDATA\claude\commands"
+$CLAUDE_COMMANDS_DIR = "$env:USERPROFILE\.claude\commands"
 $COMMANDS = @("spec.md", "plan.md", "build.md", "check.md", "ship.md")
 
 Write-Host "🗑️  Uninstalling Claude Spec Workflow Commands" -ForegroundColor Cyan
