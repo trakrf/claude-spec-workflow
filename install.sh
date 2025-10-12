@@ -5,7 +5,7 @@
 
 set -e
 
-CLAUDE_COMMANDS_DIR="$HOME/.config/claude/commands"
+CLAUDE_COMMANDS_DIR="$HOME/.claude/commands"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_COMMANDS_DIR="$SCRIPT_DIR/commands"
 
