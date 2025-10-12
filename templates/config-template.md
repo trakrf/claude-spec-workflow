@@ -1,4 +1,14 @@
-# Spec Workflow Configuration
+# ⚠️ DEPRECATED - DO NOT USE
+
+> **This template is from v0.1.0 and has been replaced by `spec/stack.md` in v0.2.0.**
+>
+> **Use instead**: `templates/stack-template.md`
+>
+> This file remains for historical reference only. The YAML format shown below is no longer supported.
+
+---
+
+# Spec Workflow Configuration (DEPRECATED)
 
 > **Note**: This is a template with placeholders shown in `[brackets]`. Replace them with your actual commands.
 > The `/build`, `/check`, and `/ship` commands read this file to determine how to validate your project.

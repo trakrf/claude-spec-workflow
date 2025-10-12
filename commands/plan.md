@@ -405,16 +405,23 @@ The user will provide the path to a specification file (e.g., `spec/active/auth/
 
    **CRITICAL**: These are not suggestions - they are GATES that block progress.
 
-   After EVERY code change:
+   After EVERY code change, use commands from `spec/stack.md`:
    ```bash
    # Gate 1: Syntax & Style
-   pnpm lint --fix
+   {lint command from spec/stack.md}
 
    # Gate 2: Type Safety
-   pnpm typecheck
+   {typecheck command from spec/stack.md}
 
    # Gate 3: Unit Tests
-   pnpm test {affected-tests}
+   {test command from spec/stack.md}
+   ```
+
+   **Example** (if using typescript-react-vite preset):
+   ```bash
+   npm run lint --fix
+   npm run typecheck
+   npm test
    ```
 
    **Enforcement Rules**:
@@ -426,17 +433,17 @@ The user will provide the path to a specification file (e.g., `spec/active/auth/
    **Do not proceed to next task until current task passes all gates.**
 
    ## Validation Sequence
-   After each task:
+   After each task (using commands from `spec/stack.md`):
    ```bash
-   pnpm lint --fix
-   pnpm typecheck
-   pnpm test {affected-tests}
+   {lint command} --fix
+   {typecheck command}
+   {test command} {affected-tests}
    ```
 
    Final validation:
    ```bash
-   pnpm test:run
-   pnpm build
+   {test command}  # Full test suite
+   {build command}
    ```
 
    ## Plan Quality Assessment
