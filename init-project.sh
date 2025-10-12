@@ -17,11 +17,33 @@
 set -e
 
 PROJECT_DIR="${1:-.}"
-PRESET="${2:-typescript-react-vite}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DEFAULT_PRESET="typescript-react-vite"
+PRESET="${2:-$DEFAULT_PRESET}"
+
+# Handle 'default' literal
+if [[ $PRESET == "default" ]]; then
+  PRESET=$DEFAULT_PRESET
+fi
+
+# Check if PRESET is a file path (contains /)
+if [[ $PRESET == */* ]]; then
+  # It's a path, use it directly
+  PRESET_FILE="$PRESET"
+  # Add .md extension if not present
+  if [[ ! $PRESET_FILE =~ \.md$ ]]; then
+    PRESET_FILE="${PRESET_FILE}.md"
+  fi
+else
+  # It's a preset name, look in presets directory
+  # Strip .md extension if user provided it
+  if [[ $PRESET =~ \.md$ ]]; then
+    PRESET="${PRESET%.md}"
+  fi
+  PRESET_FILE="$SCRIPT_DIR/presets/$PRESET.md"
+fi
 
 # Validate preset exists
-PRESET_FILE="$SCRIPT_DIR/presets/$PRESET.md"
 if [ ! -f "$PRESET_FILE" ]; then
     echo "❌ Error: Preset '$PRESET' not found"
     echo ""

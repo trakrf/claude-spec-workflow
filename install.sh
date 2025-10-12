@@ -44,14 +44,17 @@ done
 echo ""
 echo "📋 Project Setup Instructions:"
 echo "------------------------------"
-echo "In your project directory, create:"
+echo "Initialize the spec workflow in your project:"
 echo ""
-echo "  mkdir -p spec/active"
-echo "  touch spec/SHIPPED.md"
+echo "  $(dirname $0)/init-project.sh /path/to/your-project [preset]"
 echo ""
-echo "Optionally, copy templates:"
-echo "  cp $(pwd)/templates/spec-template.md spec/template.md"
-echo "  cp $(pwd)/templates/README.md spec/README.md"
+echo "Available presets:"
+for preset in "$REPO_COMMANDS_DIR/../presets"/*.md; do
+    basename "$preset" .md | sed 's/^/  - /'
+done
+echo ""
+echo "Example:"
+echo "  $(dirname $0)/init-project.sh ~/my-app default"
 echo ""
 
 echo "✅ Installation complete!"
