@@ -50,7 +50,7 @@ Think of it as "the best of both worlds, with training wheels" - structured enou
   - [Install Git for Windows](https://git-scm.com/download/win) (includes Git Bash)
   - [Install WSL2](https://docs.microsoft.com/en-us/windows/wsl/install)
 
-**Why bash?** This tool executes validation commands through bash (as defined in `spec/stack.md`). Git Bash or WSL2 provides the bash environment needed for installation and operation.
+**Why bash?** This is a bash-based workflow system. Claude Code executes all commands through bash, and the workflow depends on bash tools (git, grep, find, etc.) for every operation from installation to validation to shipping. Whether your project uses TypeScript, Python, Go, or Rust - you're still running those commands through bash. Git Bash or WSL2 provides this bash environment.
 
 ## Installation
 
