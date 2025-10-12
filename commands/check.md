@@ -79,7 +79,7 @@ Optional: Workspace name for monorepo projects (e.g., `/check frontend`, `/check
    Workspace Results:
    - database: ✅ All checks passed
    - backend: ✅ All checks passed
-   - frontend: ⚠️  2 warnings (console.log found)
+   - frontend: ⚠️  2 warnings (debug statements found)
 
    Overall: READY WITH WARNINGS
    ```
@@ -114,34 +114,151 @@ Optional: Workspace name for monorepo projects (e.g., `/check frontend`, `/check
    fi
    ```
 
-   **Otherwise, use defaults:**
+   **Otherwise, detect stack and use appropriate defaults:**
+
+   **Stack Detection**:
+   - If `package.json` exists → Node/TypeScript project
+   - If `Cargo.toml` exists → Rust project
+   - If `go.mod` exists → Go project
+   - If `pyproject.toml` or `requirements.txt` exists → Python project
+   - Otherwise → Error with init-stack guidance
+
+   **Node/TypeScript defaults**:
    ```bash
-   # Linting
+   # Detect package manager (pnpm > npm > yarn)
    echo "=== Linting ==="
-   pnpm lint
-   LINT_STATUS=$?
+   if command -v pnpm &> /dev/null; then
+     pnpm lint
+     LINT_STATUS=$?
+   elif command -v npm &> /dev/null; then
+     npm run lint
+     LINT_STATUS=$?
+   elif command -v yarn &> /dev/null; then
+     yarn lint
+     LINT_STATUS=$?
+   fi
 
-   # Type checking
    echo "=== Type Checking ==="
-   pnpm typecheck
-   TYPE_STATUS=$?
+   if command -v pnpm &> /dev/null; then
+     pnpm typecheck
+     TYPE_STATUS=$?
+   elif command -v npm &> /dev/null; then
+     npm run typecheck
+     TYPE_STATUS=$?
+   fi
 
-   # Unit tests
    echo "=== Unit Tests ==="
-   pnpm test:run
+   if command -v pnpm &> /dev/null; then
+     pnpm test:run
+   elif command -v npm &> /dev/null; then
+     npm test
+   elif command -v yarn &> /dev/null; then
+     yarn test
+   fi
    TEST_STATUS=$?
 
-   # Build
    echo "=== Build ==="
-   pnpm build
+   if command -v pnpm &> /dev/null; then
+     pnpm build
+   elif command -v npm &> /dev/null; then
+     npm run build
+   fi
    BUILD_STATUS=$?
 
-   # E2E tests (if exists)
-   echo "=== E2E Tests ==="
-   if [ -f "playwright.config.ts" ]; then
-     pnpm test:e2e
+   # E2E tests (if configured)
+   if [ -f "playwright.config.ts" ] || [ -f "cypress.config.ts" ]; then
+     echo "=== E2E Tests ==="
+     if command -v pnpm &> /dev/null; then
+       pnpm test:e2e
+     elif command -v npm &> /dev/null; then
+       npm run test:e2e
+     fi
      E2E_STATUS=$?
    fi
+   ```
+
+   **Rust defaults**:
+   ```bash
+   echo "=== Linting (clippy) ==="
+   cargo clippy -- -D warnings
+   LINT_STATUS=$?
+
+   echo "=== Type Checking ==="
+   cargo check --all
+   TYPE_STATUS=$?
+
+   echo "=== Unit Tests ==="
+   cargo test --all
+   TEST_STATUS=$?
+
+   echo "=== Build ==="
+   cargo build --release
+   BUILD_STATUS=$?
+   ```
+
+   **Go defaults**:
+   ```bash
+   echo "=== Linting ==="
+   if command -v golangci-lint &> /dev/null; then
+     golangci-lint run
+   else
+     go vet ./...
+   fi
+   LINT_STATUS=$?
+
+   echo "=== Type Checking ==="
+   go build ./...
+   TYPE_STATUS=$?
+
+   echo "=== Unit Tests ==="
+   go test ./...
+   TEST_STATUS=$?
+
+   echo "=== Build ==="
+   go build -o bin/ ./...
+   BUILD_STATUS=$?
+   ```
+
+   **Python defaults**:
+   ```bash
+   echo "=== Linting ==="
+   if command -v ruff &> /dev/null; then
+     ruff check .
+   else
+     flake8 .
+   fi
+   LINT_STATUS=$?
+
+   echo "=== Type Checking ==="
+   if command -v mypy &> /dev/null; then
+     mypy .
+     TYPE_STATUS=$?
+   fi
+
+   echo "=== Unit Tests ==="
+   pytest
+   TEST_STATUS=$?
+
+   echo "=== Build ==="
+   if [ -f "pyproject.toml" ]; then
+     python -m build
+     BUILD_STATUS=$?
+   else
+     BUILD_STATUS=0  # Skip build for apps
+   fi
+   ```
+
+   **If cannot detect**:
+   ```
+   ❌ No spec/config.md found and cannot detect project type
+
+   Please create stack configuration:
+   - Run: init-stack.sh typescript-react-vite
+   - Or: init-stack.sh python-fastapi
+   - Or: init-stack.sh go-standard
+   - Or: init-stack.sh custom (then edit spec/config.md)
+
+   Cannot proceed without validation commands.
    ```
 
 3. **Code Quality Checks**
@@ -159,7 +276,9 @@ Optional: Workspace name for monorepo projects (e.g., `/check frontend`, `/check
    grep -r "{config.skipped_tests.pattern}" {config.source_dirs}
    ```
 
-   **Defaults (TypeScript/JavaScript):**
+   **Stack-aware defaults:**
+
+   **Node/TypeScript**:
    ```bash
    # Console.log statements (except in error handlers)
    grep -r "console\.log" src/ --exclude="*.test.*" | grep -v "catch\|error"
@@ -175,14 +294,62 @@ Optional: Workspace name for monorepo projects (e.g., `/check frontend`, `/check
    grep -r "^[[:space:]]*\/\/" src/ | grep -E "(function|class|const|let|var|if|for|while)"
    ```
 
-3. **Bundle Size Analysis**
+   **Rust**:
    ```bash
-   # Get current bundle size
-   BUNDLE_SIZE=$(du -sk dist/assets/*.js | awk '{sum += $1} END {print sum}')
-   
-   # Check against threshold (e.g., 500KB)
-   if [ $BUNDLE_SIZE -gt 500 ]; then
-     echo "⚠️  Bundle size: ${BUNDLE_SIZE}KB exceeds threshold"
+   # Debug print statements
+   grep -r "println!\|dbg!\|eprintln!" src/ --exclude="*test*" | grep -v "// OK:"
+
+   # TODO comments
+   grep -r "TODO\|FIXME\|XXX" src/
+
+   # Skipped/ignored tests
+   grep -r "#\[ignore\]" src/
+
+   # Commented out code
+   grep -r "^[[:space:]]*//.*fn \|//.*let \|//.*struct " src/
+   ```
+
+   **Go**:
+   ```bash
+   # Debug print statements
+   grep -r "fmt\.Println\|log\.Println" . --include="*.go" --exclude="*_test.go"
+
+   # TODO comments
+   grep -r "TODO\|FIXME\|XXX" . --include="*.go"
+
+   # Skipped tests
+   grep -r "t\.Skip" . --include="*_test.go"
+
+   # Commented out code
+   grep -r "^[[:space:]]*//.*func \|//.*var \|//.*type " . --include="*.go"
+   ```
+
+   **Python**:
+   ```bash
+   # Debug print statements
+   grep -r "print(" . --include="*.py" --exclude="*test*" | grep -v "# OK:"
+
+   # TODO comments
+   grep -r "TODO\|FIXME\|XXX" . --include="*.py"
+
+   # Skipped tests
+   grep -r "@pytest\.mark\.skip\|@unittest\.skip" . --include="*test*.py"
+
+   # Commented out code
+   grep -r "^[[:space:]]*#.*def \|#.*class " . --include="*.py"
+   ```
+
+3. **Bundle Size Analysis** (Node/TypeScript projects only)
+   ```bash
+   # Only for projects with dist/build output
+   if [ -d "dist" ] || [ -d "build" ]; then
+     # Get current bundle size
+     BUNDLE_SIZE=$(du -sk dist/assets/*.js 2>/dev/null || du -sk build/static/*.js 2>/dev/null | awk '{sum += $1} END {print sum}')
+
+     # Check against threshold (e.g., 500KB)
+     if [ -n "$BUNDLE_SIZE" ] && [ $BUNDLE_SIZE -gt 500 ]; then
+       echo "⚠️  Bundle size: ${BUNDLE_SIZE}KB exceeds threshold"
+     fi
    fi
    ```
 
@@ -202,10 +369,46 @@ Optional: Workspace name for monorepo projects (e.g., `/check frontend`, `/check
    git rev-list --left-right --count origin/main...HEAD
    ```
 
-5. **Security Audit**
+5. **Security Audit** (stack-aware)
+
+   **Node/TypeScript**:
    ```bash
-   # Check for known vulnerabilities
-   pnpm audit
+   if command -v pnpm &> /dev/null; then
+     pnpm audit
+   elif command -v npm &> /dev/null; then
+     npm audit
+   elif command -v yarn &> /dev/null; then
+     yarn audit
+   fi
+   ```
+
+   **Rust**:
+   ```bash
+   if command -v cargo-audit &> /dev/null; then
+     cargo audit
+   else
+     echo "ℹ️  Install cargo-audit for security scanning: cargo install cargo-audit"
+   fi
+   ```
+
+   **Go**:
+   ```bash
+   if command -v gosec &> /dev/null; then
+     gosec ./...
+   else
+     echo "ℹ️  Install gosec for security scanning: go install github.com/securego/gosec/v2/cmd/gosec@latest"
+   fi
+   ```
+
+   **Python**:
+   ```bash
+   if command -v safety &> /dev/null; then
+     safety check
+   elif command -v pip-audit &> /dev/null; then
+     pip-audit
+   else
+     echo "ℹ️  Install pip-audit for security scanning: pip install pip-audit"
+   fi
    ```
 
 6. **ULTRATHINK: Interpret Results and Provide Guidance**
