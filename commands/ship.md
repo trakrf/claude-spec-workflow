@@ -163,7 +163,7 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
    - `test:` - Adding or fixing tests
    - `chore:` - Maintenance tasks, deps updates
 
-   **Breaking changes**: Add `!` after type (triggers MAJOR version bump)
+   **Breaking changes**: Add **!** after type (triggers MAJOR version bump)
    - Example: `feat!: redesign authentication API`
 
    **Examples**:
