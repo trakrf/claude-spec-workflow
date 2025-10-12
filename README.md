@@ -14,7 +14,7 @@ This project builds on excellent work from two pioneers in AI-assisted developme
 
 **Cole Medin's [Context Engineering](https://github.com/coleam00/context-engineering-intro)** taught us the power of comprehensive context and validation loops. His methodology showed how structured context dramatically improves AI output quality and prevents the "big bang integration" failures we've all experienced.
 
-**Ryan Carson's [3-File PRD System](https://creatoreconomy.so/p/full-tutorial-a-proven-3-file-system-to-vibe-code-production-apps-ryan)** demonstrated the value of progress tracking and clarifying questions. His approach to breaking down work and maintaining visible state throughout development inspired our specification lifecycle.
+**Ryan Carson's [3-File PRD System](https://creatoreconomy.so/p/full-tutorial-a-proven-3-file-system-to-vibe-code-production-apps-ryan)** ([repo](https://github.com/snarktank/ai-dev-tasks)) demonstrated the value of progress tracking and clarifying questions. His approach to breaking down work and maintaining visible state throughout development inspired our specification lifecycle.
 
 ### Our Contribution
 
@@ -233,9 +233,9 @@ The `/plan` command automatically calculates a **complexity score (0-10)** based
 When complexity >= 6, `/plan` will:
 
 1. **Show detailed complexity breakdown** with specific factors
-2. **Auto-suggest 2-3 phases** with estimated subtasks for each
+2. **Optionally generate phase breakdown** if you want to see the split
 3. **Explain why splitting reduces risk** (better validation, reviewable PRs, incremental value)
-4. **Require explicit typed confirmation** to proceed with full scope
+4. **Require simple y/n confirmation** to proceed with full scope
 
 **Example output**:
 
@@ -303,11 +303,9 @@ When complexity >= 6, `/plan` will:
 Please choose: 1, 2, or 3
 ```
 
-**If you choose YOLO override** (option 3):
+**If you choose YOLO override**:
 
-The system will require you to type exactly: `"I understand the risks and want to proceed with full scope anyway"`
-
-This isn't to be annoying - it's to make scope decisions **deliberate** rather than default.
+The system will ask for simple y/n confirmation to proceed with full scope. This makes scope decisions **deliberate** rather than default, without adding unnecessary friction.
 
 ### Why This Matters
 
@@ -465,7 +463,7 @@ Still stuck?
 This specification-driven development system synthesizes ideas from:
 
 - **Cole Medin** - [Context Engineering](https://github.com/coleam00/context-engineering-intro) methodology, validation loops, and comprehensive context approach
-- **Ryan Carson** - [3-File PRD System](https://creatoreconomy.so/p/full-tutorial-a-proven-3-file-system-to-vibe-code-production-apps-ryan) for progress tracking and clarifying questions pattern
+- **Ryan Carson** - [3-File PRD System](https://creatoreconomy.so/p/full-tutorial-a-proven-3-file-system-to-vibe-code-production-apps-ryan) ([repo](https://github.com/snarktank/ai-dev-tasks)) for progress tracking and clarifying questions pattern
 
 Special thanks to both for sharing their methodologies publicly.
 
