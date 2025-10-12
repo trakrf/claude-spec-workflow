@@ -52,6 +52,26 @@ Think of it as "the best of both worlds, with training wheels" - structured enou
 
 **Why bash?** This is a bash-based workflow system. Claude Code executes all commands through bash, and the workflow depends on bash tools (git, grep, find, etc.) for every operation from installation to validation to shipping. Whether your project uses TypeScript, Python, Go, or Rust - you're still running those commands through bash. Git Bash or WSL2 provides this bash environment.
 
+**GitHub Authentication (for automatic PR creation):**
+
+The `/ship` command can create pull requests automatically if you authenticate with GitHub using any of these methods:
+
+1. **GitHub CLI** (Recommended):
+   ```bash
+   gh auth login
+   ```
+
+2. **Personal Access Token**:
+   ```bash
+   export GH_TOKEN=your_token_here
+   # Get token: https://github.com/settings/tokens
+   # Scopes needed: repo, workflow
+   ```
+
+3. **gh config**: If gh CLI is installed, `/ship` will use stored credentials automatically
+
+**Without authentication**: `/ship` will provide manual PR creation instructions.
+
 ## Installation
 
 ```bash
@@ -480,6 +500,40 @@ This removes the Claude commands but leaves your project spec directories intact
 **Symlink issues on Unix**
 - Scripts now handle symlinks correctly (v1.0.0+)
 - If issues persist, use absolute paths
+
+### PR Creation Issues
+
+**`/ship` doesn't create PR automatically**
+
+The `/ship` command tries multiple authentication methods in order:
+1. GitHub CLI (if authenticated)
+2. GH_TOKEN environment variable
+3. Token from gh config
+
+If all fail, you'll get manual PR creation instructions.
+
+**To fix**:
+```bash
+# Option 1: Use GitHub CLI
+gh auth login
+
+# Option 2: Set GH_TOKEN
+export GH_TOKEN=your_token_here
+# Add to ~/.bashrc or ~/.zshrc for persistence
+
+# Then re-run
+/ship spec/active/your-feature/
+```
+
+**After creating PR manually**:
+Update SHIPPED.md:
+```bash
+# Find "PR: pending" in spec/SHIPPED.md and replace with actual URL
+sed -i 's|PR: pending|PR: https://github.com/owner/repo/pull/123|' spec/SHIPPED.md
+git add spec/SHIPPED.md
+git commit -m "docs: update SHIPPED.md with PR URL"
+git push
+```
 
 ### Getting Help
 

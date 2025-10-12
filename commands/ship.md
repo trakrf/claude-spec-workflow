@@ -263,37 +263,87 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
    ```
 
 9. **Create Pull Request**
-   Either:
-   a. Use GitHub CLI if available:
-   ```bash
-   gh pr create \
-     --title "feat: {feature-description}" \
-     --body "## Summary
-     {description}
-     
-     ## Changes
-     - {change 1}
-     - {change 2}
-     
-     ## Validation
-     - ✅ All tests passing
-     - ✅ Lint clean
-     - ✅ Build successful
-     
-     ## Related
-     - Implements #{issue}
-     - Spec: Archived in commit {hash}"
+
+   Try authentication methods in order until one succeeds:
+
+   **Method 1: GitHub CLI (if available)**
+   - Check if gh CLI is installed: `command -v gh`
+   - Check if authenticated: `gh auth status`
+   - If both true, create PR: `gh pr create --title "..." --body "..."`
+   - Capture PR URL from output
+   - If successful: Update SHIPPED.md, display success, exit
+
+   **Method 2: GH_TOKEN environment variable**
+   - Check if GH_TOKEN is set: `[ -n "$GH_TOKEN" ]`
+   - Extract repo info: `git remote get-url origin`
+   - Parse owner/repo from URL (format: `owner/repo` from `git@github.com:owner/repo.git` or `https://github.com/owner/repo.git`)
+   - Get base branch: `git remote show origin | grep 'HEAD branch'`
+   - Call GitHub API with curl:
+     ```bash
+     curl -s -X POST \
+       -H "Authorization: token $GH_TOKEN" \
+       -H "Accept: application/vnd.github.v3+json" \
+       "https://api.github.com/repos/$owner/$repo/pulls" \
+       -d '{"title":"...","body":"...","head":"branch","base":"main"}'
+     ```
+   - Parse html_url from JSON response
+   - If successful: Update SHIPPED.md, display success, exit
+
+   **Method 3: gh config file**
+   - Check if ~/.config/gh/hosts.yml exists
+   - Extract oauth_token: `grep -A 2 'github.com:' ~/.config/gh/hosts.yml | grep 'oauth_token:' | awk '{print $2}'`
+   - If token found, use same curl approach as Method 2
+   - If successful: Update SHIPPED.md, display success, exit
+
+   **Method 4: Manual fallback (last resort)**
+   - Show clear error message listing all methods tried:
+     ```
+     ❌ Cannot create PR automatically
+
+     Tried:
+       ❌ gh CLI: [specific reason - not installed/not authenticated]
+       ❌ GH_TOKEN: environment variable not set
+       ❌ gh config: no token found
+
+     Please authenticate with GitHub:
+
+     Option 1 (Recommended): GitHub CLI
+       gh auth login
+
+     Option 2: Personal Access Token
+       export GH_TOKEN=your_token_here
+       # Get token: https://github.com/settings/tokens
+       # Scopes needed: repo, workflow
+
+     After authenticating, re-run:
+       /ship spec/active/{feature-name}/
+
+     Or create PR manually:
+       https://github.com/{owner}/{repo}/compare/{branch-name}
+     ```
+   - Leave SHIPPED.md with "PR: pending"
+
+   **Success output format** (when PR created):
+   ```
+   🔍 Checking GitHub authentication...
+   ✅ Found: [method that worked - e.g., "GitHub CLI authenticated"]
+   🚀 Creating pull request...
+
+   🔗 Pull Request:
+
+     PR #{number}: {url}
+     Title: {title}
+     State: {state}
+
+   📦 Updated SHIPPED.md with PR URL
    ```
 
-   b. Or provide manual instructions:
-   ```markdown
-   ## Ready to Create PR
-   
-   1. Visit: https://github.com/{owner}/{repo}/compare/feature/{name}
-   2. Title: "feat: {feature-description}"
-   3. Description: {template provided}
-   4. Request review from: {team/person}
-   ```
+   **Key principles**:
+   - Show what you're trying at each step (transparency)
+   - Clear success/failure for each method
+   - Actionable error messages (tell user exactly how to fix)
+   - Only try next method if current one fails
+   - Update SHIPPED.md immediately upon success
 
 ## Validation Gates Before Ship
 
@@ -329,7 +379,10 @@ Success case:
 - Pushed to origin
 
 🔗 Pull Request:
-{Either PR URL or instructions}
+
+  PR #{number}: {url}
+  Title: {title}
+  State: {state}
 
 ✅ Ready for code review!
 ```
