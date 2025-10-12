@@ -198,6 +198,8 @@ your-build-command
 
 The commands `/build`, `/check`, and `/ship` automatically read and use these commands.
 
+**Built a great stack definition?** Share it with the community! If you've created a stack configuration for a framework or toolchain not yet in our presets, consider contributing it back. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on submitting new presets.
+
 ### Monorepo Support
 
 For monorepos with multiple tech stacks (like Go backend + React frontend):
