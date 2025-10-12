@@ -59,17 +59,11 @@ The user will provide the path to a specification file (e.g., `spec/active/auth/
    Feature: {feature-name}
    Shipped: {date from SHIPPED.md}
    PR: {pr-number from SHIPPED.md}
-   Location: spec/active/{feature-name}/
 
-   Archive this spec?
-   a) Move to spec/archive/{feature-name}/ (keep for reference)
-   b) Delete (SHIPPED.md + git history has full record)
-   c) Skip for now (leave in spec/active/)
-
-   Your choice: _
+   Archive to spec/archive/{feature-name}/? (y/n)
    ```
 
-   **If user chooses (a) - Move to archive**:
+   **If user answers y**:
    ```bash
    mkdir -p spec/archive
    mv spec/active/{feature-name} spec/archive/{feature-name}
@@ -77,18 +71,9 @@ The user will provide the path to a specification file (e.g., `spec/active/auth/
    git commit -m "chore: archive {feature-name} spec (shipped in PR #{pr})"
    ```
 
-   **If user chooses (b) - Delete**:
-   ```bash
-   rm -rf spec/active/{feature-name}
-   git add spec/active/{feature-name}
-   git commit -m "chore: remove {feature-name} spec (shipped in PR #{pr})"
+   **If user answers n**:
    ```
-
-   **If user chooses (c) - Skip**:
-   ```
-   ⏭️  Skipping archive of {feature-name}
-
-   Note: You can archive later manually or it will be prompted next time you run /plan
+   ⏭️  Skipping {feature-name} - will prompt next time you run /plan
    ```
 
    **If multiple shipped features found**: Prompt for each one sequentially.
@@ -126,15 +111,14 @@ The user will provide the path to a specification file (e.g., `spec/active/auth/
    - Existing patterns (0pts), Adapting patterns (1pt), New patterns (2pts)
 
    **Total Score Interpretation**:
-   - **0-3: LOW** ✅ Green light, proceed
-   - **4-5: MEDIUM-LOW** ⚠️ Suggest split but allow proceed
-   - **6-10: MEDIUM-HIGH to CRITICAL** 🛑 Mandatory split or YOLO override
+   - **0-5: Proceed** ✅ Well-scoped feature
+   - **6-10: Split** 🛑 Recommend splitting or explicit override
 
-   **If Score >= 6 → MANDATORY SPLIT**:
+   **If Score >= 6 → RECOMMEND SPLIT**:
 
    Present complexity breakdown:
    ```
-   🛑 COMPLEXITY: {score}/10 (MEDIUM-HIGH/HIGH/CRITICAL)
+   🛑 COMPLEXITY: {score}/10 (HIGH - SPLIT RECOMMENDED)
 
    **Complexity Factors**:
    📁 File Impact: Creating {N} files, modifying {M} files ({total} files)
@@ -158,6 +142,11 @@ The user will provide the path to a specification file (e.g., `spec/active/auth/
 
    **RECOMMENDATION: SPLIT INTO PHASES**
 
+   Generate phase breakdown? (y/n)
+   ```
+
+   **If user answers y - Show detailed breakdown**:
+   ```
    ### Phase 1: {Name} (Complexity: {score}/10) ✅
    **Start here** - {Why this first}
    {Scope bullets}
@@ -186,58 +175,50 @@ The user will provide the path to a specification file (e.g., `spec/active/auth/
    **Your Decision** (required):
    1. **Phase 1 only** - Generate full spec for Phase 1 (recommended)
    2. **Full roadmap** - Generate Phase 1 spec + Phase 2/3 outlines
-   3. ⚠️ **YOLO OVERRIDE** - Proceed with full scope (not recommended)
+   3. **Proceed with full scope** - Override split recommendation
 
    Please choose: 1, 2, or 3
    ```
 
-   **If User Chooses 3 (YOLO OVERRIDE)**:
+   **If user answers n - Skip to decision**:
    ```
-   ⚠️ YOLO MODE: HIGH-RISK OVERRIDE REQUESTED
+   **Your Decision** (required):
+   1. **Split into phases** - I'll help break this down (recommended)
+   2. **Proceed with full scope** - Override split recommendation
 
-   You've chosen to proceed with full scope despite {score}/10 complexity.
-
-   **Risks You're Explicitly Accepting**:
-   - {N} subtasks to coordinate and track
-   - Validation gate failures hard to isolate
-   - PR will be {total}+ files - difficult to review
-   - If architectural approach is wrong, {N}+ hours wasted
-   - Context limit risks
-   - High probability of scope creep
-
-   **To proceed, type exactly**:
-   "I understand the risks and want to proceed with full scope anyway"
-
-   [WAIT for exact phrase]
+   Please choose: 1 or 2
    ```
 
-   **If User Types Confirmation**:
+   **If User Chooses split (from either path)**:
+   [Continue with phase planning...]
+
+   **If User Chooses override (option 3 from detailed, option 2 from simple)**:
    ```
-   ✅ YOLO OVERRIDE CONFIRMED - Proceeding with full-scope plan
+   ⚠️ Override split recommendation?
 
-   **On the record**: You've accepted high-risk, full-scope implementation.
+   Complexity: {score}/10 (HIGH)
+   Risk: {N} subtasks, {total} files, multiple subsystems
 
-   **Mitigation**: Commit after every 3-5 subtasks, run gates frequently.
+   Proceed with full scope anyway? (y/n)
+   ```
+
+   **If user answers y**:
+   ```
+   ✅ Proceeding with full-scope plan
+
+   Mitigation: Commit after every 3-5 subtasks, run validation gates frequently.
 
    Generating comprehensive plan...
    ```
 
-   **If Score 4-5 (MEDIUM-LOW)**:
+   **If user answers n**:
    ```
-   ⚠️ COMPLEXITY: {score}/10 (MEDIUM-LOW)
-
-   This is a substantial feature. I can suggest a split, but it's manageable as-is.
-
-   **Proceed with full spec or split?**
-   1. Proceed as-is (manageable)
-   2. Split into phases (safer)
-
-   Your choice:
+   Returning to phase selection. Choose 1 or 2.
    ```
 
-   **If Score 0-3 (LOW)**:
+   **If Score 0-5 (Proceed)**:
    ```
-   ✅ COMPLEXITY: {score}/10 (LOW)
+   ✅ COMPLEXITY: {score}/10
 
    Well-scoped feature. Proceeding to planning.
    ```
