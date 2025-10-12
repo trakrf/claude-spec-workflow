@@ -46,7 +46,7 @@ echo "📋 Project Setup Instructions:"
 echo "------------------------------"
 echo "Initialize the spec workflow in your project:"
 echo ""
-echo "  $(dirname $0)/init-project.sh /path/to/your-project [preset]"
+echo "  $(dirname "$0")/init-project.sh /path/to/your-project [preset]"
 echo ""
 echo "Available presets:"
 for preset in "$REPO_COMMANDS_DIR/../presets"/*.md; do
@@ -54,7 +54,7 @@ for preset in "$REPO_COMMANDS_DIR/../presets"/*.md; do
 done
 echo ""
 echo "Example:"
-echo "  $(dirname $0)/init-project.sh ~/my-app default"
+echo "  $(dirname "$0")/init-project.sh ~/my-app default"
 echo ""
 
 echo "✅ Installation complete!"
