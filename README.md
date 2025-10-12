@@ -6,7 +6,28 @@ Created by Mike Stankavich ([@mikestankavich](https://github.com/mikestankavich)
 
 ## What is this?
 
-A streamlined workflow for turning conversations and ideas into production-ready code using Claude Code. It combines the best practices from context engineering and progressive validation to enable high-quality, AI-assisted development.
+A specification-driven development workflow for Claude Code that helps you ship production-ready features with confidence.
+
+### Origin Story
+
+This project builds on excellent work from two pioneers in AI-assisted development:
+
+**Cole Medin's [Context Engineering](https://github.com/coleam00/context-engineering-intro)** taught us the power of comprehensive context and validation loops. His methodology showed how structured context dramatically improves AI output quality and prevents the "big bang integration" failures we've all experienced.
+
+**Ryan Carson's [3-File PRD System](https://creatoreconomy.so/p/full-tutorial-a-proven-3-file-system-to-vibe-code-production-apps-ryan)** demonstrated the value of progress tracking and clarifying questions. His approach to breaking down work and maintaining visible state throughout development inspired our specification lifecycle.
+
+### Our Contribution
+
+We loved what both Cole and Ryan created, and found ourselves naturally combining techniques from both approaches. This project synthesizes those ideas into a **single, opinionated workflow** that:
+
+- **Starts with clarity** (spec-first approach)
+- **Plans with questions** (mandatory clarification gates)
+- **Builds with validation** (continuous testing, not cleanup)
+- **Ships with confidence** (comprehensive pre-release checks)
+
+The key difference: where their approaches offer flexibility and exploration, we provide a **Rails-style opinionated process**. We believe the best creativity happens within constraints, and that AI-assisted development benefits from clear guard rails and validation gates.
+
+Think of it as "the best of both worlds, with training wheels" - structured enough to prevent common pitfalls, flexible enough to adapt to your stack.
 
 ## Features
 
@@ -80,7 +101,7 @@ cd claude-spec-workflow
    ```
    /ship spec/active/my-feature/
    ```
-   Archives the spec and prepares for pull request.
+   Prepares for pull request with validation and git workflow.
 
 ## Stack Configuration
 
