@@ -50,7 +50,7 @@ Optional: Workspace name for monorepo projects (e.g., `/check frontend`, `/check
     ❌ Stack not configured
 
     This workflow requires stack configuration. Run:
-      init-project.sh . [preset]
+      /path/to/claude-spec-workflow/init-project.sh . [preset]
 
     This creates spec/stack.md with validation commands.
     Available presets: typescript-react-vite, python-fastapi, go-standard, monorepo-go-react
