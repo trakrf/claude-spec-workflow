@@ -525,6 +525,7 @@ Still stuck?
 - Community preset library (users share configs via PRs)
 - Improved monorepo workspace detection
 - Interactive preset creation wizard
+- Multi-preset composition for monorepos (specify multiple presets to compose into single stack.md)
 
 ## Credits
 
