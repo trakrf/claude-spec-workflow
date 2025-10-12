@@ -24,8 +24,10 @@ Thank you for your interest in contributing! This project is an evolving methodo
 
 ### Prerequisites
 - Git
-- Bash (macOS/Linux) or PowerShell (Windows)
+- Bash (Git Bash on Windows, native on macOS/Linux)
 - Claude Code installed
+
+**Windows developers**: Use Git Bash or WSL2 for development and testing.
 
 ### Testing Your Changes
 
@@ -33,8 +35,10 @@ Thank you for your interest in contributing! This project is an evolving methodo
    ```bash
    git clone https://github.com/trakrf/claude-spec-workflow
    cd claude-spec-workflow
-   ./install.sh  # or .\install.ps1 on Windows
+   ./install.sh
    ```
+
+   **Windows**: Run in Git Bash or WSL2 terminal.
 
 2. **Test with a sample project**
    ```bash
