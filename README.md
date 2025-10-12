@@ -516,6 +516,7 @@ Still stuck?
 - Additional stack presets (Rust, Ruby on Rails, Bun, etc.)
 - Enhanced error messages and validation feedback
 - Performance profiling and optimization
+- Investigate @ includes to DRY up slash commands (reduce repetition across command files)
 
 **Future**:
 - Package manager distribution (Homebrew, npm)
