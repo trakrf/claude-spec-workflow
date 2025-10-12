@@ -39,15 +39,11 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
     - Read `plan.md` for implementation strategy
     - Read `log.md` if it exists (resuming work)
     - Note current task number from log
-    - **Check for `spec/config.md`** - If it exists, read it for project-specific commands
-    - **Detect project type**:
-      - **Monorepo**: If `spec/config.md` contains a `workspaces:` section
-      - **Single-stack**: If `spec/config.md` has flat config (e.g., `lint:`, `test:`)
-      - **No config**: Use sensible defaults
+    - **Read `spec/stack.md`** for validation commands (required)
     - **Detect workspace** (monorepo only):
       - Check for explicit `Workspace: backend` in spec.md metadata
       - Look at file paths mentioned in plan.md (e.g., `backend/internal/`)
-      - User can override with `--workspace=backend` flag
+      - Use the appropriate workspace section from spec/stack.md
 
 2. **Initialize Progress Log**
    Create/append to `spec/active/{feature}/log.md`:
@@ -123,97 +119,25 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
 
    c. **Validate Immediately**
 
-   **For monorepo**, use workspace-specific commands:
-   ```bash
-   # Use commands from spec/config.md workspaces.{workspace}.validation
-   {config.workspaces.backend.validation.lint.autofix}
-   {config.workspaces.backend.validation.typecheck.command}
-   {config.workspaces.backend.validation.test.pattern}
+   **Read validation commands from `spec/stack.md`.**
+
+   If `spec/stack.md` not found, show error and stop:
+   ```
+   ❌ Stack not configured
+
+   This workflow requires stack configuration. Run:
+     init-project.sh . [preset]
+
+   This creates spec/stack.md with validation commands.
+   Available presets: typescript-react-vite, python-fastapi, go-standard, monorepo-go-react
+
+   Cannot proceed without spec/stack.md.
    ```
 
-   **For single-stack projects**, use project commands:
-   ```bash
-   # Use commands from spec/config.md
-   {config.lint.autofix}
-   {config.typecheck.command}
-   {config.test.pattern}
-   ```
-
-   **Otherwise**, detect stack and use appropriate defaults:
-
-   **Stack Detection**:
-   - If `package.json` exists → Node/TypeScript project
-   - If `Cargo.toml` exists → Rust project
-   - If `go.mod` exists → Go project
-   - If `pyproject.toml` or `requirements.txt` exists → Python project
-   - Otherwise → Error with init-stack guidance
-
-   **Node/TypeScript defaults**:
-   ```bash
-   # Detect package manager (pnpm > npm > yarn)
-   if command -v pnpm &> /dev/null; then
-     pnpm lint {file} --fix
-     pnpm typecheck
-     pnpm test {test-pattern}
-   elif command -v npm &> /dev/null; then
-     npm run lint -- {file} --fix
-     npm run typecheck
-     npm test {test-pattern}
-   elif command -v yarn &> /dev/null; then
-     yarn lint {file} --fix
-     yarn typecheck
-     yarn test {test-pattern}
-   fi
-   ```
-
-   **Rust defaults**:
-   ```bash
-   cargo clippy --fix --allow-dirty -- -D warnings
-   cargo check
-   cargo test {test-pattern}
-   ```
-
-   **Go defaults**:
-   ```bash
-   # If golangci-lint available, else use go vet
-   if command -v golangci-lint &> /dev/null; then
-     golangci-lint run --fix
-   else
-     go vet ./...
-   fi
-   go build ./...
-   go test {test-pattern}
-   ```
-
-   **Python defaults**:
-   ```bash
-   # Use ruff if available, else flake8
-   if command -v ruff &> /dev/null; then
-     ruff check --fix {file}
-   else
-     flake8 {file}
-   fi
-
-   # Type check if mypy available
-   if command -v mypy &> /dev/null; then
-     mypy {file}
-   fi
-
-   pytest {test-pattern} -v
-   ```
-
-   **If cannot detect**:
-   ```
-   ❌ No spec/config.md found and cannot detect project type
-
-   Please create stack configuration:
-   - Run: init-stack.sh typescript-react-vite
-   - Or: init-stack.sh python-fastapi
-   - Or: init-stack.sh go-standard
-   - Or: init-stack.sh custom (then edit spec/config.md)
-
-   Cannot proceed without validation commands.
-   ```
+   Use the commands from spec/stack.md for this task:
+   - Lint command (with --fix flag)
+   - Typecheck command (if applicable)
+   - Test command for affected files
 
    d. **Handle Validation Results** (STRICT ENFORCEMENT)
     - ✅ Pass: Log success, continue to next task
@@ -264,51 +188,10 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
 
    **This is NOT optional**. Do not commit without running ALL tests.
 
-   Use commands from `spec/config.md` if available:
-   ```bash
-   # Use project-specific commands from spec/config.md
-   {config.test.command}     # MUST pass 100%
-   {config.build.command}    # MUST succeed
-   {config.typecheck.command} # MUST be clean
-   ```
-
-   Or detect stack and use appropriate defaults:
-
-   **Node/TypeScript**:
-   ```bash
-   # Detect package manager
-   if command -v pnpm &> /dev/null; then
-     pnpm test:run
-     pnpm build
-     pnpm typecheck
-   elif command -v npm &> /dev/null; then
-     npm test
-     npm run build
-     npm run typecheck
-   fi
-   ```
-
-   **Rust**:
-   ```bash
-   cargo test --all
-   cargo build --release
-   cargo check --all
-   ```
-
-   **Go**:
-   ```bash
-   go test ./...
-   go build ./...
-   ```
-
-   **Python**:
-   ```bash
-   pytest
-   # Build only if package (skip for apps)
-   if [ -f "pyproject.toml" ]; then
-     python -m build
-   fi
-   ```
+   **Read commands from `spec/stack.md`:**
+   - Run the Test command (full suite, not pattern)
+   - Run the Build command
+   - Run the Typecheck command (if applicable)
 
    **Enforcement**:
    - ✅ 100% tests passing → Proceed to commit

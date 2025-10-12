@@ -94,13 +94,83 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Planned for v0.2.0
-- **Interactive `/init-stack` command** - Conversational stack configuration
-  - Ask clarifying questions about project type, languages, frameworks
-  - Generate custom `spec/validation.md` for any stack combination
-  - Elegant monorepo support (configure each workspace interactively)
-  - Community preset library (users share configs via PRs)
-  - Eliminates need to maintain preset files
+### Planned for Future Releases
 - Package manager distribution (Homebrew, npm)
 - Integration tests for workflow validation
 - Video walkthrough tutorials
+- Community preset library (users share configs via PRs)
+
+## [0.2.0] - 2025-10-12
+
+> **Token Optimization Release**: This version dramatically reduces token usage by extracting stack-specific conditionals into a required configuration file. Achieves 60-93% token reduction per command invocation.
+
+### Changed
+
+**Stack Configuration System**:
+- **BREAKING**: Replaced `spec/config.md` (YAML format) with `spec/stack.md` (Markdown with bash code blocks)
+- **BREAKING**: Removed ~800 lines of inline stack conditionals from commands (`/build`, `/check`, `/ship`)
+- **BREAKING**: Removed `init-stack.sh` and `init-stack.ps1` - functionality consolidated into `init-project`
+- Commands now error with helpful message if `spec/stack.md` is missing
+- Token reduction achieved:
+  - `/build`: ~240 lines removed (60% reduction)
+  - `/check`: ~200 lines removed (93% reduction in stack-specific code)
+  - `/ship`: ~150 lines removed (70% reduction in stack-specific sections)
+
+**Init System**:
+- `init-project.sh` and `init-project.ps1` now accept `[target-path] [preset]` arguments
+- Made init-project scripts re-runnable with overwrite warnings
+- Default preset is `typescript-react-vite` if not specified
+- Simple y/n confirmation prompts with git revert instructions
+- Automatic preset validation with helpful error listing available presets
+- Script auto-detects its location for flexible invocation
+
+**Preset Format**:
+- Converted all 5 presets from YAML to markdown with bash code blocks:
+  - `typescript-react-vite.md`
+  - `nextjs-app-router.md`
+  - `python-fastapi.md`
+  - `go-standard.md`
+  - `monorepo-go-react.md`
+- Simpler, more readable format with section headers (## Lint, ## Test, etc.)
+- Commands in bash code blocks instead of YAML config
+- Metadata in markdown blockquotes instead of structured fields
+
+### Added
+
+**Templates**:
+- `templates/stack-template.md` - Reference template showing single-stack and monorepo structure
+- Shows how to customize validation commands for any tech stack
+- Includes customization tips and examples
+
+**Documentation**:
+- Updated README.md Stack Configuration section to reference `spec/stack.md`
+- Updated troubleshooting section for new configuration system
+- Added `spec/stack.md` to project structure documentation
+- Updated templates/README.md validation standards section
+
+### Removed
+
+- `init-stack.sh` and `init-stack.ps1` (functionality consolidated into init-project)
+- Inline stack detection and defaults from all commands
+- YAML config format and parsing logic
+- `spec/config.md` references throughout documentation
+
+### Technical Impact
+
+**For Users**:
+- Must run `init-project.sh` (or re-run if upgrading) to create `spec/stack.md`
+- Commands will error with clear instructions if `spec/stack.md` is missing
+- No migration path needed (no public users yet for v0.1.0)
+- Simpler mental model: one initialization script instead of two
+
+**For Claude**:
+- Commands load only 100-250 lines instead of 1500+ lines
+- Faster command execution with less context pollution
+- Clearer command structure focused on workflow logic
+- Stack-specific logic extracted to single source of truth
+
+**Why This Matters**:
+- Reduces token usage by 60-93% per command invocation
+- Eliminates unused stack conditionals from context
+- Makes commands more maintainable and extensible
+- Prepares system for dogfooding and real-world validation

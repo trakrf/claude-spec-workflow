@@ -37,7 +37,7 @@ This system combines the best practices from Context Engineering (Cole Medin), 3
 spec/
 ├── README.md          # This file
 ├── template.md        # Specification template
-├── config.md          # Project-specific commands (optional)
+├── stack.md           # Validation commands for your tech stack
 ├── active/            # Current work
 │   └── {feature}/     # One directory per feature
 │       ├── spec.md    # Feature specification
@@ -109,11 +109,13 @@ Final validation and PR preparation:
 
 ## Validation Standards
 
-All features must pass:
-- `pnpm lint` - No linting errors
-- `pnpm typecheck` - No TypeScript errors
-- `pnpm test:run` - All tests passing
-- `pnpm build` - Successful build
+All features must pass validation commands defined in `spec/stack.md`:
+- **Lint** - No linting errors
+- **Typecheck** - No type errors (if applicable to your stack)
+- **Test** - All tests passing
+- **Build** - Successful build
+
+The specific commands depend on your tech stack. See `spec/stack.md` for your project's validation commands.
 
 ## Git Workflow
 
