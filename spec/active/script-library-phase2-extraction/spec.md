@@ -13,9 +13,11 @@ So that Phase 3 can wire commands to call these scripts
 
 ## Context
 
-**Phase 1 Complete**: Library functions and csw wrapper exist, tested, merged
-**This Phase**: Extract command bash → scripts using library functions
-**Next Phase**: Wire commands and installers to use these scripts
+**Phase 1 Complete**: Library functions and csw wrapper exist, tested, merged (v0.2.2)
+**This Phase**: Extract command bash → scripts using library functions (v0.2.3)
+**Next Phase**: Wire commands and installers to use these scripts (v0.3.0)
+
+**Version**: This phase should be released as **0.2.3** (internal refactoring, PATCH version)
 
 **Why this sequence**: Build primitives (✅) → compose primitives (this phase) → integrate (Phase 3)
 
