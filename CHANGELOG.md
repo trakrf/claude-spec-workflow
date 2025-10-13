@@ -48,6 +48,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 _No unreleased changes yet. See README.md Roadmap section for planned features._
 
+## [0.2.2] - 2025-10-13
+
+> **Script Library Phase 1**: Build primitive function library and CLI wrapper (internal refactoring, no user-facing changes yet)
+
+### Added
+
+- Script library infrastructure in `scripts/lib/` with 4 modules:
+  - `common.sh` (54 lines) - Logging, path helpers, file operations, validation helpers
+  - `git.sh` (123 lines) - Git operations: branches, merging, repository state
+  - `validation.sh` (117 lines) - Test/lint/build runners with package manager detection
+  - `archive.sh` (106 lines) - Archive operations for completed features
+- CLI wrapper `bin/csw` (56 lines) with command routing
+- Total: 5 files, 456 lines, 29 functions + CLI wrapper
+
+### Technical Notes
+
+- **Phase 1 of 3**: Primitives only (no integration)
+- All scripts pass shellcheck with zero errors/warnings
+- All sourcing chains tested and functional
+- CLI wrapper tested: help, version, error handling, routing
+- **Phase 2 (0.2.3)**: Will extract command logic
+- **Phase 3 (0.3.0)**: Will wire everything and enable csw CLI for users
+
 ## [0.2.0] - 2025-10-12
 
 > Stack configuration system rewritten. Achieves 60-93% token reduction per command invocation.
