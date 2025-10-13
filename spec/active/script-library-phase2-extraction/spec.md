@@ -57,7 +57,81 @@ Extract bash from these command files into standalone scripts:
 - SHIPPED.md updates
 - Spec directory cleanup
 - Archive commit creation
+- **Auto-tagging**: Read VERSION (or package.json version), create git tag, push tags
 - Uses: `common.sh`, `git.sh`, `archive.sh` (lib) functions
+
+### Enhanced Archive Script with Auto-Tagging
+
+When extracting `scripts/archive.sh`, add auto-tagging functionality:
+
+```bash
+#!/bin/bash
+# scripts/archive.sh
+
+set -e
+
+SCRIPT_DIR="$(dirname "$0")"
+source "$SCRIPT_DIR/lib/common.sh"
+source "$SCRIPT_DIR/lib/git.sh"
+source "$SCRIPT_DIR/lib/archive.sh"
+
+# Extract from commands/archive.md
+# Add auto-tagging after archive
+
+auto_tag_release() {
+    # Try VERSION file first
+    if [[ -f "VERSION" ]]; then
+        local version=$(cat VERSION | tr -d '[:space:]')
+        local tag="v$version"
+
+        if ! git tag | grep -q "^$tag$"; then
+            info "Auto-tagging release: $tag"
+            git tag "$tag"
+            git push --tags
+            success "Tagged $tag"
+        else
+            warning "Tag $tag already exists, skipping"
+        fi
+        return 0
+    fi
+
+    # Try package.json as fallback
+    if [[ -f "package.json" ]] && command -v jq &>/dev/null; then
+        local version=$(jq -r '.version' package.json)
+        if [[ "$version" != "null" ]]; then
+            local tag="v$version"
+
+            if ! git tag | grep -q "^$tag$"; then
+                info "Auto-tagging release: $tag"
+                git tag "$tag"
+                git push --tags
+                success "Tagged $tag"
+            else
+                warning "Tag $tag already exists, skipping"
+            fi
+            return 0
+        fi
+    fi
+
+    # No version file found
+    warning "No VERSION or package.json found, skipping auto-tag"
+    return 0
+}
+
+# Main logic from commands/archive.md
+FEATURE="$1"
+
+if [[ -z "$FEATURE" ]]; then
+    error "Usage: archive.sh <feature-name>"
+    exit 1
+fi
+
+# Run archive (from lib)
+archive_feature "$FEATURE"
+
+# Auto-tag the release
+auto_tag_release
+```
 
 ### Extraction Guidelines
 
@@ -131,6 +205,7 @@ fi
  **No syntax errors**: `bash -n` passes on all scripts
  **Shellcheck clean**: No warnings
  **No duplicate logic**: Logic moved to lib, not duplicated in scripts
+ **Auto-tagging works**: archive.sh creates and pushes git tags from VERSION
  **Commands unchanged**: commands/*.md still have embedded bash (Phase 3 will update)
 
 ## Success Metrics
@@ -140,6 +215,7 @@ fi
  **Zero duplication**: Reused library functions, no copy/paste
  **Shellcheck passes**: All scripts clean
  **Scripts executable independently**: Can run `./scripts/check.sh` (even if it fails due to no wiring)
+ **Auto-tagging implemented**: archive.sh reads VERSION/package.json and creates git tags
 
 ## Testing Strategy
 
