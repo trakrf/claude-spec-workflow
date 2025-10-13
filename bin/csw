@@ -41,7 +41,7 @@ case "${1:-}" in
         exit 0
         ;;
     --version|-v)
-        echo "csw 0.3.0"
+        echo "csw 0.2.2"
         exit 0
         ;;
     "")
