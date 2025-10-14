@@ -4,7 +4,7 @@
 Part 3 of 3-phase refactoring. Phase 1 built primitives, Phase 2 extracted logic to scripts. This phase wires everything together: update commands to call scripts, update installers, test end-to-end.
 
 ## Outcome
-All commands use `csw {command}` instead of embedded bash. Installers set up csw in ~/.local/bin and spec/csw. Full workflow tested and working. ~400 lines deleted from commands/*.md, replaced with clean 1-line calls.
+5 existing commands (spec, plan, build, check, ship) use `csw {command}` instead of embedded bash blocks. Prompt text remains as before. Only inline bash code blocks replaced with single csw call per command. Installers set up csw in ~/.local/bin and spec/csw. Full workflow tested and working.
 
 ## User Story
 As a developer using claude-spec-workflow
@@ -21,119 +21,150 @@ So that I can run commands via `/check`, `csw check`, or `./spec/csw check` inte
 
 ## Technical Requirements
 
-### Update Commands (Delete ~400 lines, Add ~6 lines)
+### Update Commands
 
-Replace embedded bash with csw calls:
+Replace all embedded bash blocks with single csw call per command. Keep all prompt text (persona, process steps, validation rules, etc.) - only replace the executable bash blocks.
 
 **commands/spec.md**:
+- Current: 1 bash block
+- After: Single csw call with fallback
 ```bash
-# Before: ~50 lines of bash
-# After:
-csw spec "$@"
+# Try csw in PATH first, fall back to project-local wrapper
+if command -v csw &> /dev/null; then
+    csw spec "$@"
+elif [ -f "./spec/csw" ]; then
+    ./spec/csw spec "$@"
+else
+    echo "❌ Error: csw not found"
+    echo "   Run install.sh to set up csw globally"
+    echo "   Or use: ./spec/csw spec (if initialized)"
+    exit 1
+fi
 ```
 
 **commands/plan.md**:
-```bash
-# Before: ~120 lines of bash
-# After:
-csw plan "$SPEC_FILE"
-```
+- Current: 7 bash blocks (showing sequence/examples in prompt)
+- After: Single csw call with fallback (same pattern as spec.md)
+- Replace `"$@"` with `"$SPEC_FILE"` in the csw call
+- All sequencing handled by scripts/plan.sh
 
 **commands/build.md**:
-```bash
-# Before: ~60 lines of bash
-# After:
-csw build
-```
+- Current: 1 bash block
+- After: Single csw call with fallback (same pattern as spec.md, no arguments)
+- All implementation logic handled by scripts/build.sh
 
 **commands/check.md**:
-```bash
-# Before: ~80 lines of bash
-# After:
-csw check
-```
+- Current: 13 bash blocks (showing examples in prompt)
+- After: Single csw call with fallback (same pattern as spec.md, no arguments)
+- All validation logic handled by scripts/check.sh
 
 **commands/ship.md**:
+- Current: 6 bash blocks (showing sequence/examples in prompt)
+- After: Single csw call with fallback (same pattern as spec.md)
+- All shipping logic handled by scripts/ship.sh
+
+**Pattern**: All commands use the same fallback structure:
+1. Try `csw {command}` if in PATH
+2. Fall back to `./spec/csw {command}` if available
+3. Error with helpful message if neither found
+
+**Note**: commands/archive.md doesn't exist yet (script exists but command file will be created in future phase).
+
+### Update bin/csw
+
+Fix hardcoded path to use dynamic detection:
+
 ```bash
-# Before: ~90 lines of bash
+# Before (line 6):
+CSW_HOME="$HOME/.claude-spec-workflow"
+
 # After:
-csw ship "$@"
+# Detect installation directory from this script's location
+CSW_HOME="$(cd "$(dirname "$(dirname "${BASH_SOURCE[0]}")")" && pwd)"
 ```
 
-**commands/archive.md**:
-```bash
-# Before: ~50 lines of bash
-# After:
-csw archive "$1"
-```
+This allows csw to work regardless of installation location.
 
 ### Update install.sh
 
-Add csw installation section after command setup:
+Add csw installation section after command installation loop (after line 41):
 
 ```bash
-# Install csw to ~/.local/bin
+# Install csw CLI
 echo ""
-info "Installing csw CLI..."
+echo "🔧 Installing csw CLI..."
+CSW_BIN_DIR="$HOME/.local/bin"
+if [ ! -d "$CSW_BIN_DIR" ]; then
+    echo "   📁 Creating $CSW_BIN_DIR..."
+    mkdir -p "$CSW_BIN_DIR"
+fi
 
-# Detect installation directory
-INSTALL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# Ensure ~/.local/bin exists
-mkdir -p "$HOME/.local/bin"
-
-# Create symlink
-ln -sf "$INSTALL_DIR/bin/csw" "$HOME/.local/bin/csw"
-chmod +x "$HOME/.local/bin/csw"
-chmod +x "$INSTALL_DIR/bin/csw"
+echo "   🔗 Creating symlink: csw -> $SCRIPT_DIR/bin/csw"
+ln -sf "$SCRIPT_DIR/bin/csw" "$CSW_BIN_DIR/csw"
 
 # Check if ~/.local/bin is in PATH
-if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+if [[ ":$PATH:" != *":$CSW_BIN_DIR:"* ]]; then
     echo ""
-    echo "ℹ️  For best results, add ~/.local/bin to your \$PATH"
+    echo "⚠️  Note: $CSW_BIN_DIR is not in your PATH"
+    echo "   Add this line to your ~/.bashrc or ~/.zshrc:"
     echo ""
-    echo "Add this to your shell config (~/.bashrc, ~/.zshrc, etc):"
-    echo "  export PATH=\"\$HOME/.local/bin:\$PATH\""
+    echo "   export PATH=\"\$HOME/.local/bin:\$PATH\""
     echo ""
-    echo "Or use: ./spec/csw <command>"
+    echo "   Then run: source ~/.bashrc (or ~/.zshrc)"
     echo ""
-else
-    success "csw is ready to use: csw <command>"
+    echo "   Alternatively, use ./spec/csw in your projects"
 fi
+```
+
+Also update the final message to mention csw CLI:
+
+```bash
+# Update the "Available commands:" section to show three access methods:
+echo "Available commands (use as /command in Claude or csw command in terminal):"
+echo "  spec    - Convert conversation to specification"
+echo "  plan    - Generate implementation plan (interactive)"
+echo "  build   - Execute implementation with validation"
+echo "  check   - Pre-release validation check"
+echo "  ship    - Complete feature and prepare PR"
+echo ""
+echo "Usage:"
+echo "  In Claude Code:  /plan spec/active/feature-name/spec.md"
+echo "  In terminal:     csw plan spec/active/feature-name/spec.md"
+echo "  In project:      ./spec/csw plan spec/active/feature-name/spec.md"
 ```
 
 ### Update init-project.sh
 
-Add project-local csw symlink creation after spec directory setup:
+Add project-local csw symlink creation after .gitignore section (after line 123):
 
 ```bash
-# Create project-local csw symlink
-info "Setting up project-local csw wrapper..."
-
-# Find csw installation via the symlink in PATH
-CSW_PATH="$(command -v csw)" || { error "csw not found in PATH. Run install.sh first."; exit 1; }
-CSW_TARGET="$(readlink -f "$CSW_PATH" 2>/dev/null || realpath "$CSW_PATH" 2>/dev/null)" || CSW_TARGET="$CSW_PATH"
-CSW_INSTALL_DIR="$(dirname "$(dirname "$CSW_TARGET")")"
-
-if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
-    # Windows: Create wrapper script instead of symlink
-    cat > "$PROJECT_DIR/spec/csw" << EOF
-#!/bin/bash
-exec "$CSW_INSTALL_DIR/bin/csw" "\$@"
-EOF
-    chmod +x "$PROJECT_DIR/spec/csw"
+# Create spec/csw symlink for project-local csw access
+echo "🔗 Creating spec/csw symlink..."
+CSW_BIN="$SCRIPT_DIR/bin/csw"
+if [ -f "$CSW_BIN" ]; then
+    ln -sf "$CSW_BIN" "$PROJECT_DIR/spec/csw"
+    echo "   ✓ Created: spec/csw -> $CSW_BIN"
 else
-    # Unix: Use symlink
-    ln -sf "$CSW_INSTALL_DIR/bin/csw" "$PROJECT_DIR/spec/csw"
+    echo "   ⚠️  Warning: csw binary not found at $CSW_BIN"
+    echo "   Run install.sh to set up csw CLI"
 fi
+```
 
-success "Project-local wrapper created: ./spec/csw"
+Also update the final usage instructions to show three access methods:
+
+```bash
+# Update "3. Generate implementation plan:" section to:
+echo "3. Generate implementation plan:"
+echo "   In Claude Code:  /plan spec/active/my-feature"
+echo "   In terminal:     csw plan spec/active/my-feature"
+echo "   In project:      ./spec/csw plan spec/active/my-feature"
 ```
 
 ## Validation Criteria
 
- **All commands updated**: 6 commands call csw instead of embedded bash
- **~400 lines deleted**: From commands/*.md files
+ **All commands updated**: 5 commands (spec, plan, build, check, ship) call csw instead of embedded bash
+ **Bash blocks replaced**: All executable bash blocks replaced with single csw call per command
+ **Prompt text preserved**: All persona descriptions, process steps, validation rules remain unchanged
  **install.sh updated**: csw installation section added
  **init-project.sh updated**: spec/csw symlink creation added
  **Commands work via /check**: Claude Code slash commands functional
@@ -145,8 +176,9 @@ success "Project-local wrapper created: ./spec/csw"
 
 ## Success Metrics
 
- **6 commands simplified**: Average 15-20 lines per command (from ~100+)
- **~400 lines deleted**: Bash removed from commands
+ **5 commands simplified**: spec, plan, build, check, ship now use single csw call
+ **Bash blocks replaced**: 28 total bash blocks (1+7+1+13+6) replaced with 5 csw calls
+ **Prompt text preserved**: All instructional content remains intact
  **3 access methods work**: /check, csw check, ./spec/csw check
  **Zero regression**: All workflow steps work identically
  **Cross-platform tested**: Linux, Mac, Windows Git Bash
@@ -240,10 +272,20 @@ Run all the tests that were passing before the refactor:
 ## Implementation Notes
 
 **Key changes**:
-- Commands become thin wrappers (1-2 lines of bash)
+- Commands become thin wrappers (~10 lines with fallback logic)
 - All logic now in scripts/ (testable, maintainable)
-- Installation sets up global and project-local access
+- Installation sets up global (~/.local/bin/csw) and project-local (./spec/csw) access
 - Three access patterns all work identically
+
+**Fallback mechanism**:
+- Commands try `csw` in PATH first (fastest)
+- Fall back to `./spec/csw` if csw not in PATH
+- Provides clear error if neither found
+
+**Installation flow**:
+1. User runs `install.sh` → creates ~/.local/bin/csw symlink to repo's bin/csw
+2. User runs `init-project.sh` in their project → creates ./spec/csw symlink to repo's bin/csw
+3. Commands work via /command (Claude), csw (terminal), or ./spec/csw (project-local)
 
 **What this phase completes**:
 - ✅ All bash extracted from commands
@@ -332,6 +374,22 @@ Implementation: scripts/check.sh in the csw installation
 
 - **Phase 1**: Library functions (merged)
 - **Phase 2**: Script extraction (merged)
-- **Commands to update**: commands/*.md (6 files)
-- **Installers to update**: install.sh, init-project.sh
+- **Commands to update**: commands/*.md (5 files: spec, plan, build, check, ship)
+- **bin/csw to fix**: Remove hardcoded path, add dynamic detection
+- **Installers to update**: install.sh (add csw installation), init-project.sh (add spec/csw symlink)
+- **Scripts available**: scripts/{spec,plan,build,check,ship,archive}.sh (archive.sh exists but commands/archive.md doesn't - future work)
 - **Full spec**: spec/active/script-library-enhancement/spec.md (original comprehensive spec)
+
+## Task Summary
+
+**8 files to modify**:
+1. bin/csw - Fix hardcoded CSW_HOME path
+2. commands/spec.md - Replace bash block with csw call + fallback
+3. commands/plan.md - Replace bash blocks with csw call + fallback
+4. commands/build.md - Replace bash block with csw call + fallback
+5. commands/check.md - Replace bash blocks with csw call + fallback
+6. commands/ship.md - Replace bash blocks with csw call + fallback
+7. install.sh - Add csw installation section + update final message
+8. init-project.sh - Add spec/csw symlink section + update usage instructions
+
+**Expected outcome**: ~28 bash blocks removed, replaced with 5 consistent fallback patterns + bin/csw fixed + 2 installers enhanced
