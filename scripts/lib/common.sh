@@ -18,8 +18,13 @@ get_spec_dir() {
 
 extract_feature_from_path() {
     local path="$1"
-    # Extract feature name from spec/active/feature-name/spec.md
-    basename "$(dirname "$path")"
+    # Extract full relative path under spec/
+    # Example: spec/frontend/auth/spec.md → frontend/auth
+    # Example: spec/auth/spec.md → auth
+    local spec_dir
+    spec_dir=$(get_spec_dir)
+    local relative="${path#"$spec_dir"/}"
+    dirname "$relative"
 }
 
 # File operations

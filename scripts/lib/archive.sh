@@ -9,7 +9,7 @@ create_shipped_entry_template() {
     local pr_number="$2"
     local pr_url="$3"
     local spec_dir
-    spec_dir="$(get_spec_dir)/active/$feature"
+    spec_dir="$(get_spec_dir)/$feature"
 
     ensure_directory "$spec_dir"
 
@@ -34,7 +34,7 @@ update_shipped_md() {
     local merge_commit
     local entry
 
-    spec_dir="$(get_spec_dir)/active/$feature"
+    spec_dir="$(get_spec_dir)/$feature"
     shipped_entry="$spec_dir/.shipped-entry"
     shipped_md="$(get_spec_dir)/SHIPPED.md"
 
@@ -76,7 +76,7 @@ EOF
 delete_spec_directory() {
     local feature="$1"
     local spec_dir
-    spec_dir="$(get_spec_dir)/active/$feature"
+    spec_dir="$(get_spec_dir)/$feature"
 
     if [[ -d "$spec_dir" ]]; then
         info "Archiving spec directory: $spec_dir"
