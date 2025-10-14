@@ -4,7 +4,7 @@ set -e
 SCRIPT_DIR="$(dirname "$0")"
 source "$SCRIPT_DIR/lib/common.sh"
 source "$SCRIPT_DIR/lib/git.sh"
-source "$SCRIPT_DIR/lib/archive.sh"
+source "$SCRIPT_DIR/lib/cleanup.sh"
 
 auto_tag_release() {
     # Try VERSION file first
@@ -55,8 +55,8 @@ if [[ -z "$FEATURE" ]]; then
     exit 1
 fi
 
-# Run archive (from lib)
-archive_feature "$FEATURE"
+# Run cleanup (from lib)
+cleanup_shipped_feature "$FEATURE"
 
 # Auto-tag the release
 auto_tag_release
