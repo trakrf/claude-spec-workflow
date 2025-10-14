@@ -1,5 +1,33 @@
 # Shipped Features
 
+## Script Library Phase 3 - Wire It Up
+- **Date**: 2025-10-14
+- **Branch**: feature/script-library-phase3-wiring
+- **Commit**: 5878c44bcb9203ebd95e8bc99f4bb049f323fa11
+- **Summary**: Completed script library integration - commands now use csw instead of embedded bash
+- **Key Changes**:
+  - Replaced 28 embedded bash blocks with 5 clean csw calls across commands/*.md
+  - Fixed bin/csw hardcoded path with dynamic detection
+  - Enhanced install.sh with csw CLI installation to ~/.local/bin
+  - Enhanced init-project.sh with spec/csw symlink creation
+  - Commands simplified from ~100 lines to ~15 lines each
+  - Three access methods work identically: /command, csw command, ./spec/csw command
+- **Validation**: ✅ All checks passed (shellcheck clean, syntax valid, zero regression)
+
+### Success Metrics
+- ✅ **5 commands simplified** - **Result**: spec, plan, build, check, ship now use single csw call
+- ✅ **28 bash blocks replaced** - **Result**: 1+7+1+13+6 blocks replaced with 5 csw calls
+- ✅ **Prompt text preserved** - **Result**: All instructional content remains intact
+- ✅ **3 access methods work** - **Result**: /check, csw check, ./spec/csw check all functional
+- ✅ **Zero regression** - **Result**: All workflow steps work identically
+- ✅ **Cross-platform support** - **Result**: Works on Linux (tested), Mac/Windows Git Bash (compatible)
+
+**Overall Success**: 100% of metrics achieved (6/6)
+
+**Phase**: 3 of 3 (Integration complete - script library refactoring finished!)
+
+- **PR**: Pending
+
 ## Script Library Phase 2 - Extract Command Logic
 - **Date**: 2025-10-14
 - **Branch**: feature/script-library-phase2-extraction
