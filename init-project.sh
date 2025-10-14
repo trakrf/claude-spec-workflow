@@ -54,6 +54,63 @@ if [ ! -f "$PRESET_FILE" ]; then
     exit 1
 fi
 
+# Detect project stack by inspecting project files
+detect_project_stack() {
+    local project_dir="$1"
+
+    # Check for Node.js projects
+    if [[ -f "$project_dir/package.json" ]]; then
+        if grep -q '"vite"' "$project_dir/package.json" 2>/dev/null; then
+            echo "typescript-react-vite"
+            return 0
+        elif grep -q '"next"' "$project_dir/package.json" 2>/dev/null; then
+            echo "nextjs-app-router"
+            return 0
+        else
+            # Generic Node.js project, default to React+Vite
+            echo "typescript-react-vite"
+            return 0
+        fi
+    fi
+
+    # Check for Python projects
+    if [[ -f "$project_dir/requirements.txt" ]] || [[ -f "$project_dir/pyproject.toml" ]]; then
+        echo "python-fastapi"
+        return 0
+    fi
+
+    # Check for Go projects
+    if [[ -f "$project_dir/go.mod" ]]; then
+        echo "go-standard"
+        return 0
+    fi
+
+    # Check for shell script projects (look for multiple .sh files)
+    local sh_count
+    sh_count=$(find "$project_dir" -maxdepth 2 -name "*.sh" -type f 2>/dev/null | wc -l)
+    if [[ $sh_count -gt 2 ]]; then
+        echo "shell-scripts"
+        return 0
+    fi
+
+    # Could not detect, return empty
+    return 1
+}
+
+# Get human-readable stack name from preset identifier
+get_stack_display_name() {
+    local preset="$1"
+    case "$preset" in
+        "typescript-react-vite") echo "TypeScript + React + Vite" ;;
+        "nextjs-app-router") echo "Next.js App Router + TypeScript" ;;
+        "python-fastapi") echo "Python + FastAPI" ;;
+        "go-standard") echo "Go" ;;
+        "monorepo-go-react") echo "Go + React Monorepo" ;;
+        "shell-scripts") echo "Shell Scripts (Bash)" ;;
+        *) echo "$preset" ;;
+    esac
+}
+
 echo "🏗️  Initializing Spec-Driven Development"
 echo "======================================"
 echo "Project: $PROJECT_DIR"
@@ -133,25 +190,91 @@ else
     echo "   Run install.sh to set up csw CLI"
 fi
 
+# Generate bootstrap validation spec
 echo ""
-echo "✅ Project initialized for spec-driven development!"
+echo "📝 Creating bootstrap validation spec..."
+
+# Check if spec directory already has content (reinit scenario)
+if [[ -d "$PROJECT_DIR/spec" ]] && [[ $(find "$PROJECT_DIR/spec" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l) -gt 0 ]]; then
+    echo ""
+    echo "⚠️  Spec directory already has content (existing features or previous init)"
+    read -p "Create bootstrap spec anyway? (y/n) " -n 1 -r
+    echo ""
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "Skipping bootstrap spec creation."
+        SKIP_BOOTSTRAP=1
+    fi
+fi
+
+if [[ -z "$SKIP_BOOTSTRAP" ]]; then
+    BOOTSTRAP_DIR="$PROJECT_DIR/spec/bootstrap"
+    mkdir -p "$BOOTSTRAP_DIR"
+
+    # Get current date
+    CURRENT_DATE=$(date +%Y-%m-%d)
+
+    # Get human-readable stack name
+    STACK_NAME=$(get_stack_display_name "$PRESET")
+
+    # Copy and populate template
+    if [[ -f "$SCRIPT_DIR/templates/bootstrap-spec.md" ]]; then
+        cp "$SCRIPT_DIR/templates/bootstrap-spec.md" "$BOOTSTRAP_DIR/spec.md"
+
+        # Replace placeholders (use | as delimiter to avoid issues with /)
+        sed -i "s|{{STACK_NAME}}|$STACK_NAME|g" "$BOOTSTRAP_DIR/spec.md"
+        sed -i "s|{{PRESET_NAME}}|$PRESET|g" "$BOOTSTRAP_DIR/spec.md"
+        sed -i "s|{{INSTALL_DATE}}|$CURRENT_DATE|g" "$BOOTSTRAP_DIR/spec.md"
+
+        echo "   ✓ Bootstrap spec created at spec/bootstrap/spec.md"
+    else
+        echo "   ⚠️  Warning: Bootstrap template not found at $SCRIPT_DIR/templates/bootstrap-spec.md"
+        echo "   Bootstrap spec creation skipped."
+    fi
+fi
+
+echo ""
+echo "✅ Claude Spec Workflow Setup Complete!"
+echo ""
+echo "📂 Directory structure:"
+echo "   spec/"
+echo "   ├── README.md       # Workflow documentation"
+echo "   ├── template.md     # Spec template"
+echo "   ├── stack.md        # $STACK_NAME validation commands"
+echo "   ├── SHIPPED.md      # Completed features log"
+
+if [[ -z "$SKIP_BOOTSTRAP" ]]; then
+    echo "   └── bootstrap/      # Bootstrap validation spec ⭐"
+    echo ""
+    echo "🚀 Next: Validate installation by shipping the bootstrap spec"
+    echo ""
+    echo "   Run these commands in Claude Code:"
+    echo ""
+    echo "   1. Generate plan:      /plan bootstrap"
+    echo "   2. Execute plan:       /build"
+    echo "   3. Validate quality:   /check"
+    echo "   4. Ship it:            /ship"
+    echo ""
+    echo "   This will:"
+    echo "     • Validate CSW installation works correctly"
+    echo "     • Commit CSW infrastructure using CSW itself (meta!)"
+    echo "     • Create your first SHIPPED.md entry"
+    echo "     • Give you hands-on experience with the workflow"
+else
+    echo ""
+fi
+
 echo ""
 echo "Stack configured: $PRESET"
 echo "  - Review and customize: spec/stack.md"
 echo ""
-echo "Next steps:"
-echo "1. Create your first spec:"
-echo "   cd $PROJECT_DIR"
-echo "   mkdir spec/active/my-feature"
-echo "   cp spec/template.md spec/active/my-feature/spec.md"
+echo "📖 Learn more: spec/README.md"
 echo ""
-echo "2. Edit the spec with your requirements"
-echo ""
-echo "3. Generate implementation plan:"
-echo "   In Claude Code:  /plan my-feature"
-echo "   In terminal:     csw plan my-feature"
-echo "   In project:      ./spec/csw plan my-feature"
-echo ""
-echo "To change your stack configuration later, either:"
-echo "  - Edit spec/stack.md directly, or"
-echo "  - Re-run: ./init-project.sh . [different-preset]"
+
+# Show alternative access methods
+if [[ -L "$PROJECT_DIR/spec/csw" ]]; then
+    echo "💡 Three ways to run commands:"
+    echo "   - In Claude Code:  /plan my-feature"
+    echo "   - In terminal:     csw plan my-feature"
+    echo "   - In project:      ./spec/csw plan my-feature"
+    echo ""
+fi
