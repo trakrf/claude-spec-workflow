@@ -1,5 +1,40 @@
 # Shipped Features
 
+## Script Library Phase 2 - Extract Command Logic
+- **Date**: 2025-10-14
+- **Branch**: feature/script-library-phase2-extraction
+- **Commit**: e3d39b8
+- **Summary**: Extracted bash logic from commands into standalone scripts, simplified paths, documented workflow
+- **Key Changes**:
+  - Created 6 executable scripts (spec, plan, build, check, ship, archive)
+  - Simplified paths from spec/active/ to spec/ throughout codebase
+  - Migrated all existing specs to new structure
+  - Added comprehensive Feature Lifecycle documentation with mermaid diagram
+  - Implemented auto-tagging in archive.sh
+  - Scripts use Phase 1 library functions (zero duplication)
+- **Validation**: ✅ All checks passed (shellcheck clean, syntax valid, no warnings)
+
+### Success Metrics
+- ✅ **~400 lines extracted** - **Result**: 6 scripts created from commands/*.md (~300+ lines extracted)
+- ✅ **6 scripts created** - **Result**: spec.sh, plan.sh, build.sh, check.sh, ship.sh, archive.sh
+- ✅ **Zero duplication** - **Result**: All scripts use Phase 1 library functions
+- ✅ **Shellcheck passes** - **Result**: Clean (only SC1091 info messages)
+- ✅ **Scripts executable** - **Result**: All scripts have +x, proper shebang, pass syntax validation
+- ✅ **Auto-tagging implemented** - **Result**: archive.sh reads VERSION/package.json
+- ✅ **Workflow documented** - **Result**: README.md updated with Feature Lifecycle & Archive Workflow section
+- ✅ **Paths simplified** - **Result**: spec/feature/ used consistently, spec/active/ removed
+- ✅ **Migration complete** - **Result**: 4 specs migrated to new structure
+- ✅ **Arbitrary nesting supported** - **Result**: Works with flat and nested paths
+- ✅ **Smart resolution implemented** - **Result**: Bash finds all files, Claude fuzzy matches
+- ✅ **Zero-arg workflow** - **Result**: Commands auto-detect when single spec exists
+- ✅ **Interactive disambiguation** - **Result**: Multiple matches show numbered list
+
+**Overall Success**: 100% of metrics achieved (13/13)
+
+**Phase**: 2 of 3 (Extraction complete, Phase 3 will wire commands to use these scripts)
+
+- **PR**: Pending
+
 ## Script Library Phase 1 - Build the Toolkit
 - **Date**: 2025-10-13
 - **Branch**: feature/script-library-phase1-toolkit
