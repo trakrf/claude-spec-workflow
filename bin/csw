@@ -19,7 +19,7 @@ Commands:
   build              Execute build with progress tracking
   check              Run validation suite (test/lint/build)
   ship <feature>     Create PR and prepare for merge
-  archive <feature>  Archive completed feature
+  cleanup            Clean up shipped features (delete specs)
 
 Examples:
   csw spec auth-system
@@ -32,7 +32,7 @@ EOF
 }
 
 case "${1:-}" in
-    spec|plan|build|check|ship|archive)
+    spec|plan|build|check|ship|cleanup)
         COMMAND="$1"
         shift
         exec "$SCRIPT_DIR/$COMMAND.sh" "$@"
