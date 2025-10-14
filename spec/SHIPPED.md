@@ -43,7 +43,7 @@
 
 **Impact**: Solves chicken-and-egg onboarding problem. New users experience full CSW workflow immediately, building confidence before tackling real features. CSW infrastructure gets committed properly via PR using CSW itself (meta!).
 
-- **PR**: Pending
+- **PR**: https://github.com/trakrf/claude-spec-workflow/pull/10
 
 ## Script Library Phase 3 - Wire It Up
 - **Date**: 2025-10-14
