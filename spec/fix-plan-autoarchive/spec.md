@@ -12,7 +12,7 @@ The `/plan` command's "Archive Shipped Features" workflow has two critical issue
    - Pull latest main
    - Create new branch for the next feature
    - Delete the merged branch
-   - Archive the completed spec
+   - Delete the completed spec (relies on git history)
 
 2. **Outdated path assumptions**: The archive section looks for `spec/active/*` but the current structure uses `spec/*/` (flattened, no active/ directory)
 
@@ -21,7 +21,7 @@ The `/plan` command's "Archive Shipped Features" workflow has two critical issue
 When running `/plan changelog-convention` while on `feature/onboarding-bootstrap` (which was already shipped in PR #10):
 - ❌ Didn't detect we're on a merged branch
 - ❌ Didn't pull main automatically
-- ❌ Didn't prompt to archive onboarding-bootstrap spec
+- ❌ Didn't prompt to delete onboarding-bootstrap spec
 - ❌ Didn't create new branch feature/changelog-convention
 - ❌ Required manual intervention to clean up
 
@@ -45,21 +45,20 @@ When running `/plan <feature-name>`:
      # Extract feature name from branch
      feature=$(echo "$current_branch" | sed 's/feature\///')
 
-     # Archive the spec
+     # Delete the spec (relies on git history for retrieval)
      if [ -d "spec/$feature" ]; then
-       echo "📦 Archiving spec/$feature..."
-       mkdir -p spec/archive
-       mv "spec/$feature" "spec/archive/$feature"
-       git add "spec/$feature" "spec/archive/$feature"
-       git commit -m "chore: archive $feature spec (shipped)"
+       echo "🗑️  Deleting spec/$feature..."
+       rm -rf "spec/$feature"
+       git add "spec/$feature"
+       git commit -m "chore: delete $feature spec (shipped in PR #X)"
      fi
    fi
    ```
 
-2. **Then check for OTHER shipped features to archive**:
+2. **Then check for OTHER shipped features to delete**:
    - Scan `spec/*/spec.md` (not `spec/active/*/spec.md`)
    - Cross-reference with `spec/SHIPPED.md`
-   - Prompt to archive each shipped feature found
+   - Prompt to delete each shipped feature found
 
 3. **Create new branch if needed**:
    ```bash
@@ -75,11 +74,11 @@ When running `/plan <feature-name>`:
 - ✅ Detect if current branch is in SHIPPED.md
 - ✅ Auto-pull main when on shipped branch
 - ✅ Auto-delete merged branch after switching to main
-- ✅ Auto-archive the shipped feature's spec
+- ✅ Auto-delete the shipped feature's spec
 - ✅ Fix path scanning from `spec/active/*` to `spec/*`
-- ✅ Exclude `spec/archive/*` and `spec/backlog/*` from archive prompts
+- ✅ Exclude `spec/backlog/*` from cleanup prompts
 - ✅ Create new feature branch if planning from main
-- ✅ All archive operations committed properly
+- ✅ All delete operations committed properly
 
 ### Should Have
 - Validate branch is actually merged before deleting (safety check)
@@ -98,10 +97,10 @@ When running `/plan <feature-name>`:
 ### Functional (6/6)
 - [ ] Running `/plan <feature>` while on merged branch switches to main
 - [ ] Merged branch is deleted automatically
-- [ ] Completed spec is archived to spec/archive/
-- [ ] Archive commit is created automatically
+- [ ] Completed spec is deleted (preserved in git history)
+- [ ] Delete commit is created automatically
 - [ ] New feature branch is created
-- [ ] Additional shipped features are detected and prompted for archiving
+- [ ] Additional shipped features are detected and prompted for deletion
 
 ### Developer Experience (4/4)
 - [ ] Zero manual git commands required for branch cleanup
@@ -118,7 +117,7 @@ When running `/plan <feature-name>`:
 
 ## Non-Requirements
 
-- ❌ Archiving features not in SHIPPED.md (they're still active)
+- ❌ Deleting features not in SHIPPED.md (they're still active)
 - ❌ Handling uncommitted changes (user should commit first)
 - ❌ Creating SHIPPED.md entries (that's /ship's job)
 - ❌ Pushing to remote (user does that manually)
@@ -150,14 +149,13 @@ if grep -q "Branch: $current_branch" spec/SHIPPED.md; then
   echo "🗑️  Deleting merged branch..."
   git branch -d "$current_branch"
 
-  # Archive spec if exists
+  # Delete spec if exists (preserved in git history)
   feature=$(echo "$current_branch" | sed 's/feature\///')
   if [ -d "spec/$feature" ]; then
-    echo "📦 Archiving spec/$feature to spec/archive/$feature"
-    mkdir -p spec/archive
-    mv "spec/$feature" "spec/archive/$feature"
-    git add "spec/$feature" "spec/archive/$feature"
-    git commit -m "chore: archive $feature spec (shipped)"
+    echo "🗑️  Deleting spec/$feature..."
+    rm -rf "spec/$feature"
+    git add "spec/$feature"
+    git commit -m "chore: delete $feature spec (shipped in PR #X)"
   fi
 
   echo "✅ Workspace cleaned - ready for new feature"
@@ -165,7 +163,7 @@ fi
 \`\`\`
 ```
 
-### 2. Fix Archive Section Paths
+### 2. Fix Cleanup Section Paths
 
 Replace:
 ```bash
@@ -175,14 +173,14 @@ for dir in spec/active/*/; do
 With:
 ```bash
 for dir in spec/*/; do
-  # Skip archive, backlog, and non-directory files
-  [[ "$dir" =~ spec/(archive|backlog)/ ]] && continue
+  # Skip backlog and non-directory files
+  [[ "$dir" =~ spec/backlog/ ]] && continue
   [[ ! -f "$dir/spec.md" ]] && continue
 ```
 
 ### 3. Add Branch Creation Logic
 
-After archive section, before planning:
+After cleanup section, before planning:
 
 ```bash
 # Ensure we're on the right branch
@@ -209,7 +207,7 @@ fi
    # Setup: Be on feature/foo which is in SHIPPED.md
    git checkout feature/foo
    /plan bar
-   # Expected: Switches to main, deletes foo, archives spec/foo/, creates feature/bar
+   # Expected: Switches to main, deletes foo, deletes spec/foo/, creates feature/bar
    ```
 
 2. **Normal planning from main**:
@@ -223,7 +221,7 @@ fi
    ```bash
    # Setup: spec/foo/ and spec/bar/ both in SHIPPED.md, on main
    /plan baz
-   # Expected: Prompts to archive foo, then bar, then creates feature/baz
+   # Expected: Prompts to delete foo, then bar, then creates feature/baz
    ```
 
 4. **Resume planning**:
@@ -252,7 +250,7 @@ bash -n <script>
 - Must not require user to answer prompts for obvious cleanup (shipped branch)
 - Must preserve all existing /plan functionality
 - Must work with both `spec/feature/` and `spec/nested/feature/` structures
-- Must not archive specs still in development
+- Must not delete specs still in development
 - Must be safe (don't delete branches that aren't merged)
 
 ## Dependencies
@@ -275,11 +273,11 @@ bash -n <script>
 1. Should we validate branch is actually merged before deleting? (use `git branch --merged main`)
 2. Should we offer to delete remote branch too?
 3. What if spec/SHIPPED.md has malformed entries?
-4. Should archive operation be atomic (all or nothing)?
+4. Should delete operation be atomic (all or nothing)?
 
 ## References
 
-- Current workflow: `spec/README.md` - Feature Lifecycle
+- Current workflow: `spec/README.md` - Feature Lifecycle & Archive Workflow (lines 122-130: "Archive = DELETE")
 - SHIPPED.md format: `spec/SHIPPED.md`
-- Existing archive logic: `commands/plan.md` (Archive Shipped Features section)
+- Existing cleanup logic: `commands/plan.md` (Archive Shipped Features section - needs updating)
 - Git branch safety: `git branch -d` vs `git branch -D`
