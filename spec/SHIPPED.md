@@ -1,5 +1,50 @@
 # Shipped Features
 
+## Onboarding Bootstrap - Auto-Generate Bootstrap Spec
+- **Date**: 2025-10-14
+- **Branch**: feature/onboarding-bootstrap
+- **Commit**: 4f8565757588053cb3f6c59a1cfc7a07e6d81916
+- **Summary**: Automatically create bootstrap validation spec during init-project.sh to guide users through first workflow experience
+- **Key Changes**:
+  - Created templates/bootstrap-spec.md with placeholders for stack-specific information
+  - Added detect_project_stack() function to detect stack from project files
+  - Added get_stack_display_name() function to convert preset to readable name
+  - Bootstrap spec generation with reinit detection and user prompt
+  - Updated success message to highlight bootstrap workflow with clear next steps
+  - Updated templates/README.md Quick Start to feature bootstrap-first approach
+  - Paths simplified from spec/active/ to spec/ throughout documentation
+- **Validation**: ✅ All checks passed (shellcheck clean, syntax valid, integration test verified)
+
+### Success Metrics
+
+#### Functional (8/8)
+- ✅ **templates/bootstrap-spec.md created** - **Result**: Template with placeholders created
+- ✅ **init-project.sh generates bootstrap spec** - **Result**: Automated generation after setup
+- ✅ **Stack info populated** - **Result**: STACK_NAME placeholder replaced correctly
+- ✅ **Preset name populated** - **Result**: PRESET_NAME placeholder replaced correctly
+- ✅ **Current date populated** - **Result**: INSTALL_DATE placeholder replaced correctly
+- ✅ **Success message includes next steps** - **Result**: Clear /plan → /build → /check → /ship instructions
+- ✅ **Bootstrap spec can be planned** - **Result**: Template structure compatible with /plan
+- ✅ **Bootstrap spec can be shipped** - **Result**: Full workflow cycle verified in integration test
+
+#### Documentation (4/4)
+- ✅ **README.md Quick Start updated** - **Result**: Bootstrap-first approach documented
+- ✅ **README shows shipping example** - **Result**: Clear 4-step workflow shown
+- ✅ **Success message is actionable** - **Result**: Users immediately know what to do
+- ✅ **Placeholders documented** - **Result**: {{STACK_NAME}}, {{PRESET_NAME}}, {{INSTALL_DATE}} used consistently
+
+#### User Experience (4/4)
+- ✅ **Users know what to do next** - **Result**: Success message provides explicit next steps
+- ✅ **First workflow cycle succeeds** - **Result**: Integration test validated /plan → /ship works
+- ✅ **Bootstrap PR is clean** - **Result**: Follows conventional commit format
+- ✅ **SHIPPED.md entry meaningful** - **Result**: This entry demonstrates the workflow
+
+**Overall Success**: 100% of metrics achieved (16/16)
+
+**Impact**: Solves chicken-and-egg onboarding problem. New users experience full CSW workflow immediately, building confidence before tackling real features. CSW infrastructure gets committed properly via PR using CSW itself (meta!).
+
+- **PR**: Pending
+
 ## Script Library Phase 3 - Wire It Up
 - **Date**: 2025-10-14
 - **Branch**: feature/script-library-phase3-wiring
