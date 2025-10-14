@@ -107,31 +107,35 @@ Final validation and PR preparation:
 | `/plan` | Generate implementation plan | `spec/{feature}/spec.md` or fragment |
 | `/build` | Execute implementation | `spec/{feature}/` or auto-detect |
 | `/check` | Validate PR readiness | None |
-| `/ship` | Complete and archive | `spec/{feature}/` or auto-detect |
+| `/ship` | Complete and ship | `spec/{feature}/` or auto-detect |
 
-## Feature Lifecycle & Archive Workflow
+## Feature Lifecycle & Cleanup Workflow
 
-### The Breadcrumb Pattern
+### Linear History Workflow
 
-When you run `/ship`, it creates "breadcrumb" files before the PR is merged:
-- `.shipped-entry` - Template entry for SHIPPED.md with placeholder for merge commit
-- `.pr-url` - The PR URL for reference
+CSW uses **rebase workflow** (linear history), not merge commits.
 
-**Why?** The merge commit hash isn't known until after PR merge, but we need to capture PR details before merge.
+**When you run `/ship`**:
+1. Creates PR from feature branch
+2. **Updates SHIPPED.md** with entry (commit hash is known before merge)
+3. Commits on feature branch before final merge
 
-### Archive = DELETE
-
-When you run `/plan` on a new feature and detect shipped features, the "archive" operation:
-1. Reads breadcrumb files (`.shipped-entry`, `.pr-url`) from the shipped feature
-2. Updates `SHIPPED.md` with actual merge commit hash
+**When you run `/plan` (next feature)**:
+1. Detects if current branch is in SHIPPED.md
+2. Switches to main, pulls latest
 3. **DELETES** the spec directory (`spec/feature-name/`)
-4. Commits the cleanup on the new feature branch
+4. Creates new feature branch
 
-**Important**: There is no `spec/archive/` directory. Specs are preserved in git history at their merge commit. SHIPPED.md provides the reference.
+### Cleanup = DELETE
 
-### Piggybacking Cleanup
+When `/plan` detects shipped features, the "cleanup" operation:
+1. Checks SHIPPED.md for shipped features
+2. **DELETES** the spec directory (`spec/feature-name/`)
+3. Commits the deletion on the new feature branch
 
-Archive commits piggyback onto the next feature branch to avoid an extra merge:
+**Important**: There is no `spec/archive/` directory. Specs are preserved in git history. SHIPPED.md provides the reference to find them.
+
+### Workflow Diagram
 
 ```mermaid
 sequenceDiagram
@@ -140,14 +144,16 @@ sequenceDiagram
     participant M as Main
     participant N as Next Feature
 
-    U->>F: /build, /ship
-    F->>F: Creates .shipped-entry breadcrumb
-    F->>M: Merge PR
+    U->>F: /build
+    U->>F: /ship (creates PR)
+    F->>F: Update SHIPPED.md with entry
+    F->>F: Commit all changes
+    F->>M: Rebase and merge PR (linear history)
     U->>N: /plan (new feature)
-    N->>N: Read breadcrumb from main
-    N->>N: Update SHIPPED.md
+    N->>N: Detect current branch is shipped
+    N->>M: Switch to main, pull latest
     N->>N: DELETE spec/old-feature/
-    N->>N: Commit archive
+    N->>N: Create new feature branch
     N->>N: Continue with new planning
 ```
 
@@ -216,7 +222,7 @@ Solo development with single feature needs zero path arguments:
 /build                # Auto-detect (only 1 plan)
 /ship                 # Auto-detect (only 1 plan)
 # Merge PR
-/plan next-feature    # Archives my-feature, creates next-feature
+/plan next-feature    # Cleans up my-feature, creates next-feature
 ```
 
 ## Best Practices
@@ -248,9 +254,10 @@ The specific commands depend on your tech stack. See `spec/stack.md` for your pr
 ## Git Workflow
 
 1. Features are developed on `feature/{name}` branches
-2. Each feature gets semantic commits
-3. Specs are archived by reference, not content
-4. Clean history with meaningful commit messages
+2. Linear history via rebase workflow (no merge commits)
+3. Each feature gets semantic commits
+4. Specs are cleaned up after merge (preserved in git history)
+5. Clean history with meaningful commit messages
 
 ## Troubleshooting
 
