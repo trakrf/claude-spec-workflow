@@ -26,7 +26,7 @@
 
 **Phase**: 3 of 3 (Integration complete - script library refactoring finished!)
 
-- **PR**: Pending
+- **PR**: https://github.com/trakrf/claude-spec-workflow/pull/9
 
 ## Script Library Phase 2 - Extract Command Logic
 - **Date**: 2025-10-14
