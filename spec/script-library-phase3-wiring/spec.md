@@ -76,13 +76,16 @@ Add csw installation section after command setup:
 echo ""
 info "Installing csw CLI..."
 
+# Detect installation directory
+INSTALL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # Ensure ~/.local/bin exists
 mkdir -p "$HOME/.local/bin"
 
 # Create symlink
-ln -sf "$HOME/.claude-spec-workflow/bin/csw" "$HOME/.local/bin/csw"
+ln -sf "$INSTALL_DIR/bin/csw" "$HOME/.local/bin/csw"
 chmod +x "$HOME/.local/bin/csw"
-chmod +x "$HOME/.claude-spec-workflow/bin/csw"
+chmod +x "$INSTALL_DIR/bin/csw"
 
 # Check if ~/.local/bin is in PATH
 if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
@@ -107,16 +110,21 @@ Add project-local csw symlink creation after spec directory setup:
 # Create project-local csw symlink
 info "Setting up project-local csw wrapper..."
 
+# Find csw installation via the symlink in PATH
+CSW_PATH="$(command -v csw)" || { error "csw not found in PATH. Run install.sh first."; exit 1; }
+CSW_TARGET="$(readlink -f "$CSW_PATH" 2>/dev/null || realpath "$CSW_PATH" 2>/dev/null)" || CSW_TARGET="$CSW_PATH"
+CSW_INSTALL_DIR="$(dirname "$(dirname "$CSW_TARGET")")"
+
 if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
     # Windows: Create wrapper script instead of symlink
-    cat > "$PROJECT_DIR/spec/csw" << 'EOF'
+    cat > "$PROJECT_DIR/spec/csw" << EOF
 #!/bin/bash
-exec "$HOME/.claude-spec-workflow/bin/csw" "$@"
+exec "$CSW_INSTALL_DIR/bin/csw" "\$@"
 EOF
     chmod +x "$PROJECT_DIR/spec/csw"
 else
     # Unix: Use symlink
-    ln -sf "$HOME/.claude-spec-workflow/bin/csw" "$PROJECT_DIR/spec/csw"
+    ln -sf "$CSW_INSTALL_DIR/bin/csw" "$PROJECT_DIR/spec/csw"
 fi
 
 success "Project-local wrapper created: ./spec/csw"
@@ -191,7 +199,7 @@ cd /tmp
 mkdir test-project
 cd test-project
 git init
-~/.claude-spec-workflow/init-project.sh
+csw init-project  # Or wherever you cloned: /path/to/clone/init-project.sh
 
 # Verify spec/csw exists
 ls -la spec/csw
@@ -317,7 +325,7 @@ This validates your code by running:
 - Type checker
 - Build process
 
-Implementation: ~/.claude-spec-workflow/scripts/check.sh
+Implementation: scripts/check.sh in the csw installation
 ```
 
 ## References

@@ -246,6 +246,57 @@ The system uses workspace-specific validation commands from `spec/stack.md`:
 | `/check` | Validate everything | Before creating PR |
 | `/ship` | Complete and PR | When ready to merge |
 
+## Feature Lifecycle
+
+CSW supports a complete feature development cycle:
+
+([spec] | `<spec>`) → plan → build → [check] → ship → `<merge>` → [archive] → repeat
+
+**Legend**:
+- [brackets] - Optional CSW command
+- `<angle brackets>` - Manual/external action
+- (A | B) - Choose either approach
+
+```mermaid
+flowchart LR
+    Start([Start Feature]) --> Spec{Create Spec}
+    Spec -->|/spec command| AutoSpec[spec/active/feature/]
+    Spec -->|Write manually| ManualSpec[spec/feature/spec.md]
+    AutoSpec --> Plan
+    ManualSpec --> Plan
+    Plan[/plan] --> Build[build]
+    Build --> Check{/check?}
+    Check -->|Optional| CheckRun[Validate]
+    Check -->|Skip| Ship
+    CheckRun --> Ship
+    Ship[/ship] --> Merge(<merge PR>)
+    Merge --> Archive{/archive?}
+    Archive -->|Optional| ArchiveRun[SHIPPED.md + cleanup]
+    Archive -->|Skip| Next
+    ArchiveRun --> Next
+    Next([Next Feature]) --> Spec
+```
+
+**The cycle**:
+1. **([spec] | `<spec>`)** - Create feature spec (tool-assisted or manual)
+2. **plan** - Generate implementation plan
+3. **build** - Implement the feature
+4. **[check]** - Validate (optional: tests, lint, types, build)
+5. **ship** - Create PR and merge
+6. **`<merge>`** - Merge the PR (manual)
+7. **[archive]** - Summarize to SHIPPED.md and cleanup (optional, or auto-triggered by next /plan)
+8. **repeat** - Start next feature
+
+## Workflow vs History
+
+CSW focuses on *current* work, not completed work.
+
+- **spec/** - Workspace for active/planned features (transient)
+- **SHIPPED.md** - Record of completed work (durable)
+- **Git** - Full history and context
+
+Complete a feature? `/ship` it, then after merging `/archive` it to summarize history to SHIPPED.md and clean up the completed spec/. Or let `/plan` auto-archive when appropriate. The scaffolding did its job.
+
 ## Workflow Philosophy
 
 1. **Context is King** - Provide comprehensive context for better AI execution
