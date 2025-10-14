@@ -4,128 +4,87 @@ Specification: spec.md
 
 ## Understanding
 
-This is the final phase of a 3-phase refactoring to extract bash logic from command files into a reusable script library. Phase 1 built library functions, Phase 2 extracted commands to scripts. This phase wires everything together by:
+This is Phase 3 of a 3-phase refactoring to build a maintainable script library for the Claude Spec Workflow system. Phases 1 and 2 are complete and merged:
+- Phase 1: Built library functions (scripts/lib/)
+- Phase 2: Extracted command logic to scripts (scripts/*.sh)
 
-1. Updating commands to call `csw` instead of embedded bash
-2. Fixing bin/csw to use dynamic path detection (not hardcoded)
-3. Updating installers to set up csw globally and project-locally
-4. Testing all 3 access methods: `/command`, `csw command`, `./spec/csw command`
+**This phase** wires everything together by:
+1. Updating 5 command files to call scripts instead of embedding bash
+2. Fixing bin/csw hardcoded path to use dynamic detection
+3. Updating installers to set up csw CLI access
 
-**Key design decisions** (from clarifying questions):
-- All commands use `"$@"` for argument passing (POLS)
-- install.sh overwrites existing symlink with `-f` (refresh)
-- Commands fall back to `./spec/csw` if `csw` not in PATH (resilience)
-- Full test coverage included (reasonable effort, high value)
-- shellcheck validation on command bash blocks
+**Key insight from clarifying discussion**: The scripts are utilities FOR CLAUDE TO CALL via the Bash tool, not for direct user usage. The prompts (commands/*.md) remain the primary interface - they guide Claude's behavior with personas, ULTRATHINK sections, and process steps. The bash blocks in those prompts just need to be cleaner (call scripts instead of embedding logic). The fallback pattern exists for Claude's bash execution environment, not to enable "three access methods" for users.
+
+**Clarifications**:
+- Question 1: plan.md uses `"$SPEC_FILE"` from scripts/plan.sh's smart resolution output
+- Question 2: Commands assume execution from project root (./spec/csw is relative to root)
+- Question 3: Only replace executable bash blocks, keep documentation/example blocks in prompt text
+- **Descoped**: Shell-script usage for users - this is about cleaning up prompts for Claude
+- **Focus**: Fast iterative Claude Code workflow (90% of value)
 
 ## Relevant Files
 
-**Files to Modify** (8 total):
-
-**1. bin/csw** (lines 6-7):
-- **Current**: Hardcoded `CSW_HOME="$HOME/.claude-spec-workflow"`
-- **Change**: Dynamic detection using script's own location
-- **Why**: Supports any checkout directory, not just `~/.claude-spec-workflow`
-
-**2-7. commands/*.md** (6 files, ~1,700 lines total):
-- **commands/spec.md** (~50 lines bash → 1 line)
-- **commands/plan.md** (~120 lines bash → 1 line)
-- **commands/build.md** (~60 lines bash → 1 line)
-- **commands/check.md** (~80 lines bash → 1 line)
-- **commands/ship.md** (~90 lines bash → 1 line)
-- **commands/archive.md** (not in glob, may not exist yet - check)
-
-**8. install.sh** (line ~60):
-- **Add**: csw installation section (14 lines from spec)
-
-**9. init-project.sh** (line ~115):
-- **Add**: spec/csw symlink creation (20 lines from spec)
+**Files to Modify**:
+1. `bin/csw` (line 6) - Replace hardcoded path with dynamic detection
+2. `commands/spec.md` (~line 126) - Replace 1 bash block with fallback pattern
+3. `commands/plan.md` (multiple) - Replace 7 bash blocks with fallback pattern
+4. `commands/build.md` (~line 176) - Replace 1 bash block with fallback pattern
+5. `commands/check.md` (multiple) - Replace 13 bash blocks with fallback pattern
+6. `commands/ship.md` (multiple) - Replace 6 bash blocks with fallback pattern
+7. `install.sh` (after line 41) - Add csw installation section + update final message
+8. `init-project.sh` (after line 123) - Add spec/csw symlink section + update usage instructions
 
 **Reference Patterns**:
-- bin/csw (lines 1-58): CLI wrapper structure to preserve
-- scripts/check.sh (lines 1-18): Example of script that sources libs
-- install.sh (lines 28-41): Existing command installation pattern
+- `bin/csw` (line 6) - Current: `CSW_HOME="$HOME/.claude-spec-workflow"`
+- Dynamic detection pattern: `CSW_HOME="$(cd "$(dirname "$(dirname "${BASH_SOURCE[0]}")")" && pwd)"`
+- Fallback pattern provided in spec (lines 31-43) - for Claude's bash environment
+
+**Scripts Available** (no changes needed - Phase 2 complete):
+- `scripts/spec.sh` - Handles spec creation
+- `scripts/plan.sh` - Handles planning with smart resolution
+- `scripts/build.sh` - Handles build execution
+- `scripts/check.sh` - Handles validation suite
+- `scripts/ship.sh` - Handles shipping/PR creation
 
 ## Architecture Impact
 
-- **Subsystems affected**:
-  1. Commands system (slash commands in Claude Code)
-  2. Installation system (install.sh, init-project.sh)
-  3. CLI system (bin/csw wrapper)
-
-- **New dependencies**: None (all scripts exist from Phase 2)
-
-- **Breaking changes**: None - maintains backward compatibility
-  - Slash commands work identically
-  - Output unchanged
-  - Only internal implementation changes
+- **Subsystems affected**: CLI/Commands (all bash, single subsystem)
+- **New dependencies**: None
+- **Breaking changes**: None (commands work identically for Claude, just cleaner implementation)
 
 ## Task Breakdown
 
 ### Task 1: Fix bin/csw hardcoded path
-**File**: `bin/csw`
-**Action**: MODIFY
-**Lines**: 6-7
+**File**: bin/csw
+**Action**: MODIFY (line 6)
+**Pattern**: Replace hardcoded CSW_HOME with dynamic detection
 
-**Current code**:
+**Implementation**:
+Replace line 6:
 ```bash
+# Before:
 CSW_HOME="$HOME/.claude-spec-workflow"
-SCRIPT_DIR="$CSW_HOME/scripts"
-```
 
-**New code**:
-```bash
+# After:
 # Detect installation directory from this script's location
 CSW_HOME="$(cd "$(dirname "$(dirname "${BASH_SOURCE[0]}")")" && pwd)"
-SCRIPT_DIR="$CSW_HOME/scripts"
 ```
 
-**Rationale**: Allows csw to work from any checkout directory, not just `~/.claude-spec-workflow`.
+**Why**: Allows csw to work from any checkout directory.
 
 **Validation**:
 ```bash
 shellcheck bin/csw
-./bin/csw --version  # Should still work
-./bin/csw --help     # Should still work
+bash -n bin/csw
 ```
 
----
+### Task 2: Update commands/spec.md
+**File**: commands/spec.md
+**Action**: MODIFY (replace bash block around line 126)
+**Pattern**: Replace single executable bash block with fallback pattern
 
-### Task 2: Update commands/check.md
-**File**: `commands/check.md`
-**Action**: MODIFY
-**Current**: ~400 lines including large bash block
-**New**: ~20 lines with simple csw call
-
-**Find the bash code block** (between triple backticks after the front matter).
-
-**Replace entire bash block with**:
-```bash
-# Try csw in PATH first, fall back to project-local wrapper
-if command -v csw &> /dev/null; then
-    csw check "$@"
-elif [ -f "./spec/csw" ]; then
-    ./spec/csw check "$@"
-else
-    echo "❌ Error: csw not found"
-    echo "   Run install.sh to set up csw globally"
-    echo "   Or use: ./spec/csw check (if initialized)"
-    exit 1
-fi
-```
-
-**Validation**:
-```bash
-shellcheck commands/check.md  # Lint bash block
-```
-
----
-
-### Task 3: Update commands/spec.md
-**File**: `commands/spec.md`
-**Action**: MODIFY
-
-**Replace bash block with**:
+**Implementation**:
+Find the ```bash...``` block (only 1 executable block in file) and replace with:
 ```bash
 # Try csw in PATH first, fall back to project-local wrapper
 if command -v csw &> /dev/null; then
@@ -140,24 +99,27 @@ else
 fi
 ```
 
+**Important**: Keep all prompt text (persona, ULTRATHINK, process steps) - only replace the executable bash block.
+
 **Validation**:
 ```bash
-shellcheck commands/spec.md
+# Extract and validate bash syntax
+bash -n <(grep -Pzo '```bash\K[\s\S]*?(?=```)' commands/spec.md | head -c -1)
 ```
 
----
+### Task 3: Update commands/plan.md
+**File**: commands/plan.md
+**Action**: MODIFY (replace 7 bash blocks with 1)
+**Pattern**: Replace all executable bash blocks with single fallback pattern
 
-### Task 4: Update commands/plan.md
-**File**: `commands/plan.md`
-**Action**: MODIFY
-
-**Replace bash block with**:
+**Implementation**:
+Find all ```bash...``` blocks (7 total showing sequence/examples in documentation) and consolidate to SINGLE executable bash block:
 ```bash
 # Try csw in PATH first, fall back to project-local wrapper
 if command -v csw &> /dev/null; then
-    csw plan "$@"
+    csw plan "$SPEC_FILE"
 elif [ -f "./spec/csw" ]; then
-    ./spec/csw plan "$@"
+    ./spec/csw plan "$SPEC_FILE"
 else
     echo "❌ Error: csw not found"
     echo "   Run install.sh to set up csw globally"
@@ -166,24 +128,28 @@ else
 fi
 ```
 
+**Note**: Uses `"$SPEC_FILE"` (from scripts/plan.sh smart resolution) not `"$@"`.
+
+**Important**: This file has extensive process documentation with personas, ULTRATHINK, archive workflow - all that text stays. Only the executable bash blocks are replaced.
+
 **Validation**:
 ```bash
-shellcheck commands/plan.md
+bash -n <(grep -Pzo '```bash\K[\s\S]*?(?=```)' commands/plan.md | head -c -1)
 ```
 
----
+### Task 4: Update commands/build.md
+**File**: commands/build.md
+**Action**: MODIFY (replace bash block around line 176)
+**Pattern**: Replace single bash block with fallback pattern (no arguments)
 
-### Task 5: Update commands/build.md
-**File**: `commands/build.md`
-**Action**: MODIFY
-
-**Replace bash block with**:
+**Implementation**:
+Replace the ```bash...``` block with:
 ```bash
 # Try csw in PATH first, fall back to project-local wrapper
 if command -v csw &> /dev/null; then
-    csw build "$@"
+    csw build
 elif [ -f "./spec/csw" ]; then
-    ./spec/csw build "$@"
+    ./spec/csw build
 else
     echo "❌ Error: csw not found"
     echo "   Run install.sh to set up csw globally"
@@ -194,16 +160,44 @@ fi
 
 **Validation**:
 ```bash
-shellcheck commands/build.md
+bash -n <(grep -Pzo '```bash\K[\s\S]*?(?=```)' commands/build.md | head -c -1)
 ```
 
----
+### Task 5: Update commands/check.md
+**File**: commands/check.md
+**Action**: MODIFY (replace 13 bash blocks with 1)
+**Pattern**: Replace all executable bash blocks with single fallback pattern (no arguments)
+
+**Implementation**:
+Find all ```bash...``` blocks (13 total showing validation examples) and consolidate to SINGLE executable bash block:
+```bash
+# Try csw in PATH first, fall back to project-local wrapper
+if command -v csw &> /dev/null; then
+    csw check
+elif [ -f "./spec/csw" ]; then
+    ./spec/csw check
+else
+    echo "❌ Error: csw not found"
+    echo "   Run install.sh to set up csw globally"
+    echo "   Or use: ./spec/csw check (if initialized)"
+    exit 1
+fi
+```
+
+**Important**: This file has extensive documentation (stack-aware validation, monorepo support, ULTRATHINK sections) - all that text stays, only executable bash blocks are replaced.
+
+**Validation**:
+```bash
+bash -n <(grep -Pzo '```bash\K[\s\S]*?(?=```)' commands/check.md | head -c -1)
+```
 
 ### Task 6: Update commands/ship.md
-**File**: `commands/ship.md`
-**Action**: MODIFY
+**File**: commands/ship.md
+**Action**: MODIFY (replace 6 bash blocks with 1)
+**Pattern**: Replace all executable bash blocks with single fallback pattern
 
-**Replace bash block with**:
+**Implementation**:
+Find all ```bash...``` blocks (6 total showing sequence/examples) and consolidate to SINGLE executable bash block:
 ```bash
 # Try csw in PATH first, fall back to project-local wrapper
 if command -v csw &> /dev/null; then
@@ -220,519 +214,228 @@ fi
 
 **Validation**:
 ```bash
-shellcheck commands/ship.md
+bash -n <(grep -Pzo '```bash\K[\s\S]*?(?=```)' commands/ship.md | head -c -1)
 ```
 
----
+### Task 7: Update install.sh - Add csw installation
+**File**: install.sh
+**Action**: MODIFY (add section after line 41, update final message)
+**Pattern**: Add csw CLI installation after command installation loop
 
-### Task 7: Check if commands/archive.md exists and update if present
-**File**: `commands/archive.md` (may not exist)
-**Action**: MODIFY (if exists) or SKIP (if doesn't exist)
+**Implementation**:
+After the command installation loop (after line 41, after `done`), insert:
 
-**Check first**:
 ```bash
-if [ -f "commands/archive.md" ]; then
-    # Update it following same pattern as other commands
-fi
-```
-
-**If exists, replace bash block with**:
-```bash
-# Try csw in PATH first, fall back to project-local wrapper
-if command -v csw &> /dev/null; then
-    csw archive "$@"
-elif [ -f "./spec/csw" ]; then
-    ./spec/csw archive "$@"
-else
-    echo "❌ Error: csw not found"
-    echo "   Run install.sh to set up csw globally"
-    echo "   Or use: ./spec/csw archive (if initialized)"
-    exit 1
-fi
-```
-
-**Validation**:
-```bash
-if [ -f "commands/archive.md" ]; then
-    shellcheck commands/archive.md
-fi
-```
-
----
-
-### Task 8: Update install.sh - Add csw installation
-**File**: `install.sh`
-**Action**: MODIFY
-**Insert after**: Line ~60 (after command installation, before final messaging)
-
-**Add this section**:
-```bash
-# Install csw to ~/.local/bin
+# Install csw CLI
 echo ""
 echo "🔧 Installing csw CLI..."
+CSW_BIN_DIR="$HOME/.local/bin"
+if [ ! -d "$CSW_BIN_DIR" ]; then
+    echo "   📁 Creating $CSW_BIN_DIR..."
+    mkdir -p "$CSW_BIN_DIR"
+fi
 
-# Detect installation directory
-INSTALL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# Ensure ~/.local/bin exists
-mkdir -p "$HOME/.local/bin"
-
-# Create symlink (force refresh if exists)
-ln -sf "$INSTALL_DIR/bin/csw" "$HOME/.local/bin/csw"
-chmod +x "$HOME/.local/bin/csw"
-chmod +x "$INSTALL_DIR/bin/csw"
+echo "   🔗 Creating symlink: csw -> $SCRIPT_DIR/bin/csw"
+ln -sf "$SCRIPT_DIR/bin/csw" "$CSW_BIN_DIR/csw"
 
 # Check if ~/.local/bin is in PATH
-if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+if [[ ":$PATH:" != *":$CSW_BIN_DIR:"* ]]; then
     echo ""
-    echo "ℹ️  For best results, add ~/.local/bin to your \$PATH"
+    echo "⚠️  Note: $CSW_BIN_DIR is not in your PATH"
+    echo "   Add this line to your ~/.bashrc or ~/.zshrc:"
     echo ""
-    echo "Add this to your shell config (~/.bashrc, ~/.zshrc, etc):"
-    echo "  export PATH=\"\$HOME/.local/bin:\$PATH\""
+    echo "   export PATH=\"\$HOME/.local/bin:\$PATH\""
     echo ""
-    echo "Or use: ./spec/csw <command>"
+    echo "   Then run: source ~/.bashrc (or ~/.zshrc)"
     echo ""
-else
-    echo "✅ csw is ready to use: csw <command>"
+    echo "   Alternatively, use ./spec/csw in your projects"
 fi
 ```
 
-**Update final message** to include csw info:
+Then update the final message section (around line 87) to:
 ```bash
-echo "Available commands:"
-echo "  /spec   - Convert conversation to specification"
-echo "  /plan   - Generate implementation plan (interactive)"
-echo "  /build  - Execute implementation with validation"
-echo "  /check  - Pre-release validation check"
-echo "  /ship   - Complete feature and prepare PR"
+echo "Available commands (use as /command in Claude or csw command in terminal):"
+echo "  spec    - Convert conversation to specification"
+echo "  plan    - Generate implementation plan (interactive)"
+echo "  build   - Execute implementation with validation"
+echo "  check   - Pre-release validation check"
+echo "  ship    - Complete feature and prepare PR"
 echo ""
-echo "Also available as CLI:"
-echo "  csw <command>           - Run from anywhere"
-echo "  ./spec/csw <command>    - Project-local wrapper"
+echo "Usage:"
+echo "  In Claude Code:  /plan spec/feature-name/spec.md"
+echo "  In terminal:     csw plan spec/feature-name/spec.md"
+echo "  In project:      ./spec/csw plan spec/feature-name/spec.md"
 ```
 
 **Validation**:
 ```bash
 shellcheck install.sh
+bash -n install.sh
 ```
 
----
+### Task 8: Update init-project.sh - Add spec/csw symlink
+**File**: init-project.sh
+**Action**: MODIFY (add section after line 123, update usage message)
+**Pattern**: Add project-local csw symlink after .gitignore section
 
-### Task 9: Update init-project.sh - Add spec/csw symlink
-**File**: `init-project.sh`
-**Action**: MODIFY
-**Insert after**: Line ~115 (after .gitignore update, before final success message)
+**Implementation**:
+After the .gitignore section (after line 123, after `fi`), insert:
 
-**Add this section**:
 ```bash
-# Create project-local csw symlink
-echo "🔗 Setting up project-local csw wrapper..."
-
-# Find csw installation via the symlink in PATH
-CSW_PATH="$(command -v csw 2>/dev/null)" || true
-
-if [ -n "$CSW_PATH" ]; then
-    # Resolve symlink to find actual installation
-    if command -v readlink &> /dev/null; then
-        CSW_TARGET="$(readlink -f "$CSW_PATH" 2>/dev/null || realpath "$CSW_PATH" 2>/dev/null)" || CSW_TARGET="$CSW_PATH"
-    else
-        CSW_TARGET="$CSW_PATH"
-    fi
-    CSW_INSTALL_DIR="$(dirname "$(dirname "$CSW_TARGET")")"
-
-    if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
-        # Windows: Create wrapper script instead of symlink
-        cat > "$PROJECT_DIR/spec/csw" << EOF
-#!/bin/bash
-exec "$CSW_INSTALL_DIR/bin/csw" "\$@"
-EOF
-        chmod +x "$PROJECT_DIR/spec/csw"
-    else
-        # Unix: Use symlink
-        ln -sf "$CSW_INSTALL_DIR/bin/csw" "$PROJECT_DIR/spec/csw"
-    fi
-
-    echo "✅ Project-local wrapper created: ./spec/csw"
+# Create spec/csw symlink for project-local csw access
+echo "🔗 Creating spec/csw symlink..."
+CSW_BIN="$SCRIPT_DIR/bin/csw"
+if [ -f "$CSW_BIN" ]; then
+    ln -sf "$CSW_BIN" "$PROJECT_DIR/spec/csw"
+    echo "   ✓ Created: spec/csw -> $CSW_BIN"
 else
-    echo "⚠️  csw not found in PATH - skipping project-local wrapper"
-    echo "   Run install.sh first, then rerun init-project.sh to create wrapper"
+    echo "   ⚠️  Warning: csw binary not found at $CSW_BIN"
+    echo "   Run install.sh to set up csw CLI"
 fi
 ```
 
-**Update final message** to mention spec/csw:
+Then update the "3. Generate implementation plan:" section (around line 150) to:
 ```bash
-echo "Next steps:"
-echo "1. Create your first spec:"
-echo "   cd $PROJECT_DIR"
-echo "   mkdir spec/my-feature"
-echo "   cp spec/template.md spec/my-feature/spec.md"
-echo ""
-echo "2. Edit the spec with your requirements"
-echo ""
 echo "3. Generate implementation plan:"
-echo "   /plan my-feature"
-echo "   # Or: csw plan my-feature"
-echo "   # Or: ./spec/csw plan my-feature"
+echo "   In Claude Code:  /plan my-feature"
+echo "   In terminal:     csw plan my-feature"
+echo "   In project:      ./spec/csw plan my-feature"
 ```
 
 **Validation**:
 ```bash
 shellcheck init-project.sh
+bash -n init-project.sh
 ```
 
----
+### Task 9: Final validation
+**Action**: Run comprehensive validation suite
+**Pattern**: Ensure all changes pass validation gates
 
-### Task 10: Test slash commands (via Claude Code)
-**Action**: Manual testing
-**Prerequisites**: Tasks 1-9 complete, commands reinstalled
-
-**Test each command**:
+**Implementation**:
 ```bash
-# In Claude Code, run each:
-/check
-/spec test-feature  # Creates spec/test-feature/spec.md
-/plan test-feature
-# Edit spec to be trivial (just add a comment or echo)
-/build
-/check
-/ship test-feature
+# Validate all shell scripts
+find . -name "*.sh" -not -path "*/\.*" -exec shellcheck {} +
+
+# Syntax check all bash scripts
+for script in $(find . -name "*.sh" -not -path "*/\.*"); do
+  bash -n "$script" || exit 1
+done
+
+# Verify command bash blocks are syntactically valid (best effort)
+for cmd in commands/*.md; do
+  echo "Checking $cmd..."
+  bash -n <(grep -Pzo '```bash\K[\s\S]*?(?=```)' "$cmd" | head -c -1) 2>/dev/null || echo "  (markdown file, syntax check may not apply)"
+done
+
+echo "✅ All validation gates passed"
 ```
 
-**Expected**: All commands work identically to before refactor, just calling csw internally.
-
-**Validation**:
-- Commands execute without errors
-- Output format unchanged
-- Scripts are invoked correctly
-
----
-
-### Task 11: Test direct csw CLI
-**Action**: Manual testing
-**Prerequisites**: Task 8 complete (install.sh updated and rerun)
-
-**Test direct csw**:
-```bash
-# Verify installation
-ls -la ~/.local/bin/csw
-readlink -f ~/.local/bin/csw  # Should point to actual installation
-
-# Test help/version
-csw --help
-csw --version
-
-# Test commands
-csw check
-csw spec test-feature-2
-csw plan test-feature-2
-```
-
-**Expected**:
-- csw symlink exists in ~/.local/bin
-- Points to actual installation (not hardcoded ~/.claude-spec-workflow)
-- All commands work
-
-**Validation**:
-- Commands execute without errors
-- Same output as slash commands
-
----
-
-### Task 12: Test project-local ./spec/csw
-**Action**: Manual testing
-**Prerequisites**: Task 9 complete (init-project.sh updated)
-
-**Test in a fresh project**:
-```bash
-cd /tmp
-mkdir test-csw-project
-cd test-csw-project
-git init
-
-# Run init-project
-/path/to/claude-spec-workflow/init-project.sh .
-
-# Verify spec/csw created
-ls -la spec/csw
-readlink -f spec/csw  # Should point to installation
-
-# Test commands
-./spec/csw --help
-./spec/csw --version
-./spec/csw check
-```
-
-**Expected**:
-- spec/csw exists (symlink on Unix, wrapper on Windows)
-- Points to installation
-- Commands work without csw in PATH
-
-**Validation**:
-- All commands execute
-- Works even if ~/.local/bin not in PATH
-
----
-
-### Task 13: Test PATH fallback (resilience check)
-**Action**: Manual testing
-**Prerequisites**: Tasks 10-12 complete
-
-**Temporarily remove csw from PATH**:
-```bash
-# Backup PATH
-OLD_PATH="$PATH"
-
-# Remove ~/.local/bin from PATH
-export PATH=$(echo "$PATH" | sed -e 's|:$HOME/.local/bin||g' -e 's|$HOME/.local/bin:||g')
-
-# Verify csw not in PATH
-command -v csw  # Should fail
-
-# Test that slash commands fall back to ./spec/csw
-cd /path/to/project/with/spec/csw
-/check  # Should work via ./spec/csw fallback
-
-# Restore PATH
-export PATH="$OLD_PATH"
-```
-
-**Expected**: Commands work via ./spec/csw fallback when csw not in PATH.
-
-**Validation**: Fallback mechanism works as intended.
-
----
-
-### Task 14: Full workflow integration test
-**Action**: Complete feature lifecycle test
-**Prerequisites**: All previous tasks complete
-
-**Run complete cycle**:
-```bash
-cd /home/mike/claude-spec-workflow
-git checkout main
-git pull
-
-# Use /spec to create a trivial test feature
-/spec test-phase3-integration
-
-# Add minimal spec content
-cat > spec/test-phase3-integration/spec.md << 'EOF'
-# Test Feature
-
-## Outcome
-Add a comment to README.md
-
-## Validation
-- [ ] Comment added to README
-EOF
-
-# Plan, build, check, ship
-/plan test-phase3-integration
-/build
-/check
-/ship test-phase3-integration
-
-# Verify all steps completed successfully
-```
-
-**Expected**: Entire workflow works end-to-end with new csw integration.
-
-**Validation**: Complete feature lifecycle with zero regressions.
-
----
-
-### Task 15: Fresh installation test
-**Action**: Test install.sh in clean environment
-**Prerequisites**: Tasks 1-9 complete
-
-**Simulate fresh install**:
-```bash
-cd /tmp
-rm -rf test-csw-install
-git clone https://github.com/trakrf/claude-spec-workflow test-csw-install
-cd test-csw-install
-
-# Run installation
-./install.sh
-
-# Verify csw installed
-ls -la ~/.local/bin/csw
-csw --version
-
-# Test project initialization
-cd /tmp
-mkdir test-project
-cd test-project
-git init
-csw init-project .  # Note: May need path to init-project.sh depending on implementation
-
-# Verify spec/csw exists
-ls -la spec/csw
-./spec/csw --version
-```
-
-**Expected**: Clean installation works, csw available globally and project-locally.
-
-**Validation**: Installation script sets up csw correctly from scratch.
-
----
-
-### Task 16: Cross-platform compatibility check (if accessible)
-**Action**: Test on Windows Git Bash (if available)
-**Prerequisites**: Tasks 1-15 complete
-
-**Windows-specific checks**:
-```bash
-# In Git Bash on Windows
-./install.sh
-
-# Verify wrapper script created (not symlink)
-cat spec/csw  # Should be a bash script with 'exec' line
-
-# Test wrapper works
-./spec/csw --version
-./spec/csw check
-```
-
-**Expected**: Windows wrapper script works identically to Unix symlink.
-
-**Validation**: Cross-platform compatibility maintained.
-
----
+**Success criteria**:
+- All .sh files pass shellcheck
+- All .sh files pass bash syntax check
+- Command bash blocks are syntactically valid
+- No regression in functionality
 
 ## Risk Assessment
 
-### Risk: Bash block extraction errors
-**Impact**: Commands fail to execute
-**Likelihood**: Low (simple replacement)
-**Mitigation**:
-- shellcheck validation after each command update
-- Test each command immediately after modification
-- Keep old bash blocks in git history for reference
+**Low Risk - Mechanical Refactoring**:
+- ✅ Well-defined transformation (replace bash blocks with fallback pattern)
+- ✅ All logic already exists in scripts/ (Phase 2 complete)
+- ✅ Copy-paste implementation from spec
+- ✅ Simple validation (shellcheck + syntax check)
+- ✅ Easy rollback (git revert individual files)
 
-### Risk: Path detection fails in edge cases
-**Impact**: csw can't find scripts
-**Likelihood**: Low (common bash idiom)
-**Mitigation**:
-- Test with symlinked installations
-- Test with spaces in path
-- Use robust `cd && pwd` pattern
+**Potential Issues**:
+- **Risk**: Bash blocks in commands/*.md might not extract cleanly for validation
+  **Mitigation**: Manual review of each file, verify bash syntax after replacement
 
-### Risk: init-project.sh fails if csw not installed
-**Impact**: No project-local wrapper created
-**Likelihood**: Medium (user might init before install)
-**Mitigation**:
-- Make wrapper creation optional (warn but don't fail)
-- Provide clear instructions to rerun after install
-- Already implemented in task 9
+- **Risk**: Accidentally removing prompt documentation while replacing bash blocks
+  **Mitigation**: Only replace ```bash...``` blocks, preserve all persona/ULTRATHINK/process text
 
-### Risk: Fallback logic complexity
-**Impact**: Commands harder to debug if issues arise
-**Likelihood**: Low (simple if/elif/else)
-**Mitigation**:
-- Clear error messages for each failure mode
-- Consistent fallback pattern across all commands
-- Test PATH fallback explicitly (task 13)
+- **Risk**: $SPEC_FILE undefined if scripts/plan.sh changes
+  **Mitigation**: Spec confirms $SPEC_FILE comes from scripts/plan.sh output (Phase 2)
 
 ## Integration Points
 
-- **Command files → bin/csw**: Commands now delegate to csw CLI
-- **install.sh → ~/.local/bin/csw**: Creates global symlink
-- **init-project.sh → spec/csw**: Creates project-local symlink
-- **bin/csw → scripts/**: CLI routes to script files
-- **Slash commands → command files**: Unchanged (transparency)
+- **bin/csw**: Calls scripts/*.sh (already integrated in Phase 2)
+- **install.sh**: Creates ~/.local/bin/csw symlink (for Claude's PATH)
+- **init-project.sh**: Creates ./spec/csw symlink (for fallback)
+- **commands/*.md**: Call csw via fallback pattern (Claude executes via Bash tool)
 
 ## VALIDATION GATES (MANDATORY)
 
-This is a bash/shell project. Validation uses shellcheck:
+**CRITICAL**: These are not suggestions - they are GATES that block progress.
 
-**After each command file modification (tasks 2-7)**:
+After EVERY file change:
 ```bash
-shellcheck commands/*.md
+# Gate 1: Shellcheck (for .sh files)
+shellcheck <file>.sh
+
+# Gate 2: Syntax check
+bash -n <file>
 ```
 
-**After installer modifications (tasks 8-9)**:
+For command files (.md):
 ```bash
-shellcheck install.sh
-shellcheck init-project.sh
+# Extract and syntax check bash blocks (best effort)
+bash -n <(grep -Pzo '```bash\K[\s\S]*?(?=```)' commands/<file>.md | head -c -1)
 ```
-
-**After bin/csw modification (task 1)**:
-```bash
-shellcheck bin/csw
-```
-
-**Manual testing gates (tasks 10-16)**:
-- Each access method must work: `/command`, `csw command`, `./spec/csw command`
-- PATH fallback must work when csw not in PATH
-- Fresh installation must set up csw correctly
-- Full workflow must complete without errors
 
 **Enforcement Rules**:
-- If shellcheck fails → Fix syntax errors immediately
-- If manual test fails → Debug and fix before proceeding
-- All 3 access methods must work before considering complete
-- Zero regression: output must match pre-refactor behavior
+- If ANY gate fails → Fix immediately
+- Re-run validation after fix
+- Loop until ALL gates pass
+- After 3 failed attempts → Stop and ask for help
+
+**Do not proceed to next task until current task passes all gates.**
 
 ## Validation Sequence
 
-**Per-file validation** (after tasks 1-9):
+After each task:
 ```bash
-shellcheck <modified-file>
+# For .sh files:
+shellcheck <file>.sh
+bash -n <file>.sh
+
+# For .md files (best effort):
+bash -n <(grep -Pzo '```bash\K[\s\S]*?(?=```)' <file>.md | head -c -1)
 ```
 
-**Comprehensive validation** (after task 9, before testing):
+Final validation (Task 9):
 ```bash
-shellcheck bin/csw
-shellcheck install.sh
-shellcheck init-project.sh
-shellcheck commands/*.md
-```
+# All shell scripts
+find . -name "*.sh" -not -path "*/\.*" -exec shellcheck {} +
 
-**Functional validation** (tasks 10-16):
-- Test via Claude Code slash commands
-- Test via direct csw CLI
-- Test via project-local ./spec/csw
-- Test PATH fallback mechanism
-- Test full workflow integration
-- Test fresh installation
-- Test cross-platform (if accessible)
+# Syntax check all
+for script in $(find . -name "*.sh" -not -path "*/\.*"); do
+  bash -n "$script" || exit 1
+done
+```
 
 ## Plan Quality Assessment
 
-**Complexity Score**: 6/10 (MEDIUM-HIGH)
-- 8 files to modify (2pts)
-- 2 subsystems (1pt)
-- ~13 subtasks (3pts)
-- 0 new dependencies (0pts)
-- Existing patterns (0pts)
+**Complexity Score**: 4/10 (LOW-MEDIUM)
+- Modifying 8 files, creating 0 files
+- Single subsystem (CLI/commands)
+- 9 discrete tasks
+- No new dependencies
+- Existing patterns (mechanical refactoring)
 
 **Confidence Score**: 9/10 (HIGH)
 
 **Confidence Factors**:
-✅ Clear requirements from spec - every change specified
-✅ Existing scripts from Phase 2 - no new script logic needed
-✅ Simple mechanical refactor - delete bash, add one line
-✅ All clarifying questions answered
-✅ Comprehensive test strategy in place
-✅ bin/csw pattern already exists - just fixing hardcoded path
-✅ install.sh pattern exists - just adding section
-✅ Fallback pattern is simple and well-tested (command -v)
+✅ Clear requirements from spec with concrete code examples
+✅ Mechanical refactoring (copy-paste fallback pattern)
+✅ All logic already exists in scripts/ (Phase 2 complete)
+✅ Simple validation (shellcheck + syntax)
+✅ Spec provides exact code for each transformation
+✅ No external dependencies
+✅ Easy rollback (independent file changes)
+✅ Clarifying discussion resolved ambiguities
 
-**Assessment**: High-confidence implementation. The changes are mechanical (copy-paste), well-specified, and incrementally testable. The only complexity is in the number of files, but each change is independent and validated separately.
+**Assessment**: This is a straightforward mechanical refactoring with high confidence. All implementation details are specified in the spec with copy-paste ready code. The clarifying discussion confirmed this is about cleaning up prompts for Claude's workflow, not enabling general shell usage. Tasks are independent (each file change stands alone). Validation is clear (shellcheck + syntax).
 
-**Estimated one-pass success probability**: 85%
+**Estimated one-pass success probability**: 95%
 
-**Reasoning**:
-- All bash code is copy-paste from spec (eliminates syntax errors)
-- Each file change is independent (one failure doesn't cascade)
-- shellcheck catches any bash issues immediately
-- Manual testing catches integration issues before full workflow test
-- The 15% risk accounts for edge cases in path detection, cross-platform issues, or testing environment differences
-- Phase 1 & 2 already validated the underlying scripts work correctly
-
-**Mitigation for the 15%**:
-- Task ordering ensures early detection (bin/csw first, commands second)
-- Incremental testing catches issues before they compound
-- Fallback mechanism provides resilience to PATH issues
-- Clear error messages guide debugging if issues arise
+**Reasoning**: The spec provides exact code for every transformation. Tasks are independent. Validation is clear. Only minor risk is markdown bash block extraction for validation, but that's non-critical (manual review suffices). This is "copy from spec, validate, move to next file" implementation. The clarifying discussion removed scope creep and focused on the core value: fast iterative Claude Code workflow.
