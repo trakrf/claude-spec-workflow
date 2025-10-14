@@ -54,10 +54,15 @@ spec/
 ├── team-a/            # Nested by team
 │   └── feature-x/
 │       └── spec.md
+├── backlog/           # Optional: Future specs not ready to work on
+│   └── onboarding-bootstrap/
+│       └── spec.md
 └── SHIPPED.md         # Log of completed features
 ```
 
 **Note**: Organize specs however makes sense for your project. The system supports arbitrary nesting after `spec/`.
+
+**Optional**: Use `spec/backlog/` for future specs that aren't ready to work on yet. Move them to `spec/` when ready to `/plan`.
 
 **Note**: The slash commands (`/plan`, `/build`, `/check`, `/ship`, `/spec`) are installed globally in Claude's commands directory, not in your project.
 
