@@ -1,4 +1,4 @@
-# Fix /plan Auto-Archive Workflow
+# Fix /plan Auto-Cleanup Workflow
 
 **Status**: Backlog
 **Created**: 2025-10-14
@@ -6,7 +6,7 @@
 
 ## Problem Statement
 
-The `/plan` command's "Archive Shipped Features" workflow has two critical issues:
+The `/plan` command's "Cleanup Shipped Features" workflow has two critical issues:
 
 1. **Doesn't detect merged branch scenario**: When you're still on a feature branch that's been merged and shipped (exists in `SHIPPED.md`), `/plan` should detect this and:
    - Pull latest main
@@ -124,12 +124,14 @@ When running `/plan <feature-name>`:
 
 ## Technical Approach
 
-### 1. Update commands/plan.md
+### 1. Create/Update scripts/cleanup.sh
 
-Add new section BEFORE "Archive Shipped Features":
+Create shared cleanup script (or update existing scripts/archive.sh → scripts/cleanup.sh):
 
-```markdown
-## Pre-Flight: Branch Cleanup
+```bash
+#!/bin/bash
+# Cleanup shipped features by deleting their spec directories
+# Specs are preserved in git history
 
 **Check if current branch has been shipped**:
 
@@ -163,7 +165,16 @@ fi
 \`\`\`
 ```
 
-### 2. Fix Cleanup Section Paths
+### 2. Update commands/plan.md to call cleanup script
+
+Replace manual bash blocks with call to cleanup script:
+
+```bash
+# Call shared cleanup script
+./scripts/cleanup.sh
+```
+
+### 3. Fix Path Scanning in Cleanup Logic
 
 Replace:
 ```bash
@@ -178,9 +189,9 @@ for dir in spec/*/; do
   [[ ! -f "$dir/spec.md" ]] && continue
 ```
 
-### 3. Add Branch Creation Logic
+### 4. Add Branch Creation Logic in commands/plan.md
 
-After cleanup section, before planning:
+After cleanup call, before planning:
 
 ```bash
 # Ensure we're on the right branch
