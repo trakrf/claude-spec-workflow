@@ -64,12 +64,7 @@ The user will provide the path to a specification file (e.g., `spec/active/auth/
    ```
 
    **If user answers y**:
-   ```bash
-   mkdir -p spec/archive
-   mv spec/active/{feature-name} spec/archive/{feature-name}
-   git add spec/active/{feature-name} spec/archive/{feature-name}
-   git commit -m "chore: archive {feature-name} spec (shipped in PR #{pr})"
-   ```
+   The script will archive the feature directory and commit the change.
 
    **If user answers n**:
    ```
@@ -384,11 +379,7 @@ The user will provide the path to a specification file (e.g., `spec/active/auth/
    ```
 
    **Validation**:
-   ```bash
-   pnpm lint {file}
-   pnpm typecheck
-   pnpm test {test-file}
-   ```
+   Use validation commands from `spec/stack.md`
 
    ### Task 2: {...}
 
@@ -406,23 +397,9 @@ The user will provide the path to a specification file (e.g., `spec/active/auth/
    **CRITICAL**: These are not suggestions - they are GATES that block progress.
 
    After EVERY code change, use commands from `spec/stack.md`:
-   ```bash
-   # Gate 1: Syntax & Style
-   {lint command from spec/stack.md}
-
-   # Gate 2: Type Safety
-   {typecheck command from spec/stack.md}
-
-   # Gate 3: Unit Tests
-   {test command from spec/stack.md}
-   ```
-
-   **Example** (if using typescript-react-vite preset):
-   ```bash
-   npm run lint --fix
-   npm run typecheck
-   npm test
-   ```
+   - Gate 1: Syntax & Style (lint command)
+   - Gate 2: Type Safety (typecheck command)
+   - Gate 3: Unit Tests (test command)
 
    **Enforcement Rules**:
    - If ANY gate fails → Fix immediately
@@ -433,18 +410,9 @@ The user will provide the path to a specification file (e.g., `spec/active/auth/
    **Do not proceed to next task until current task passes all gates.**
 
    ## Validation Sequence
-   After each task (using commands from `spec/stack.md`):
-   ```bash
-   {lint command} --fix
-   {typecheck command}
-   {test command} {affected-tests}
-   ```
+   After each task: Use lint, typecheck, and test commands from `spec/stack.md`
 
-   Final validation:
-   ```bash
-   {test command}  # Full test suite
-   {build command}
-   ```
+   Final validation: Run full test suite and build command from `spec/stack.md`
 
    ## Plan Quality Assessment
 
@@ -469,17 +437,7 @@ The user will provide the path to a specification file (e.g., `spec/active/auth/
    ```
 
 10. **Git Setup**
-   ```bash
-   # Check current branch
-   git branch --show-current
-   
-   # If on main/master:
-   git checkout -b feature/{feature-name}
-   
-   # Stage the planning artifacts
-   git add spec/active/{feature}/spec.md spec/active/{feature}/plan.md
-   git commit -m "plan: {feature-name} implementation"
-   ```
+   The script will create a feature branch if needed and commit the planning artifacts.
 
 ## Output Format
 Report to user:
@@ -501,3 +459,19 @@ Report to user:
 - If spec file missing: Report error with path tried
 - If ambiguous requirements: List them and ask for clarification
 - If architectural concerns: Highlight them prominently in risks
+
+## Execution
+
+```bash
+# Try csw in PATH first, fall back to project-local wrapper
+if command -v csw &> /dev/null; then
+    csw plan "$SPEC_FILE"
+elif [ -f "./spec/csw" ]; then
+    ./spec/csw plan "$SPEC_FILE"
+else
+    echo "❌ Error: csw not found"
+    echo "   Run install.sh to set up csw globally"
+    echo "   Or use: ./spec/csw plan (if initialized)"
+    exit 1
+fi
+```

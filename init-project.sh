@@ -122,6 +122,17 @@ if [ -f "$PROJECT_DIR/.gitignore" ]; then
     fi
 fi
 
+# Create spec/csw symlink for project-local csw access
+echo "🔗 Creating spec/csw symlink..."
+CSW_BIN="$SCRIPT_DIR/bin/csw"
+if [ -f "$CSW_BIN" ]; then
+    ln -sf "$CSW_BIN" "$PROJECT_DIR/spec/csw"
+    echo "   ✓ Created: spec/csw -> $CSW_BIN"
+else
+    echo "   ⚠️  Warning: csw binary not found at $CSW_BIN"
+    echo "   Run install.sh to set up csw CLI"
+fi
+
 echo ""
 echo "✅ Project initialized for spec-driven development!"
 echo ""
@@ -137,7 +148,9 @@ echo ""
 echo "2. Edit the spec with your requirements"
 echo ""
 echo "3. Generate implementation plan:"
-echo "   /plan spec/active/my-feature"
+echo "   In Claude Code:  /plan my-feature"
+echo "   In terminal:     csw plan my-feature"
+echo "   In project:      ./spec/csw plan my-feature"
 echo ""
 echo "To change your stack configuration later, either:"
 echo "  - Edit spec/stack.md directly, or"

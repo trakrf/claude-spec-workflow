@@ -65,20 +65,7 @@ Optional: Workspace name for monorepo projects (e.g., `/check frontend`, `/check
    **For Monorepo** (if spec/stack.md has `## Workspace:` sections):
 
    If workspace argument provided, validate only that workspace.
-   Otherwise, validate each workspace in order listed:
-
-   ```bash
-   # For each workspace section in spec/stack.md
-   echo "=== Validating Workspace: {workspace} ==="
-
-   # Run commands from that workspace's section:
-   # - Lint
-   # - Typecheck (if present)
-   # - Test
-   # - Build (if present)
-
-   # Track results per workspace
-   ```
+   Otherwise, validate each workspace in order listed by running lint, typecheck, test, and build commands from each workspace's section in spec/stack.md.
 
    Report aggregate results:
    ```
@@ -92,177 +79,31 @@ Optional: Workspace name for monorepo projects (e.g., `/check frontend`, `/check
 
    **For Single-Stack** (if spec/stack.md has only top-level commands):
 
-   ```bash
-   echo "=== Linting ==="
-   # Run Lint command from spec/stack.md
-   LINT_STATUS=$?
-
-   echo "=== Type Checking ==="
-   # Run Typecheck command from spec/stack.md (if present)
-   TYPE_STATUS=$?
-
-   echo "=== Unit Tests ==="
-   # Run Test command from spec/stack.md
-   TEST_STATUS=$?
-
-   echo "=== Build ==="
-   # Run Build command from spec/stack.md
-   BUILD_STATUS=$?
-
-   echo "=== E2E Tests ==="
-   # Run E2E command from spec/stack.md (if present)
-   E2E_STATUS=$?
-   ```
+   Run lint, typecheck, test, build, and E2E commands from spec/stack.md in sequence, tracking status for each.
 
 3. **Code Quality Checks**
    Use patterns from `spec/config.md` if available, otherwise use defaults.
 
-   **With config:**
-   ```bash
-   # Console/debug statements
-   grep -r "{config.console_logs.pattern}" {config.source_dirs} --exclude="{config.console_logs.exclude}"
+   **With config:** Use patterns from spec/config.md to search for console/debug statements, TODO comments, and skipped tests.
 
-   # TODO comments
-   grep -r "{config.todos.pattern}" {config.source_dirs}
-
-   # Skipped tests
-   grep -r "{config.skipped_tests.pattern}" {config.source_dirs}
-   ```
-
-   **Stack-aware defaults:**
-
-   **Node/TypeScript**:
-   ```bash
-   # Console.log statements (except in error handlers)
-   grep -r "console\.log" src/ --exclude="*.test.*" | grep -v "catch\|error"
-
-   # TODO comments
-   grep -r "TODO\|FIXME\|XXX" src/
-
-   # Skipped tests
-   grep -r "test\.skip|it\.skip|describe\.skip" src/
-
-   # Commented out code blocks
-   grep -r "^[[:space:]]*\/\*[\s\S]*?\*\/" src/
-   grep -r "^[[:space:]]*\/\/" src/ | grep -E "(function|class|const|let|var|if|for|while)"
-   ```
-
-   **Rust**:
-   ```bash
-   # Debug print statements
-   grep -r "println!\|dbg!\|eprintln!" src/ --exclude="*test*" | grep -v "// OK:"
-
-   # TODO comments
-   grep -r "TODO\|FIXME\|XXX" src/
-
-   # Skipped/ignored tests
-   grep -r "#\[ignore\]" src/
-
-   # Commented out code
-   grep -r "^[[:space:]]*//.*fn \|//.*let \|//.*struct " src/
-   ```
-
-   **Go**:
-   ```bash
-   # Debug print statements
-   grep -r "fmt\.Println\|log\.Println" . --include="*.go" --exclude="*_test.go"
-
-   # TODO comments
-   grep -r "TODO\|FIXME\|XXX" . --include="*.go"
-
-   # Skipped tests
-   grep -r "t\.Skip" . --include="*_test.go"
-
-   # Commented out code
-   grep -r "^[[:space:]]*//.*func \|//.*var \|//.*type " . --include="*.go"
-   ```
-
-   **Python**:
-   ```bash
-   # Debug print statements
-   grep -r "print(" . --include="*.py" --exclude="*test*" | grep -v "# OK:"
-
-   # TODO comments
-   grep -r "TODO\|FIXME\|XXX" . --include="*.py"
-
-   # Skipped tests
-   grep -r "@pytest\.mark\.skip\|@unittest\.skip" . --include="*test*.py"
-
-   # Commented out code
-   grep -r "^[[:space:]]*#.*def \|#.*class " . --include="*.py"
-   ```
+   **Stack-aware defaults:** Search for stack-specific quality issues:
+   - **Node/TypeScript**: console.log, TODOs, skipped tests, commented code
+   - **Rust**: println!/dbg!, TODOs, ignored tests, commented code
+   - **Go**: fmt.Println/log.Println, TODOs, skipped tests, commented code
+   - **Python**: print(), TODOs, skipped tests, commented code
 
 3. **Bundle Size Analysis** (Node/TypeScript projects only)
-   ```bash
-   # Only for projects with dist/build output
-   if [ -d "dist" ] || [ -d "build" ]; then
-     # Get current bundle size
-     BUNDLE_SIZE=$(du -sk dist/assets/*.js 2>/dev/null || du -sk build/static/*.js 2>/dev/null | awk '{sum += $1} END {print sum}')
-
-     # Check against threshold (e.g., 500KB)
-     if [ -n "$BUNDLE_SIZE" ] && [ $BUNDLE_SIZE -gt 500 ]; then
-       echo "⚠️  Bundle size: ${BUNDLE_SIZE}KB exceeds threshold"
-     fi
-   fi
-   ```
+   Check dist/build output size against thresholds (e.g., 500KB) and warn if exceeded.
 
 4. **Git Status Check**
-   ```bash
-   # Uncommitted changes
-   git status --porcelain
-   
-   # Current branch
-   git branch --show-current
-   
-   # Commits ahead of main
-   git rev-list --count main..HEAD
-   
-   # Divergence from main
-   git fetch origin main
-   git rev-list --left-right --count origin/main...HEAD
-   ```
+   Check uncommitted changes, current branch, commits ahead of main, and divergence from main.
 
 5. **Security Audit** (stack-aware)
-
-   **Node/TypeScript**:
-   ```bash
-   if command -v pnpm &> /dev/null; then
-     pnpm audit
-   elif command -v npm &> /dev/null; then
-     npm audit
-   elif command -v yarn &> /dev/null; then
-     yarn audit
-   fi
-   ```
-
-   **Rust**:
-   ```bash
-   if command -v cargo-audit &> /dev/null; then
-     cargo audit
-   else
-     echo "ℹ️  Install cargo-audit for security scanning: cargo install cargo-audit"
-   fi
-   ```
-
-   **Go**:
-   ```bash
-   if command -v gosec &> /dev/null; then
-     gosec ./...
-   else
-     echo "ℹ️  Install gosec for security scanning: go install github.com/securego/gosec/v2/cmd/gosec@latest"
-   fi
-   ```
-
-   **Python**:
-   ```bash
-   if command -v safety &> /dev/null; then
-     safety check
-   elif command -v pip-audit &> /dev/null; then
-     pip-audit
-   else
-     echo "ℹ️  Install pip-audit for security scanning: pip install pip-audit"
-   fi
-   ```
+   Run appropriate security scanner based on stack:
+   - **Node/TypeScript**: pnpm/npm/yarn audit
+   - **Rust**: cargo audit
+   - **Go**: gosec
+   - **Python**: safety check / pip-audit
 
 6. **ULTRATHINK: Interpret Results and Provide Guidance**
 
@@ -401,4 +242,20 @@ These should be addressed but don't block merge:
 
 📊 Status: {PASS/FAIL/WARNINGS}
 ⚡ Faster feedback - full validation with /check (no args)
+```
+
+## Execution
+
+```bash
+# Try csw in PATH first, fall back to project-local wrapper
+if command -v csw &> /dev/null; then
+    csw check
+elif [ -f "./spec/csw" ]; then
+    ./spec/csw check
+else
+    echo "❌ Error: csw not found"
+    echo "   Run install.sh to set up csw globally"
+    echo "   Or use: ./spec/csw check (if initialized)"
+    exit 1
+fi
 ```
