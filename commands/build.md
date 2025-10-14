@@ -172,13 +172,7 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
    - Dead code and unused imports
    - TODO comments for completed tasks
 
-   **Verify cleanup**:
-   ```bash
-   # Search for common debug patterns
-   grep -r "console\\.log" {affected-files}
-   grep -r "debugger" {affected-files}
-   grep -r "TODO.*TEMP" {affected-files}
-   ```
+   **Verify cleanup**: Use grep to search for common debug patterns (console.log, debugger, etc.)
 
    **If found**: Remove them before proceeding to final validation.
 
@@ -269,4 +263,20 @@ Final report:
 ✅ Tasks completed: {X}/{N}
 ⚠️  Issues encountered: {count}
 📋 Next: Run /check for pre-release validation
+```
+
+## Execution
+
+```bash
+# Try csw in PATH first, fall back to project-local wrapper
+if command -v csw &> /dev/null; then
+    csw build
+elif [ -f "./spec/csw" ]; then
+    ./spec/csw build
+else
+    echo "❌ Error: csw not found"
+    echo "   Run install.sh to set up csw globally"
+    echo "   Or use: ./spec/csw build (if initialized)"
+    exit 1
+fi
 ```

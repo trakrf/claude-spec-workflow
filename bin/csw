@@ -3,7 +3,8 @@
 
 set -e
 
-CSW_HOME="$HOME/.claude-spec-workflow"
+# Detect installation directory from this script's location
+CSW_HOME="$(cd "$(dirname "$(dirname "${BASH_SOURCE[0]}")")" && pwd)"
 SCRIPT_DIR="$CSW_HOME/scripts"
 
 usage() {

@@ -135,14 +135,6 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
    - For single-stack: Use the top-level Lint command
    - Run with `--fix` flag to auto-correct issues
 
-   ```bash
-   # Example for single-stack (read actual command from spec/stack.md):
-   npm run lint --fix
-
-   # Example for monorepo (read from workspace section):
-   cd backend && npm run lint --fix
-   ```
-
    **Manual cleanup if needed**:
    - Remove debug console.log statements
    - Remove commented-out code blocks
@@ -166,62 +158,9 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
    **Breaking changes**: Add **!** after type (triggers MAJOR version bump)
    - Example: `feat!: redesign authentication API`
 
-   **Examples**:
-   ```bash
-   # New feature (most common)
-   git commit -m "feat(auth): add JWT token refresh mechanism
+   **Examples**: feat(auth), fix(validation), feat(api)!, docs(readme), refactor(store)
 
-   - Implement refresh token endpoint
-   - Add token rotation logic
-   - Update auth middleware to handle refresh
-
-   Closes #123"
-
-   # Bug fix
-   git commit -m "fix(validation): prevent empty form submission
-
-   - Add client-side validation for required fields
-   - Add server-side validation fallback
-   - Display error messages to user
-
-   Fixes #456"
-
-   # Breaking change
-   git commit -m "feat(api)!: redesign user profile endpoint
-
-   BREAKING CHANGE: /api/user response format changed from flat object to nested structure
-
-   - Nested address fields under 'address' object
-   - Phone numbers now array instead of single string
-   - Migration guide in docs/migrations/v2.md
-
-   Closes #789"
-
-   # Documentation
-   git commit -m "docs(readme): add installation instructions for Windows"
-
-   # Refactor
-   git commit -m "refactor(store): simplify user state management
-
-   - Remove redundant state fields
-   - Consolidate user actions
-   - No behavior changes"
-   ```
-
-   **Commit your changes**:
-   ```bash
-   # Stage all changes
-   git add .
-
-   # Create conventional commit
-   git commit -m "{type}({scope}): {description}
-
-   - {key change 1}
-   - {key change 2}
-   - {key change 3}
-
-   Closes #{issue-number}"
-   ```
+   **Commit your changes**: Stage all changes with git add, create conventional commit with appropriate type, scope, and description.
 
 7. **Update Shipped Log**
    Create/append to `spec/SHIPPED.md`:
@@ -248,19 +187,12 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
    - **PR**: {pending|url}
    ```
 
-   Commit SHIPPED.md update:
-   ```bash
-   git add spec/SHIPPED.md
-   git commit -m "docs: record {feature} in SHIPPED.md"
-   ```
+   Commit SHIPPED.md update with git add and git commit.
 
    **Note**: The spec directory (`spec/active/{feature}/`) remains in place through PR review. It will be archived when starting the next feature via `/plan`.
 
 8. **Push Branch**
-   ```bash
-   # Push to remote
-   git push -u origin feature/{name}
-   ```
+   Push to remote with git push -u origin.
 
 9. **Create Pull Request**
 
@@ -278,14 +210,7 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
    - Extract repo info: `git remote get-url origin`
    - Parse owner/repo from URL (format: `owner/repo` from `git@github.com:owner/repo.git` or `https://github.com/owner/repo.git`)
    - Get base branch: `git remote show origin | grep 'HEAD branch'`
-   - Call GitHub API with curl:
-     ```bash
-     curl -s -X POST \
-       -H "Authorization: token $GH_TOKEN" \
-       -H "Accept: application/vnd.github.v3+json" \
-       "https://api.github.com/repos/$owner/$repo/pulls" \
-       -d '{"title":"...","body":"...","head":"branch","base":"main"}'
-     ```
+   - Call GitHub API with curl POST to create pull request
    - Parse html_url from JSON response
    - If successful: Update SHIPPED.md, display success, exit
 
@@ -296,31 +221,9 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
    - If successful: Update SHIPPED.md, display success, exit
 
    **Method 4: Manual fallback (last resort)**
-   - Show clear error message listing all methods tried:
-     ```
-     ❌ Cannot create PR automatically
-
-     Tried:
-       ❌ gh CLI: [specific reason - not installed/not authenticated]
-       ❌ GH_TOKEN: environment variable not set
-       ❌ gh config: no token found
-
-     Please authenticate with GitHub:
-
-     Option 1 (Recommended): GitHub CLI
-       gh auth login
-
-     Option 2: Personal Access Token
-       export GH_TOKEN=your_token_here
-       # Get token: https://github.com/settings/tokens
-       # Scopes needed: repo, workflow
-
-     After authenticating, re-run:
-       /ship spec/active/{feature-name}/
-
-     Or create PR manually:
-       https://github.com/{owner}/{repo}/compare/{branch-name}
-     ```
+   - Show clear error message listing all methods tried
+   - Provide instructions for gh auth login or setting GH_TOKEN
+   - Suggest manual PR creation URL
    - Leave SHIPPED.md with "PR: pending"
 
    **Success output format** (when PR created):
@@ -413,3 +316,19 @@ Fix all BLOCKING issues then try /ship again
 - If no specs found: Error with path tried
 
 **Remember**: BLOCKING GATES are not negotiable. Fix them before shipping.
+
+## Execution
+
+```bash
+# Try csw in PATH first, fall back to project-local wrapper
+if command -v csw &> /dev/null; then
+    csw ship "$@"
+elif [ -f "./spec/csw" ]; then
+    ./spec/csw ship "$@"
+else
+    echo "❌ Error: csw not found"
+    echo "   Run install.sh to set up csw globally"
+    echo "   Or use: ./spec/csw ship (if initialized)"
+    exit 1
+fi
+```

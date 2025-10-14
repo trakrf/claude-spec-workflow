@@ -124,8 +124,17 @@ Optional: Target feature name (e.g., `/spec auth-system`). If not provided, infe
 7. **Finalize**
    When approved:
    ```bash
-   mkdir -p spec/active/{feature}
-   # Save the final spec.md
+   # Try csw in PATH first, fall back to project-local wrapper
+   if command -v csw &> /dev/null; then
+       csw spec "$@"
+   elif [ -f "./spec/csw" ]; then
+       ./spec/csw spec "$@"
+   else
+       echo "❌ Error: csw not found"
+       echo "   Run install.sh to set up csw globally"
+       echo "   Or use: ./spec/csw spec (if initialized)"
+       exit 1
+   fi
    ```
 
 ## Output Format

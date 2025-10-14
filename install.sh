@@ -40,6 +40,31 @@ for cmd in "$REPO_COMMANDS_DIR"/*.md; do
     fi
 done
 
+# Install csw CLI
+echo ""
+echo "🔧 Installing csw CLI..."
+CSW_BIN_DIR="$HOME/.local/bin"
+if [ ! -d "$CSW_BIN_DIR" ]; then
+    echo "   📁 Creating $CSW_BIN_DIR..."
+    mkdir -p "$CSW_BIN_DIR"
+fi
+
+echo "   🔗 Creating symlink: csw -> $SCRIPT_DIR/bin/csw"
+ln -sf "$SCRIPT_DIR/bin/csw" "$CSW_BIN_DIR/csw"
+
+# Check if ~/.local/bin is in PATH
+if [[ ":$PATH:" != *":$CSW_BIN_DIR:"* ]]; then
+    echo ""
+    echo "⚠️  Note: $CSW_BIN_DIR is not in your PATH"
+    echo "   Add this line to your ~/.bashrc or ~/.zshrc:"
+    echo ""
+    echo "   export PATH=\"\$HOME/.local/bin:\$PATH\""
+    echo ""
+    echo "   Then run: source ~/.bashrc (or ~/.zshrc)"
+    echo ""
+    echo "   Alternatively, use ./spec/csw in your projects"
+fi
+
 # Create project spec directory template
 echo ""
 echo "📋 Project Setup Instructions:"
@@ -59,12 +84,14 @@ echo ""
 
 echo "✅ Installation complete!"
 echo ""
-echo "Available commands:"
-echo "  /spec   - Convert conversation to specification"
-echo "  /plan   - Generate implementation plan (interactive)"
-echo "  /build  - Execute implementation with validation"
-echo "  /check  - Pre-release validation check"
-echo "  /ship   - Complete feature and prepare PR"
+echo "Available commands (use as /command in Claude or csw command in terminal):"
+echo "  spec    - Convert conversation to specification"
+echo "  plan    - Generate implementation plan (interactive)"
+echo "  build   - Execute implementation with validation"
+echo "  check   - Pre-release validation check"
+echo "  ship    - Complete feature and prepare PR"
 echo ""
-echo "Get started: Create a spec in spec/active/feature-name/spec.md"
-echo "Then run: /plan spec/active/feature-name/spec.md"
+echo "Usage:"
+echo "  In Claude Code:  /plan spec/feature-name/spec.md"
+echo "  In terminal:     csw plan spec/feature-name/spec.md"
+echo "  In project:      ./spec/csw plan spec/feature-name/spec.md"
