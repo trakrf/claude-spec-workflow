@@ -29,7 +29,7 @@ Do NOT treat validation as optional. These are blocking requirements.
 ---
 
 ## Input
-The user will provide the path to a specification file (e.g., `spec/active/auth/spec.md`).
+The user will provide the path to a specification file (e.g., `spec/auth/spec.md`).
 
 **IMPORTANT**: Before planning, you must:
 1. Read `spec/README.md` for workflow philosophy
@@ -43,42 +43,32 @@ The user will provide the path to a specification file (e.g., `spec/active/auth/
    - **First: Read `spec/README.md`** to understand workflow standards
    - This ensures consistency with project methodology
 
-2. **Archive Shipped Features** (Workspace Cleanup)
+2. **Cleanup Shipped Features** (Workspace Cleanup)
 
-   **Check for completed features to archive**:
+   **Pre-flight branch check and cleanup**:
 
-   For each directory in `spec/active/*`:
-   - Read `spec/SHIPPED.md`
-   - If feature exists in SHIPPED.md → it's been shipped, archive it
-   - If feature NOT in SHIPPED.md → still active, leave it
+   The planning workflow automatically cleans up shipped features by running `scripts/cleanup.sh`:
 
-   **For each shipped feature found**:
+   1. **Detects if current branch is shipped**: Checks `spec/SHIPPED.md` for current branch
+   2. **Validates branch is merged**: Uses `git branch --merged main` for safety
+   3. **Switches to main and pulls**: Ensures clean starting point
+   4. **Deletes merged branch**: Safely removes shipped branch
+   5. **Deletes shipped spec**: Removes spec directory (preserved in git history)
+   6. **Scans for other shipped features**: Prompts to delete any remaining shipped specs
+
+   This happens automatically when you run `/plan`. The script ensures:
+   - ✅ Branch is actually merged (safety check)
+   - ✅ Spec directory exists before attempting deletion
+   - ✅ Clean workspace for next feature
+
+   **If no shipped features found**:
    ```
-   📦 Found shipped feature to archive:
-
-   Feature: {feature-name}
-   Shipped: {date from SHIPPED.md}
-   PR: {pr-number from SHIPPED.md}
-
-   Archive to spec/archive/{feature-name}/? (y/n)
-   ```
-
-   **If user answers y**:
-   The script will archive the feature directory and commit the change.
-
-   **If user answers n**:
-   ```
-   ⏭️  Skipping {feature-name} - will prompt next time you run /plan
-   ```
-
-   **If multiple shipped features found**: Prompt for each one sequentially.
-
-   **If no shipped features found in spec/active/**:
-   ```
-   ✅ Workspace clean - no shipped features to archive
+   ✅ Workspace clean - no shipped features to clean up
 
    Proceeding to planning...
    ```
+
+   **Note**: Specs are NOT moved to `spec/archive/`. They are DELETED and preserved in git history. `SHIPPED.md` provides the reference to find them.
 
 3. **Read and Understand Specification**
     - Read the specification file completely
@@ -335,7 +325,7 @@ The user will provide the path to a specification file (e.g., `spec/active/auth/
    **Output from this step**: Clear mental model of implementation approach, task sequencing, and validation strategy.
 
 9. **Create Implementation Plan**
-   Save to `spec/active/{feature}/plan.md`:
+   Save to `spec/{feature}/plan.md`:
 
    ```markdown
    # Implementation Plan: {Feature Name}
@@ -443,7 +433,7 @@ The user will provide the path to a specification file (e.g., `spec/active/auth/
 Report to user:
 ```
 ✅ Implementation plan created for {feature}
-📁 Location: spec/active/{feature}/plan.md
+📁 Location: spec/{feature}/plan.md
 🌿 Branch: feature/{feature-name}
 
 📊 ASSESSMENT:
@@ -452,7 +442,7 @@ Report to user:
    One-pass success probability: {percentage}%
 
 📋 Tasks: {N} identified
-⚡ Ready to build: /build spec/active/{feature}/
+⚡ Ready to build: /build spec/{feature}/
 ```
 
 ## Error Handling
