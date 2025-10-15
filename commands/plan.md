@@ -210,7 +210,23 @@ The user will provide the path to a specification file (e.g., `spec/auth/spec.md
 
    **CRITICAL**: You MUST ask clarifying questions before generating the plan.
 
-   **Do NOT skip this step**. Even if the spec seems clear, ask about:
+   **ONE-AT-A-TIME FORMAT** (eliminates scrolling friction):
+
+   Ask questions **sequentially**, not in batch:
+
+   1. **Show progress**: "Question N/M: [question]"
+   2. **Wait for answer**: Let user respond
+   3. **Acknowledge briefly**: "✓ Got it. [1-line summary]"
+   4. **Move to next**: Ask Question N+1/M
+   5. **After all answered**: "All questions answered! Generating plan..."
+
+   **User Flexibility**:
+   - **Normal answer** → Acknowledge and proceed to next question
+   - **"skip" or "default"** → Use inferred answer, proceed to next
+   - **"default for rest"** → Use sensible defaults for all remaining questions
+   - **Multiple answers** → "1a, 2b, 3c" → Acknowledge all, skip to first unanswered question
+
+   **Question Categories** (still ask about these):
    - Ambiguous requirements or undefined behaviors
    - Integration points not explicitly stated
    - Technical tradeoffs (performance vs simplicity, etc.)
@@ -219,50 +235,46 @@ The user will provide the path to a specification file (e.g., `spec/auth/spec.md
    - Testing strategy and coverage expectations
    - Error handling approach
 
-   **Format Requirements**:
-   - Use numbered/lettered lists for easy responses
-   - Group related questions by category
-   - Provide multiple-choice options where applicable (A/B/C choices)
-   - Make it easy for user to respond with "1a, 2, 3b" style answers
-
-   **Example template**:
+   **Example ONE-AT-A-TIME flow**:
    ```
-   Before I create the implementation plan, I need clarification on:
-
-   **Requirements**:
-   1. {Specific ambiguous requirement from spec}
-      a) Option A: {interpretation}
-      b) Option B: {alternative interpretation}
-   2. {Question about scope boundary}
-
-   **Technical Approach**:
-   3. Should this follow the pattern in {similar-feature at path/to/file.ts}?
+   Question 1/5: Should this follow the pattern in auth-service.ts:45-67?
       a) Yes, mirror that approach
-      b) No, use different pattern because {reason}
-   4. What's the priority tradeoff:
+      b) No, use different pattern
+
+   [User: "a"]
+
+   ✓ Got it. Following auth-service.ts pattern.
+
+   Question 2/5: What's the priority tradeoff?
       a) Performance (faster but more complex)
       b) Simplicity (cleaner code but potentially slower)
       c) Balance both
 
-   **Integration**:
-   5. How should this integrate with {existing-system}?
-   6. Should we modify {existing-component} or create new one?
+   [User: "c"]
 
-   **Edge Cases**:
-   7. How should we handle {edge case scenario}?
-      a) {Option A}
-      b) {Option B}
-   8. What's the expected behavior when {error condition}?
+   ✓ Got it. Balancing performance and simplicity.
 
-   **Testing**:
-   9. What test coverage level is expected?
+   Question 3/5: How should this integrate with existing API layer?
+
+   [User: "Use the same REST conventions as user-api.ts"]
+
+   ✓ Got it. Using REST conventions from user-api.ts.
+
+   Question 4/5: What test coverage level is expected?
       a) Unit tests only
       b) Unit + Integration tests
       c) Unit + Integration + E2E tests
-   10. Are there specific test scenarios you want covered?
+
+   [User: "default for rest"]
+
+   ✓ Got it. Using sensible defaults for remaining questions.
+   ✓ Test coverage: Unit + Integration (inferred from project standards)
+   ✓ Error handling: Follow existing error-handler.ts pattern
+
+   All questions answered! Generating plan...
    ```
 
-   **WAIT FOR USER RESPONSES**
+   **WAIT FOR USER RESPONSES** (one at a time)
 
    Incorporate all answers into the plan before proceeding to codebase research.
 
