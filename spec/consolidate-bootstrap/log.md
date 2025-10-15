@@ -117,3 +117,31 @@ Status: ✅ Complete
 Completed: 2025-10-15 (Session 1)
 
 ---
+### Tasks 7-9: Finalize CLI (uninstall, help, bin/ removal)
+Started: 2025-10-15 (Session 1)
+File: csw, bin/
+
+**Changes**:
+- Task 7: Added uninstall subcommand
+  - Removes commands from ~/.claude/commands/
+  - Removes ~/.local/bin/csw symlink
+  - Preserves project spec/ directories
+  - Shows installation directory for manual removal
+- Task 8: Updated help text
+  - Added Bootstrap Commands section
+  - Added install, init, uninstall examples
+  - Clarified command usage
+- Task 9: Removed bin/ directory
+  - Directory now empty after csw move
+  - Cleaned up project structure
+
+**Validation**:
+✅ shellcheck csw - passed
+✅ ./csw --help - shows updated help with new commands
+✅ bin/ directory removed
+✅ csw still works from root
+
+Status: ✅ Complete
+Completed: 2025-10-15 (Session 1)
+
+---
