@@ -35,7 +35,7 @@ Think of it as "the best of both worlds, with training wheels" - structured enou
 - 🤔 **Interactive Planning** - Get clarifying questions before implementation
 - ✅ **Continuous Validation** - Test and fix as you build, not after
 - 📊 **Pre-release Checks** - Comprehensive validation before creating PRs
-- 🚀 **Clean Shipping** - Automated archival and git workflow
+- 🚀 **Clean Shipping** - Automated cleanup and git workflow
 - 🔧 **Stack Agnostic** - Works with TypeScript, Python, Go, and more via presets
 
 ## Prerequisites
@@ -241,7 +241,7 @@ The system uses workspace-specific validation commands from `spec/stack.md`:
 | Command | Purpose | When to Use |
 |---------|---------|-------------|
 | `/spec` | Convert conversation to specification | After exploring an idea interactively |
-| `/plan` | Archive previous and generate implementation plan | When you have a clear spec |
+| `/plan` | Generate implementation plan | When you have a clear spec |
 | `/build` | Execute the plan | After plan is approved |
 | `/check` | Validate everything | Before creating PR |
 | `/ship` | Complete and PR | When ready to merge |
@@ -250,7 +250,7 @@ The system uses workspace-specific validation commands from `spec/stack.md`:
 
 CSW supports a complete feature development cycle:
 
-([spec] | `<spec>`) → plan → build → [check] → ship → `<merge>` → [archive] → repeat
+([spec] | `<spec>`) → plan → build → [check] → ship → `<merge>` → repeat
 
 **Legend**:
 - [brackets] - Optional CSW command
@@ -270,11 +270,8 @@ flowchart LR
     Check -->|Skip| Ship
     CheckRun --> Ship
     Ship[/ship] --> Merge(<merge PR>)
-    Merge --> Archive{/archive?}
-    Archive -->|Optional| ArchiveRun[SHIPPED.md + cleanup]
-    Archive -->|Skip| Next
-    ArchiveRun --> Next
-    Next([Next Feature]) --> Spec
+    Merge --> Next([Next Feature])
+    Next --> Spec
 ```
 
 **The cycle**:
@@ -282,10 +279,9 @@ flowchart LR
 2. **plan** - Generate implementation plan
 3. **build** - Implement the feature
 4. **[check]** - Validate (optional: tests, lint, types, build)
-5. **ship** - Create PR and merge
+5. **ship** - Create PR (logs to SHIPPED.md)
 6. **`<merge>`** - Merge the PR (manual)
-7. **[archive]** - Summarize to SHIPPED.md and cleanup (optional, or auto-triggered by next /plan)
-8. **repeat** - Start next feature
+7. **repeat** - Start next feature
 
 ## Workflow vs History
 
@@ -295,7 +291,7 @@ CSW focuses on *current* work, not completed work.
 - **SHIPPED.md** - Record of completed work (durable)
 - **Git** - Full history and context
 
-Complete a feature? `/ship` it, then after merging `/archive` it to summarize history to SHIPPED.md and clean up the completed spec/. Or let `/plan` auto-archive when appropriate. The scaffolding did its job.
+Complete a feature? `/ship` logs it to SHIPPED.md. After merging, the spec/ scaffolding can be cleaned up manually or left in place - it's already preserved in git history.
 
 ## Workflow Philosophy
 
@@ -440,7 +436,7 @@ your-project/
     ├── stack.md          # Validation commands for your tech stack
     ├── template.md       # Spec template for new features
     ├── README.md         # Workflow documentation
-    └── SHIPPED.md        # Archive of completed features
+    └── SHIPPED.md        # Log of completed features
 ```
 
 ## Uninstalling
