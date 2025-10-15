@@ -41,7 +41,7 @@
 
 **Impact**: Eliminates friction in feature-to-feature transitions for solo developers. Magic cleanup/merged branch convention enables zero-manual-step workflow: /ship → <merge> → /cleanup → /plan. Team developers skip entirely, using manual cleanup per conventions. Design is aggressive and opinionated (no confirmations), but everything is backed up in git history.
 
-- **PR**: pending
+- **PR**: https://github.com/trakrf/claude-spec-workflow/pull/12
 
 ## Fix /plan Auto-Cleanup Workflow
 - **Date**: 2025-10-14
