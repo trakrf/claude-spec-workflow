@@ -4,7 +4,14 @@
 set -e
 
 # Detect installation directory from this script's location
-CSW_HOME="$(cd "$(dirname "$(dirname "${BASH_SOURCE[0]}")")" && pwd)"
+# Resolve symlinks to find the actual project directory
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do
+    DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+    SOURCE="$(readlink "$SOURCE")"
+    [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+CSW_HOME="$(cd -P "$(dirname "$(dirname "$SOURCE")")" && pwd)"
 SCRIPT_DIR="$CSW_HOME/scripts"
 
 usage() {
