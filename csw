@@ -20,19 +20,29 @@ Claude Spec Workflow (csw) - Specification-driven development CLI
 
 Usage: csw <command> [arguments]
 
-Commands:
-  spec [name]        Create specification from conversation
-  plan <spec-file>   Generate implementation plan
-  build              Execute build with progress tracking
-  check              Run validation suite (test/lint/build)
-  ship <feature>     Create PR and prepare for merge
-  cleanup            Clean up shipped features (delete specs)
+Bootstrap Commands:
+  install                Install CSW globally (creates ~/.local/bin/csw)
+  init <dir> [preset] [--no-bootstrap-spec]
+                         Initialize project with spec workflow
+  uninstall              Remove CSW installation
+
+Workflow Commands:
+  spec [name]            Create specification from conversation
+  plan <spec-file>       Generate implementation plan
+  build                  Execute build with progress tracking
+  check                  Run validation suite (test/lint/build)
+  ship <feature>         Create PR and prepare for merge
+  cleanup                Clean up shipped features (delete specs)
 
 Examples:
+  csw install
+  csw init . typescript-react-vite
+  csw init /path/to/project python --no-bootstrap-spec
   csw spec auth-system
   csw plan spec/active/auth-system/spec.md
   csw check
   csw ship auth-system
+  csw uninstall
 
 For more information: https://github.com/trakrf/claude-spec-workflow
 EOF
@@ -375,6 +385,50 @@ case "${1:-}" in
         echo "   - In terminal:     csw plan my-feature"
         echo "   - In project:      ./spec/csw plan my-feature"
         echo ""
+        exit 0
+        ;;
+    uninstall)
+        # csw uninstall - Remove installed components
+        echo "🗑️  Uninstalling Claude Spec Workflow"
+        echo ""
+
+        CLAUDE_COMMANDS_DIR="$HOME/.claude/commands"
+        COMMANDS=("spec.md" "plan.md" "build.md" "check.md" "ship.md" "cleanup.md")
+
+        # Remove Claude commands
+        removed=0
+        for cmd in "${COMMANDS[@]}"; do
+            cmd_path="$CLAUDE_COMMANDS_DIR/$cmd"
+            if [ -f "$cmd_path" ]; then
+                rm "$cmd_path"
+                echo "   ✓ Removed $cmd"
+                ((removed++))
+            fi
+        done
+
+        if [ $removed -eq 0 ]; then
+            echo "ℹ️  No commands found to remove"
+        else
+            echo "✅ Removed $removed command(s)"
+        fi
+        echo ""
+
+        # Remove csw symlink
+        CSW_BIN="$HOME/.local/bin/csw"
+        if [ -L "$CSW_BIN" ] || [ -f "$CSW_BIN" ]; then
+            rm "$CSW_BIN"
+            echo "✅ Removed csw from ~/.local/bin"
+        else
+            echo "ℹ️  No csw symlink found in ~/.local/bin"
+        fi
+        echo ""
+
+        echo "ℹ️  Note: Project spec/ directories remain untouched"
+        echo "   Installation directory: $CSW_HOME"
+        echo "   Remove manually if desired: rm -rf $CSW_HOME"
+        echo ""
+
+        echo "✅ Uninstall complete!"
         exit 0
         ;;
     spec|plan|build|check|ship|cleanup)
