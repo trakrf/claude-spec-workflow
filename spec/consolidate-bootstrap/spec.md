@@ -7,8 +7,9 @@
 Currently installation and project initialization use separate shell scripts (`install.sh` and `init-project.sh`). This creates an awkward bootstrap experience and inconsistent interface. Everything should go through `csw` for a unified, self-contained CLI tool.
 
 ## Outcome
-- `./bin/csw install` replaces `./install.sh`
+- `./csw install` replaces `./install.sh`
 - `csw init <project-dir> [preset]` replaces `init-project.sh`
+- Move `bin/csw` to project root for minimal bootstrap friction
 - Delete `install.sh` and `init-project.sh`
 - All functionality accessible through consistent `csw` interface
 - Cleaner bootstrap, simpler mental model, easier to maintain
@@ -32,7 +33,7 @@ csw init-project /path/to/proj  # Wait, is this csw or init-project.sh?
 ```bash
 git clone https://github.com/trakrf/claude-spec-workflow.git
 cd claude-spec-workflow
-./bin/csw install               # csw installs itself
+./csw install                   # csw installs itself
 cd /path/to/my-project
 csw init . typescript           # csw initializes project
 ```
@@ -155,7 +156,7 @@ Update all references:
 
 git clone https://github.com/trakrf/claude-spec-workflow.git
 cd claude-spec-workflow
-./bin/csw install
+./csw install
 
 ## Quick Start
 
@@ -165,21 +166,44 @@ csw spec my-feature
 ```
 
 **Other docs**:
-- Search for references to `install.sh` → update to `./bin/csw install`
+- Search for references to `install.sh` → update to `./csw install`
 - Search for references to `init-project.sh` → update to `csw init`
 - Update CONTRIBUTING.md if it mentions installers
 - Update any example commands in spec/ templates
+- Upsert to README.md Backlog or Future Enhancements section: "Convenience install script (curl-based one-liner for installation without checkout)"
 
-### 6. Implementation Strategy
+### 6. Move csw to Project Root
 
-**Option A: Inline in bin/csw**
-- Add `install` and `init` cases directly in bin/csw
+**Action**: Move `bin/csw` → `csw` (project root)
+
+**Rationale**:
+- Maximum discoverability: `ls` shows `csw` immediately after clone
+- Bootstrap simplicity: `./csw install` is shortest possible path
+- Industry patterns: `./gradlew`, `./configure`, `./mvnw` live at root
+- Mental model: csw is THE entry point - root placement signals this
+- Documentation brevity: cleaner in all docs and examples
+
+**Post-move structure**:
+```
+claude-spec-workflow/
+├── csw              # Main CLI (moved from bin/)
+├── scripts/         # Command implementations
+├── commands/        # Command docs
+└── spec/
+```
+
+The `bin/` directory is removed (only held csw).
+
+### 7. Implementation Strategy
+
+**Option A: Inline in csw**
+- Add `install` and `init` cases directly in csw
 - Simple, everything in one file
 - Good for relatively simple logic
 
 **Option B: Script delegation**
 - Move logic to `scripts/install.sh` and `scripts/init-project.sh`
-- bin/csw calls them: `exec "$SCRIPTS_DIR/install.sh" "$@"`
+- csw calls them: `exec "$SCRIPTS_DIR/install.sh" "$@"`
 - Better separation of concerns
 - Easier to test independently
 
@@ -187,8 +211,10 @@ csw spec my-feature
 
 ## Validation Criteria
 
-- [ ] `./bin/csw install` creates `~/.local/bin/csw` symlink correctly
-- [ ] `./bin/csw install` checks PATH and provides appropriate guidance
+- [ ] `bin/csw` moved to project root as `csw`
+- [ ] `bin/` directory removed
+- [ ] `./csw install` creates `~/.local/bin/csw` symlink correctly
+- [ ] `./csw install` checks PATH and provides appropriate guidance
 - [ ] `csw init <dir>` creates proper spec/ directory structure
 - [ ] `csw init` prompts when directory doesn't exist
 - [ ] `csw init` prompts when spec/ already exists
@@ -205,8 +231,9 @@ csw spec my-feature
 ## Success Metrics
 
 - **2 files deleted**: install.sh, init-project.sh
+- **1 directory removed**: bin/ (csw moved to root)
 - **2 subcommands added**: install, init (+ uninstall in backlog)
-- **Cleaner bootstrap**: `./bin/csw install` vs `./install.sh`
+- **Cleaner bootstrap**: `./csw install` vs `./install.sh`
 - **Unified interface**: Everything through csw
 - **Self-documenting**: `csw --help` shows all operations
 - **Zero regression**: All installation functionality preserved
@@ -220,11 +247,11 @@ csw spec my-feature
 cd /tmp
 git clone https://github.com/trakrf/claude-spec-workflow.git test-csw
 cd test-csw
-./bin/csw install
+./csw install
 
 # Verify symlink created
 ls -la ~/.local/bin/csw
-readlink -f ~/.local/bin/csw  # Should point to test-csw/bin/csw
+readlink -f ~/.local/bin/csw  # Should point to test-csw/csw
 
 # Verify csw works
 csw --version
@@ -276,7 +303,7 @@ csw init .  # Type 'y' when prompted
 cd /tmp
 git clone ... test-workflow
 cd test-workflow
-./bin/csw install
+./csw install
 
 cd /tmp
 mkdir my-feature-project
@@ -321,7 +348,7 @@ Every feature from install.sh and init-project.sh must be preserved:
 
 **For existing users** (just you):
 - Delete old symlinks manually if needed: `rm ~/.local/bin/csw`
-- Run `./bin/csw install` to reinstall
+- Run `./csw install` to reinstall
 - Projects with `spec/csw` continue to work (just point to new location)
 
 **For new users** (future):
@@ -330,11 +357,26 @@ Every feature from install.sh and init-project.sh must be preserved:
 
 ## Design Decisions
 
+**Why move csw to project root instead of keeping in bin/?**
+- Maximum discoverability: `ls` shows csw immediately after clone
+- Bootstrap simplicity: `./csw install` is the shortest possible path
+- Industry patterns: `./gradlew`, `./configure`, `./mvnw` all live at root
+- Mental model clarity: csw is THE entry point - root placement signals this
+- Documentation brevity: cleaner in all docs and examples
+- bin/ only held csw, so removing the directory reduces clutter
+
 **Why delete install.sh instead of wrapping?**
 - Cleaner: one clear path
 - User is you: no backwards compatibility needed
 - Simpler to maintain: one less file
-- More honest: `./bin/csw install` shows exactly what's happening
+- More honest: `./csw install` shows exactly what's happening
+
+**Why not implement curl-based convenience install script?**
+- Scope control: keep consolidate-bootstrap focused
+- Solo dev context: checkout-based install works fine for now
+- Iteration value: ship this first, learn from usage
+- YAGNI: may never need convenience install
+- Future option: can add as separate enhancement if needed (upsert to README backlog during implementation)
 
 **Why require project-dir to exist?**
 - Matches mental model: create repo/README first, add csw second
@@ -380,5 +422,5 @@ csw install --link-only     # Don't copy, just symlink checkout
 
 - **Related spec**: script-library-phase3-wiring (wiring commands to csw)
 - **Current installers**: install.sh, init-project.sh, uninstall.sh
-- **Target**: bin/csw (main CLI entry point)
+- **Target**: csw (main CLI entry point, moved to project root)
 - **Scripts**: Will use scripts/ for install/init logic if complexity warrants
