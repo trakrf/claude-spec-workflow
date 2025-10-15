@@ -153,4 +153,18 @@ Changed inline bash blocks to external script:
 - syntax check: Valid
 - Consistent with spec, plan, build, check, ship commands
 
-**Commit**: 82f666f - refactor: move /cleanup inline bash to scripts/cleanup.sh
+**Commits**:
+- 82f666f - refactor: move /cleanup inline bash to scripts/cleanup.sh
+- 94fa3ed - refactor: move /plan git setup to scripts/plan.sh
+
+**Additional Refactoring**:
+User spotted inconsistency in /plan command:
+- commands/plan.md had ~60 lines of inline bash for git setup (step 10)
+- Moved branch creation/renaming logic to scripts/plan.sh
+- Moved commit planning artifacts logic to scripts/plan.sh
+- Updated commands/plan.md to reference script instead of inline bash
+
+**Final Pattern (100% consistent)**:
+- commands/*.md: ONLY prompts and process documentation
+- scripts/*.sh: ALL bash implementation
+- NO inline bash blocks in any commands/*.md file
