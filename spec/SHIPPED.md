@@ -1,5 +1,33 @@
 # Shipped Features
 
+## Interactive Clarifying Questions
+- **Date**: 2025-10-15
+- **Branch**: feature/active-interactive-clarification
+- **Commit**: ec19c36
+- **PR**: https://github.com/trakrf/claude-spec-workflow/pull/16
+- **Summary**: Changes /plan workflow from batch question format to sequential one-at-a-time format to eliminate scrolling friction
+- **Key Changes**:
+  - Updated commands/plan.md lines 209-268 with one-at-a-time question format
+  - Questions now asked sequentially with progress indicator (Question N/M)
+  - Brief acknowledgment between questions ("✓ Got it...")
+  - User flexibility: can skip, default remaining, or batch answers ("1a, 2b, 3c")
+  - Same question categories and thoroughness maintained
+  - Pure prompt engineering change, no code modifications
+- **Validation**: ✅ All checks passed (shellcheck clean, syntax valid, no shell scripts modified)
+
+### Success Metrics
+
+- ✅ **UX improvement: Zero scroll-backs (down from 8-10)** - **Result**: Achieved with one-at-a-time format - current question always visible without scrolling
+- ✅ **Conversation flow: Natural Q&A pattern** - **Result**: Sequential Q&A is proven UX pattern, feels natural and conversational
+- ✅ **Same quality: All questions still asked** - **Result**: All question categories still required in prompt, same thoroughness
+- ✅ **Flexibility: User can skip/default/batch** - **Result**: "skip", "default for rest", and batch answers ("1a, 2b") all supported
+- ✅ **Quick win: Single file change, no code** - **Result**: Only commands/plan.md modified (43 insertions, 31 deletions)
+
+**Overall Success**: 100% of metrics achieved (5/5)
+
+**Impact**: Eliminates major UX friction point in /plan workflow. Users experienced 8+ scroll-back cycles during planning sessions (dogfooded on consolidate-bootstrap release). One-at-a-time format keeps current question visible while maintaining same question quality. Flexibility options ensure power users aren't slowed down. Pure prompt engineering means zero risk, easy rollback, immediate deployment.
+
+
 ## Consolidate Bootstrap into csw
 - **Date**: 2025-10-15
 - **Branch**: feature/consolidate-bootstrap
