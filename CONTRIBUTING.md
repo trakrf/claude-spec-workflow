@@ -35,7 +35,7 @@ Thank you for your interest in contributing! This project is an evolving methodo
    ```bash
    git clone https://github.com/trakrf/claude-spec-workflow
    cd claude-spec-workflow
-   ./install.sh
+   ./csw install
    ```
 
    **Windows**: Run in Git Bash or WSL2 terminal.
@@ -47,7 +47,7 @@ Thank you for your interest in contributing! This project is an evolving methodo
    git init
 
    # Initialize with spec workflow (includes stack preset)
-   ~/claude-spec-workflow/init-project.sh . typescript-react-vite
+   csw init . typescript-react-vite
 
    # Create a test spec
    mkdir -p spec/active/test-feature
@@ -66,7 +66,7 @@ Thank you for your interest in contributing! This project is an evolving methodo
 
    ```bash
    # Re-run install to update global commands
-   ./install.sh
+   csw install
 
    # Restart Claude Code to pick up changes
    # (Command palette > "Reload Window" or restart application)

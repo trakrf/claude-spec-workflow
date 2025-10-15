@@ -12,13 +12,14 @@ Manual test procedures to validate Claude Spec Workflow functionality.
 ### Test 1: Fresh Installation (Unix)
 ```bash
 cd claude-spec-workflow
-./install.sh
+./csw install
 ```
 
 **Expected:**
 - Commands copied to `~/.claude/commands/`
+- `~/.local/bin/csw` symlink created
 - Success message displayed
-- All 5 commands listed (spec, plan, build, check, ship)
+- All commands listed (spec, plan, build, check, ship, cleanup)
 
 **Verify:**
 ```bash
@@ -35,11 +36,12 @@ Run installation script again.
 
 ### Test 3: Uninstallation
 ```bash
-./uninstall.sh
+csw uninstall
 ```
 
 **Expected:**
-- All 5 commands removed
+- All commands removed from `~/.claude/commands/`
+- `~/.local/bin/csw` symlink removed
 - Success message with count
 - No errors if already uninstalled
 
@@ -50,15 +52,16 @@ Run installation script again.
 mkdir /tmp/test-project
 cd /tmp/test-project
 git init
-~/path/to/claude-spec-workflow/init-project.sh .
+csw init .
 ```
 
 **Expected:**
 - `spec/` directory created
 - `spec/active/` subdirectory exists
 - `spec/SHIPPED.md` file created
-- `spec/template.md` copied
-- `spec/README.md` copied
+- `spec/template.md`, `spec/stack.md`, `spec/README.md` copied
+- `spec/bootstrap/` created with validation spec
+- `spec/csw` symlink created
 - `.gitignore` updated (if exists)
 
 **Verify:**
@@ -70,12 +73,13 @@ cat .gitignore | grep "spec/active/\*/log.md"
 ### Test 6: Initialize with Different Preset
 ```bash
 cd test-project
-~/path/to/claude-spec-workflow/init-project.sh . python-fastapi
+csw init . python-fastapi
 ```
 
 **Expected:**
 - `spec/stack.md` updated with Python/FastAPI preset
-- Contains pytest, ruff, mypy commands
+- Contains pytest, ruff commands
+- Bootstrap spec created (or skipped with --no-bootstrap-spec)
 - Success message displayed
 - Prompts for confirmation if files exist
 
@@ -87,7 +91,7 @@ cat spec/stack.md | grep "ruff"
 
 ### Test 7: View Available Presets
 ```bash
-~/path/to/claude-spec-workflow/init-project.sh . invalid-preset
+csw init . invalid-preset
 ```
 
 **Expected:**
@@ -98,6 +102,7 @@ cat spec/stack.md | grep "ruff"
   - python-fastapi
   - go-standard
   - monorepo-go-react
+  - shell-scripts
 
 ## Command Workflow Tests
 
@@ -164,7 +169,7 @@ In a project without `spec/stack.md`:
 
 **Expected:**
 - Error message: "❌ Stack not configured"
-- Suggests running init-project.sh with preset
+- Suggests running csw init with preset
 - Shows available presets
 - Does not proceed without stack.md
 
@@ -207,8 +212,8 @@ Run `/plan` in project without spec/ directory.
 
 **Expected:**
 - Clear error message
-- Suggests running init-project.sh
-- Provides correct path
+- Suggests running csw init
+- Provides correct usage
 
 ### Test 15: Invalid Spec Path
 ```
@@ -252,13 +257,15 @@ On Windows (Git Bash), test with forward slashes:
 
 ### Test 19: Symlink Handling (Unix)
 ```bash
-ln -s ~/claude-spec-workflow/install.sh ~/test-symlink.sh
-~/test-symlink.sh
+# Test that csw resolves symlinks correctly
+ln -s ~/claude-spec-workflow/csw ~/test-csw
+~/test-csw install
 ```
 
 **Expected:**
 - Installation works correctly
-- Scripts find their directory despite symlink
+- csw resolves symlinks and finds its home directory
+- Commands installed to ~/.claude/commands/
 
 ## Performance Tests
 
@@ -286,7 +293,7 @@ For each preset, verify commands are correct:
 ```bash
 # Test TypeScript preset
 cd typescript-react-project
-~/path/to/claude-spec-workflow/init-project.sh . typescript-react-vite
+csw init . typescript-react-vite
 npm run lint  # Should work
 npm run typecheck  # Should work
 npm test  # Should work
@@ -297,7 +304,7 @@ Repeat for all presets with appropriate projects.
 ### Test 23: Monorepo Configuration
 ```bash
 cd monorepo-project
-~/path/to/claude-spec-workflow/init-project.sh . monorepo-go-react
+csw init . monorepo-go-react
 ```
 
 **Verify:**
@@ -305,6 +312,7 @@ cd monorepo-project
 - All three workspaces defined (database, backend, frontend)
 - Each workspace has validation commands
 - Workspace sections use `## Workspace: [name]` headers
+- Bootstrap spec created for monorepo validation
 
 ## Regression Tests
 
@@ -321,8 +329,10 @@ After any changes, verify:
 - [ ] Windows installation works
 - [ ] Uninstallation works
 - [ ] Project initialization works
+- [ ] Bootstrap spec generation works
+- [ ] Fuzzy preset matching works
 - [ ] Stack configuration works
-- [ ] All 5 commands execute successfully
+- [ ] All commands execute successfully (spec, plan, build, check, ship, cleanup)
 - [ ] Error handling is clear
 - [ ] Cross-platform compatibility verified
 - [ ] Presets are accurate

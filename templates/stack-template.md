@@ -4,7 +4,7 @@
 >
 > **Used by**: `/build`, `/check`, `/ship` commands
 >
-> **Customize**: Edit this file directly or run `init-project.sh [path] [preset]`
+> **Customize**: Edit this file directly or run `csw init [path] [preset]`
 
 ## Single-Stack Example
 
@@ -83,7 +83,7 @@ cd frontend && npm run build
 
 ## Available Presets
 
-Run `init-project.sh [path] [preset]` with:
+Run `csw init [path] [preset]` with:
 - `typescript-react-vite` - TypeScript + React + Vite (npm)
 - `python-fastapi` - Python + FastAPI + pytest
 - `go-standard` - Go + standard library

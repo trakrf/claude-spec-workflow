@@ -50,7 +50,7 @@ Optional: Workspace name for monorepo projects (e.g., `/check frontend`, `/check
     ❌ Stack not configured
 
     This workflow requires stack configuration. Run:
-      /path/to/claude-spec-workflow/init-project.sh . [preset]
+      csw init . [preset]
 
     This creates spec/stack.md with validation commands.
     Available presets: typescript-react-vite, python-fastapi, go-standard, monorepo-go-react
@@ -254,7 +254,7 @@ elif [ -f "./spec/csw" ]; then
     ./spec/csw check
 else
     echo "❌ Error: csw not found"
-    echo "   Run install.sh to set up csw globally"
+    echo "   Run ./csw install to set up csw globally"
     echo "   Or use: ./spec/csw check (if initialized)"
     exit 1
 fi

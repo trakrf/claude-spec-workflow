@@ -476,7 +476,7 @@ elif [ -f "./spec/csw" ]; then
     ./spec/csw plan "$SPEC_FILE"
 else
     echo "❌ Error: csw not found"
-    echo "   Run install.sh to set up csw globally"
+    echo "   Run ./csw install to set up csw globally"
     echo "   Or use: ./spec/csw plan (if initialized)"
     exit 1
 fi

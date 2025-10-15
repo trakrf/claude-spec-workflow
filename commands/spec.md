@@ -131,7 +131,7 @@ Optional: Target feature name (e.g., `/spec auth-system`). If not provided, infe
        ./spec/csw spec "$@"
    else
        echo "❌ Error: csw not found"
-       echo "   Run install.sh to set up csw globally"
+       echo "   Run ./csw install to set up csw globally"
        echo "   Or use: ./spec/csw spec (if initialized)"
        exit 1
    fi
