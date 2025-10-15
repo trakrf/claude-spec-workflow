@@ -74,6 +74,47 @@ Thank you for your interest in contributing! This project is an evolving methodo
 
    **Why**: Slash commands (`/plan`, `/build`, `/ship`, etc.) are installed globally in Claude's commands directory. Changes only take effect after reinstalling and restarting Claude Code.
 
+## Hacking on CSW Commands
+
+For rapid iteration on command prompts without install/restart cycles:
+
+### Development Workflow (Instant Feedback)
+
+Use `@` includes instead of `/` slash commands during development:
+
+```markdown
+# In Claude Code - instant, no restart needed!
+@commands/plan.md spec/my-feature/spec.md
+@commands/build.md
+@commands/check.md
+```
+
+**Benefits**:
+- ✅ Zero installation needed
+- ✅ NO restart required (@ includes read on-demand)
+- ✅ Changes visible immediately after edit
+- ✅ Faster iteration loop
+
+**How it works**: Claude Code's `@` syntax includes files on-demand from your project directory, bypassing the global commands cache. Commands are just markdown files, so they work perfectly as includes.
+
+### Production Testing
+
+Once satisfied with changes, test as users will see it:
+
+```bash
+csw install
+# Restart Claude Code (Command palette > "Reload Window")
+/plan spec/my-feature/spec.md  # Test with slash command syntax
+```
+
+### Workflow Pattern
+
+1. **Iterate fast**: Edit `commands/plan.md` → run `@commands/plan.md` (repeat)
+2. **Test as user**: `csw install` → restart → `/plan`
+3. **Commit**: Changes validated in both modes
+
+**Tip**: Keep a scratch conversation open for `@commands/...` testing to avoid polluting your main work context.
+
 See TESTING.md for comprehensive test procedures.
 
 ## Contribution Guidelines
