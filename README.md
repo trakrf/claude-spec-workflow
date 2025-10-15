@@ -80,13 +80,13 @@ git clone https://github.com/trakrf/claude-spec-workflow
 cd claude-spec-workflow
 
 # Install commands globally
-./install.sh
+./csw install
 
 # Initialize a project with default preset (TypeScript + React + Vite)
-./init-project.sh /path/to/your/project
+csw init /path/to/your/project
 
 # Or initialize with a specific preset
-./init-project.sh /path/to/your/project python-fastapi
+csw init /path/to/your/project python-fastapi
 ```
 
 **Windows users**: Run these commands in Git Bash or WSL2 terminal.
@@ -147,10 +147,10 @@ Presets are automatically applied during project initialization:
 
 ```bash
 # Default preset (typescript-react-vite)
-./init-project.sh /path/to/your/project
+csw init /path/to/your/project
 
 # Specific preset
-./init-project.sh /path/to/your/project python-fastapi
+csw init /path/to/your/project python-fastapi
 ```
 
 ### Changing Your Stack
@@ -158,11 +158,11 @@ Presets are automatically applied during project initialization:
 To change your stack configuration, you have two options:
 
 1. **Edit spec/stack.md directly** - Customize validation commands to match your setup
-2. **Re-run init-project with a different preset** - Overwrites with new preset (prompts for confirmation)
+2. **Re-run csw init with a different preset** - Overwrites with new preset (prompts for confirmation)
 
 ```bash
 # From your project directory, switch to a different preset
-/path/to/claude-spec-workflow/init-project.sh . go-standard
+csw init . go-standard
 ```
 
 ### Custom Stack Configuration
@@ -214,7 +214,7 @@ For monorepos with multiple tech stacks (like Go backend + React frontend):
 1. **Initialize with monorepo preset:**
    ```bash
    # From your project directory
-   /path/to/claude-spec-workflow/init-project.sh . monorepo-go-react
+   csw init . monorepo-go-react
    ```
 
 2. **Add workspace metadata to specs:**
@@ -450,10 +450,14 @@ your-project/
 ## Uninstalling
 
 ```bash
-./uninstall.sh
+csw uninstall
 ```
 
-This removes the Claude commands but leaves your project spec directories intact.
+This removes:
+- Claude commands from `~/.claude/commands/`
+- `~/.local/bin/csw` symlink
+
+Your project `spec/` directories remain untouched. To remove the installation directory itself, delete it manually.
 
 ## Troubleshooting
 
@@ -475,7 +479,7 @@ This removes the Claude commands but leaves your project spec directories intact
 **`/plan` or `/build` can't find spec directory**
 - Ensure you're in the project root
 - Check `spec/` directory exists: `ls -la spec/`
-- Run `/path/to/claude-spec-workflow/init-project.sh .` if spec directory is missing
+- Run `csw init .` if spec directory is missing
 
 **Commands run out of order**
 - Recommended flow: `/spec` → `/plan` → `/build` → `/check` → `/ship`
@@ -483,9 +487,9 @@ This removes the Claude commands but leaves your project spec directories intact
 - If missing spec.md, create it or use `/spec`
 
 **Validation commands fail**
-- Missing `spec/stack.md`: Commands will error and ask you to run init-project.sh
+- Missing `spec/stack.md`: Commands will error and ask you to run csw init
 - Check validation commands work: `npm run lint`, `npm test`, etc.
-- Run `/path/to/claude-spec-workflow/init-project.sh . <preset-name>` to create or update stack.md
+- Run `csw init . <preset-name>` to create or update stack.md
 - Verify commands in spec/stack.md match your project setup
 
 ### Git Issues
@@ -611,6 +615,7 @@ Still stuck?
 - Project maturity config to control documentation verbosity (dogfooding=minimal docs, production=migration guides)
 
 **Future**:
+- Convenience install script (curl-based one-liner for installation without checkout)
 - Package manager distribution (Homebrew, npm)
 - Integration tests for workflow validation
 - Video walkthrough tutorials

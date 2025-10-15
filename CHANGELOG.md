@@ -46,7 +46,78 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_No unreleased changes yet. See README.md Roadmap section for planned features._
+## [0.3.0] - 2025-10-15
+
+> **Bootstrap Consolidation**: Unified CLI experience with self-contained csw command
+
+### Added
+
+- `csw install` subcommand - Replaces `install.sh` with idempotent installation
+  - Installs commands to `~/.claude/commands/`
+  - Creates `~/.local/bin/csw` symlink
+  - Checks PATH and provides setup guidance
+- `csw init` subcommand - Replaces `init-project.sh` with enhanced project initialization
+  - Fuzzy preset matching (exact → case-insensitive → substring)
+  - Bootstrap spec generation by default for all users (beginners + monorepos)
+  - `--no-bootstrap-spec` flag to opt out of bootstrap
+  - Interactive prompts for directory creation and reinit confirmation
+  - Creates `spec/csw` symlink for project-local usage
+  - Auto-updates `.gitignore` with spec log patterns
+- `csw uninstall` subcommand - Replaces `uninstall.sh` with clean removal
+  - Removes commands from `~/.claude/commands/`
+  - Removes `~/.local/bin/csw` symlink
+  - Preserves project `spec/` directories
+- Bootstrap validation spec template (`templates/bootstrap-spec.md`)
+  - Validates installation and project initialization
+  - Teaches workflow to newcomers
+  - Enables stack customization for monorepos
+  - Variable substitution ({{STACK_NAME}}, {{PRESET_NAME}}, {{INSTALL_DATE}})
+
+### Changed
+
+- **BREAKING**: Moved `bin/csw` to project root as `csw`
+  - Simpler bootstrap: `./csw install` instead of `./bin/csw install`
+  - Maximum discoverability: visible immediately after clone
+  - Follows industry patterns (gradlew, mvnw, configure)
+- **BREAKING**: Removed `bin/` directory (empty after csw move)
+- Updated help text with Bootstrap Commands and Workflow Commands sections
+- Updated all documentation to reference new csw commands
+  - README.md: Installation, uninstall, troubleshooting sections
+  - CONTRIBUTING.md: Development setup instructions
+  - TESTING.md: All test procedures
+  - commands/*.md: All command references
+  - templates/stack-template.md: Customization instructions
+
+### Removed
+
+- **BREAKING**: `install.sh` (replaced by `csw install`)
+- **BREAKING**: `init-project.sh` (replaced by `csw init`)
+- **BREAKING**: `uninstall.sh` (replaced by `csw uninstall`)
+
+### Migration Guide
+
+If upgrading from v0.2.x:
+
+1. **Reinstall globally**:
+   ```bash
+   cd claude-spec-workflow
+   git pull
+   ./csw install  # New command
+   ```
+
+2. **Update existing projects** (optional):
+   - Projects with `spec/` already initialized will continue to work
+   - To update project-local wrapper: `cd your-project && csw init .` (confirm overwrite)
+   - To skip bootstrap spec: use `--no-bootstrap-spec` flag
+
+3. **Update scripts/automation**:
+   - Replace `./install.sh` → `./csw install`
+   - Replace `init-project.sh /path/to/project` → `csw init /path/to/project`
+   - Replace `./uninstall.sh` → `csw uninstall`
+
+**No data loss**: All existing `spec/` directories and SHIPPED.md files preserved.
+
+_No other unreleased changes. See README.md Roadmap section for planned features._
 
 ## [0.2.2] - 2025-10-13
 

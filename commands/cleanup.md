@@ -115,7 +115,7 @@ elif [ -f "./spec/csw" ]; then
     ./spec/csw cleanup
 else
     echo "❌ Error: csw not found"
-    echo "   Run install.sh to set up csw globally"
+    echo "   Run ./csw install to set up csw globally"
     echo "   Or use: ./spec/csw cleanup (if initialized)"
     exit 1
 fi
