@@ -1,5 +1,38 @@
 # Shipped Features
 
+## Consolidate Bootstrap into csw
+- **Date**: 2025-10-15
+- **Branch**: feature/consolidate-bootstrap
+- **Commit**: 11222a0
+- **PR**: https://github.com/trakrf/claude-spec-workflow/pull/15
+- **Summary**: Unified bootstrap experience - consolidated separate shell scripts into self-contained csw subcommands
+- **Key Changes**:
+  - Moved bin/csw to project root for maximum discoverability
+  - Added csw install subcommand (replaces install.sh) with idempotent installation
+  - Added csw init subcommand (replaces init-project.sh) with fuzzy preset matching
+  - Added csw uninstall subcommand (replaces uninstall.sh)
+  - Deleted 3 obsolete scripts (install.sh, init-project.sh, uninstall.sh)
+  - Removed bin/ directory (empty after csw move)
+  - Bootstrap spec generation default for all users (teaches workflow + monorepo customization)
+  - Updated 13 documentation files (README, CONTRIBUTING, TESTING, commands/*.md, templates, CHANGELOG)
+- **Validation**: ✅ All checks passed (shellcheck clean, syntax valid, 10/10 integration tests passed)
+
+### Success Metrics
+
+#### Core Goals (7/7)
+- ✅ **3 files deleted** (target: 2) - **Result**: install.sh, init-project.sh, uninstall.sh removed
+- ✅ **1 directory removed** - **Result**: bin/ removed after csw moved to root
+- ✅ **3 subcommands added** (target: 2) - **Result**: install, init, uninstall implemented
+- ✅ **Cleaner bootstrap** - **Result**: `./csw install` vs `./install.sh` - shorter, self-contained
+- ✅ **Unified interface** - **Result**: Everything through csw - single entry point
+- ✅ **Self-documenting** - **Result**: `csw --help` shows all operations including bootstrap
+- ✅ **Zero regression** - **Result**: All functionality preserved, idempotent operations
+
+**Overall Success**: 100% of metrics achieved (7/7) - exceeded targets on 2 metrics
+
+**Impact**: Transforms awkward multi-script bootstrap into clean, unified CLI experience. Moves csw to project root for immediate discoverability (follows gradlew/mvnw patterns). Fuzzy preset matching ("shell" → "shell-scripts") reduces friction. Bootstrap spec generation teaches workflow to newcomers while enabling monorepo customization. Breaking changes documented in CHANGELOG with simple migration guide. Dogfooding note: This feature was shipped using the optimized /ship workflow from PR #14!
+
+
 ## Optimize SHIPPED.md Workflow
 - **Date**: 2025-10-15
 - **Branch**: feature/shipped-md-optimization
