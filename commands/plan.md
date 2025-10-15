@@ -427,7 +427,69 @@ The user will provide the path to a specification file (e.g., `spec/auth/spec.md
    ```
 
 10. **Git Setup**
-   The script will create a feature branch if needed and commit the planning artifacts.
+
+   Create or transition to the feature branch for this plan:
+
+   ```bash
+   # Extract feature name from spec path
+   # Example: spec/auth/spec.md → feature_name="auth"
+   # Example: spec/frontend/auth/spec.md → feature_name="frontend-auth"
+
+   # Check current branch
+   current_branch=$(git branch --show-current)
+
+   # Branch transition logic
+   if [[ $current_branch == "cleanup/merged" ]]; then
+     # Solo dev fast path - specs already cleaned
+     echo "🔄 Renaming cleanup/merged → feature/$feature_name"
+     git branch -m "feature/$feature_name"
+     echo "✅ Branch renamed for new feature"
+
+   elif [[ $current_branch == "main" ]] || [[ $current_branch == "master" ]]; then
+     # Standard path - create new branch from main
+     echo "🌿 Creating feature/$feature_name from $current_branch"
+     git checkout -b "feature/$feature_name"
+     echo "✅ Feature branch created"
+
+   elif [[ $current_branch == feature/* ]]; then
+     # Already on a feature branch - check if it's for this feature
+     if [[ $current_branch == "feature/$feature_name" ]]; then
+       echo "ℹ️  Already on feature/$feature_name"
+     else
+       echo "⚠️  Currently on: $current_branch"
+       echo "❌ Cannot create plan - already on a different feature branch"
+       echo ""
+       echo "Options:"
+       echo "  1. Finish current feature: /build → /ship → merge PR"
+       echo "  2. Clean up and start fresh: /cleanup → /plan"
+       echo "  3. Switch to main: git checkout main"
+       exit 1
+     fi
+
+   else
+     # Unknown branch - warn user
+     echo "⚠️  Currently on: $current_branch"
+     echo "⚠️  Recommended: Run /cleanup or switch to main first"
+     echo ""
+     read -p "Create feature/$feature_name from current branch anyway? (y/n) " -n 1 -r
+     echo
+     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+       echo "❌ Planning cancelled"
+       exit 1
+     fi
+     git checkout -b "feature/$feature_name"
+   fi
+
+   # Stage and commit the planning artifacts
+   git add "spec/$feature_path/spec.md" "spec/$feature_path/plan.md"
+   git commit -m "plan: $feature_name implementation"
+   echo "✅ Planning artifacts committed"
+   ```
+
+   **Branch Convention**:
+   - `cleanup/merged` - Magic branch from `/cleanup` command (gets renamed)
+   - `feature/*` - Active feature development
+   - `main`/`master` - Clean starting point
 
 ## Output Format
 Report to user:

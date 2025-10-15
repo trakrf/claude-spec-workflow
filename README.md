@@ -245,12 +245,13 @@ The system uses workspace-specific validation commands from `spec/stack.md`:
 | `/build` | Execute the plan | After plan is approved |
 | `/check` | Validate everything | Before creating PR |
 | `/ship` | Complete and PR | When ready to merge |
+| `/cleanup` | Clean up shipped features | After merging PR (optional solo dev tool) |
 
 ## Feature Lifecycle
 
 CSW supports a complete feature development cycle:
 
-([spec] | `<spec>`) → plan → build → [check] → ship → `<merge>` → repeat
+([spec] | `<spec>`) → plan → build → [check] → ship → `<merge>` → [cleanup] → repeat
 
 **Legend**:
 - [brackets] - Optional CSW command
@@ -281,7 +282,8 @@ flowchart LR
 4. **[check]** - Validate (optional: tests, lint, types, build)
 5. **ship** - Create PR (logs to SHIPPED.md)
 6. **`<merge>`** - Merge the PR (manual)
-7. **repeat** - Start next feature
+7. **[cleanup]** - Clean up shipped features (optional solo dev tool)
+8. **repeat** - Start next feature
 
 ## Workflow vs History
 
@@ -292,6 +294,12 @@ CSW focuses on *current* work, not completed work.
 - **Git** - Full history and context
 
 Complete a feature? `/ship` logs it to SHIPPED.md. After merging, the spec/ scaffolding can be cleaned up manually or left in place - it's already preserved in git history.
+
+**Optional `/cleanup` step**:
+- **Solo devs**: Use `/cleanup` for zero-friction transition to next feature (deletes merged branches and shipped specs)
+- **Team devs**: Handle cleanup manually per team conventions
+- **Skippable**: `/plan` still works without prior cleanup
+- Everything is backed up: specs in git history, branches in reflog, features in SHIPPED.md
 
 ## Workflow Philosophy
 
