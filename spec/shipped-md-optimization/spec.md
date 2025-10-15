@@ -196,8 +196,33 @@ Consider (but not required) updating existing entries for consistency:
 
 ## Implementation Notes
 
+### ⚠️ CRITICAL: Architecture Principle
+
+**DO NOT implement logic inline in `commands/ship.md`**
+
+The `/ship` command in `commands/ship.md` is a **prompt** that Claude executes. It describes what to do, but the actual implementation should be in **bash scripts**, not inline in the prompt.
+
+**Correct approach**:
+- `commands/ship.md` - Update the workflow description and instructions
+- `scripts/ship.sh` - May need logic changes (but currently just lists plans)
+- Claude interprets the prompt and executes the workflow
+
+**Why this matters**:
+- Keeps prompts focused on "what" not "how"
+- Bash scripts are testable, lintable, reusable
+- Claude has flexibility in how it executes the workflow
+- Maintains separation of concerns (prompt vs implementation)
+
+**Example**:
+- ❌ Don't add bash logic to commands/ship.md
+- ✅ Do update workflow steps in commands/ship.md
+- ✅ Do add any script logic to scripts/ if needed
+
+Since `/ship` is mostly orchestrated by Claude following the prompt (not a standalone script), the changes will be primarily in the **prompt workflow steps** in commands/ship.md, with Claude handling the execution.
+
 ### Files to Modify
-- `commands/ship.md` - Resequence steps 7-9, update template
+- `commands/ship.md` - Resequence steps 7-9, update template, update workflow description
+- `scripts/ship.sh` - Currently just lists plans (may not need changes)
 - Maybe: existing SHIPPED.md entries (optional cleanup)
 
 ### Backward Compatibility
