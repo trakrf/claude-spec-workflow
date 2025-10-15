@@ -1,0 +1,155 @@
+#!/bin/bash
+# Claude Spec Workflow CLI wrapper
+
+set -e
+
+# Detect installation directory from this script's location
+# Resolve symlinks to find the actual project directory
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do
+    DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+    SOURCE="$(readlink "$SOURCE")"
+    [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+CSW_HOME="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+SCRIPT_DIR="$CSW_HOME/scripts"
+
+usage() {
+    cat << EOF
+Claude Spec Workflow (csw) - Specification-driven development CLI
+
+Usage: csw <command> [arguments]
+
+Commands:
+  spec [name]        Create specification from conversation
+  plan <spec-file>   Generate implementation plan
+  build              Execute build with progress tracking
+  check              Run validation suite (test/lint/build)
+  ship <feature>     Create PR and prepare for merge
+  cleanup            Clean up shipped features (delete specs)
+
+Examples:
+  csw spec auth-system
+  csw plan spec/active/auth-system/spec.md
+  csw check
+  csw ship auth-system
+
+For more information: https://github.com/trakrf/claude-spec-workflow
+EOF
+}
+
+case "${1:-}" in
+    install)
+        # csw install - Install CSW globally
+        echo "🚀 Installing Claude Spec Workflow"
+        echo ""
+
+        # Detect installation directory
+        INSTALL_DIR="$CSW_HOME"
+        echo "Installation directory: $INSTALL_DIR"
+        echo ""
+
+        # Install Claude commands
+        CLAUDE_COMMANDS_DIR="$HOME/.claude/commands"
+        REPO_COMMANDS_DIR="$INSTALL_DIR/commands"
+
+        if [ ! -d "$REPO_COMMANDS_DIR" ]; then
+            echo "❌ Error: commands directory not found at $REPO_COMMANDS_DIR"
+            echo "   This should not happen. Please report this issue."
+            exit 1
+        fi
+
+        if [ ! -d "$CLAUDE_COMMANDS_DIR" ]; then
+            echo "📁 Creating Claude commands directory..."
+            mkdir -p "$CLAUDE_COMMANDS_DIR"
+        fi
+
+        echo "📦 Installing commands..."
+        updated=0
+        installed=0
+        for cmd in "$REPO_COMMANDS_DIR"/*.md; do
+            if [ -f "$cmd" ]; then
+                filename=$(basename "$cmd")
+                target="$CLAUDE_COMMANDS_DIR/$filename"
+                if [ -f "$target" ]; then
+                    echo "   ↻ Updated $filename"
+                    ((updated++))
+                else
+                    echo "   ✓ Installed $filename"
+                    ((installed++))
+                fi
+                cp "$cmd" "$target"
+            fi
+        done
+        echo ""
+
+        # Install csw CLI
+        echo "🔧 Installing csw CLI..."
+        CSW_BIN_DIR="$HOME/.local/bin"
+        if [ ! -d "$CSW_BIN_DIR" ]; then
+            echo "   📁 Creating $CSW_BIN_DIR..."
+            mkdir -p "$CSW_BIN_DIR"
+        fi
+
+        # Check if already installed
+        if [ -L "$CSW_BIN_DIR/csw" ]; then
+            existing_target=$(readlink "$CSW_BIN_DIR/csw")
+            if [ "$existing_target" = "$INSTALL_DIR/csw" ]; then
+                echo "   ✅ Already installed (up to date)"
+            else
+                echo "   ↻ Updating symlink"
+                ln -sf "$INSTALL_DIR/csw" "$CSW_BIN_DIR/csw"
+            fi
+        else
+            echo "   🔗 Creating symlink: csw -> $INSTALL_DIR/csw"
+            ln -sf "$INSTALL_DIR/csw" "$CSW_BIN_DIR/csw"
+        fi
+        echo ""
+
+        # Check if ~/.local/bin is in PATH
+        if [[ ":$PATH:" != *":$CSW_BIN_DIR:"* ]]; then
+            echo "⚠️  Note: $CSW_BIN_DIR is not in your PATH"
+            echo "   Add this line to your ~/.bashrc or ~/.zshrc:"
+            echo ""
+            echo "   export PATH=\"\$HOME/.local/bin:\$PATH\""
+            echo ""
+            echo "   Then run: source ~/.bashrc (or ~/.zshrc)"
+            echo ""
+            echo "   Alternatively, use ./spec/csw in your projects"
+            echo ""
+        fi
+
+        echo "✅ Installation complete!"
+        echo ""
+        echo "Installed: $installed command(s)"
+        echo "Updated: $updated command(s)"
+        echo ""
+        echo "📋 Next: Initialize a project"
+        echo "   csw init /path/to/project [preset]"
+        echo ""
+        exit 0
+        ;;
+    spec|plan|build|check|ship|cleanup)
+        COMMAND="$1"
+        shift
+        exec "$SCRIPT_DIR/$COMMAND.sh" "$@"
+        ;;
+    help|--help|-h)
+        usage
+        exit 0
+        ;;
+    --version|-v)
+        echo "csw 0.2.2"
+        exit 0
+        ;;
+    "")
+        usage
+        exit 1
+        ;;
+    *)
+        echo "Error: Unknown command '$1'"
+        echo ""
+        usage
+        exit 1
+        ;;
+esac
