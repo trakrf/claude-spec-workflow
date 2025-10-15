@@ -6,66 +6,119 @@ source "$SCRIPT_DIR/lib/common.sh"
 source "$SCRIPT_DIR/lib/git.sh"
 source "$SCRIPT_DIR/lib/cleanup.sh"
 
-# Main cleanup workflow
-# Called by /plan command to clean up shipped features
+# /cleanup command - Post-ship workflow automation
+# Clean up after shipping and merging a feature
 
 main() {
-    local current_branch
-    local main_branch
-    local feature
+    info "🧹 Starting cleanup workflow..."
+    echo ""
 
-    current_branch=$(get_current_branch)
-    main_branch=$(get_main_branch)
-
-    # Pre-flight: Check if current branch is shipped
-    if [[ -f "spec/SHIPPED.md" ]] && grep -q "Branch: $current_branch" spec/SHIPPED.md; then
-        info "🧹 Current branch $current_branch has been shipped"
-
-        # Validate branch is merged
-        if git branch --merged "$main_branch" | grep -q " $current_branch$"; then
-            info "📥 Pulling latest $main_branch..."
-            git checkout "$main_branch"
-            git pull origin "$main_branch"
-
-            info "🗑️  Deleting merged branch..."
-            git branch -d "$current_branch"
-
-            # Delete spec directory
-            feature=$(echo "$current_branch" | sed 's/feature\///')
-            if [[ -d "spec/$feature" ]]; then
-                cleanup_spec_directory "$feature"
-                git add "spec/$feature"
-                git commit -m "chore: delete $feature spec (shipped)"
-            fi
-        else
-            warning "Branch $current_branch not fully merged to $main_branch"
-            error "Please merge branch before running /plan"
-            exit 1
-        fi
+    # 1. Pre-flight Checks
+    if [[ ! -f "spec/SHIPPED.md" ]]; then
+        warning "⚠️  Warning: spec/SHIPPED.md not found"
+        echo "   Spec cleanup will be skipped (no reference for what's shipped)"
+        echo ""
     fi
 
-    # Scan for other shipped features
-    for dir in spec/*/; do
-        # Skip backlog and special directories
-        [[ "$dir" =~ spec/(backlog|fix-plan-autoarchive)/ ]] && continue
-        [[ ! -f "$dir/spec.md" ]] && continue
+    current_branch=$(get_current_branch)
+    if [[ $current_branch == "cleanup/merged" ]]; then
+        warning "⚠️  Warning: Already on cleanup/merged branch"
+        echo "   This will re-run cleanup (idempotent)"
+        echo ""
+    fi
 
-        feature=$(basename "$dir")
+    # 2. Sync with Main
+    main_branch=$(get_main_branch)
+    info "📥 Syncing with $main_branch..."
+    git checkout "$main_branch"
+    git pull
 
-        # Check if in SHIPPED.md
-        if [[ -f "spec/SHIPPED.md" ]] && grep -q "## .*$feature" spec/SHIPPED.md; then
-            info "📦 Found shipped feature: $feature"
-            read -p "Delete spec/$feature/? (y/n) " -n 1 -r
-            echo
-            if [[ $REPLY =~ ^[Yy]$ ]]; then
-                cleanup_spec_directory "$feature"
-                git add "spec/$feature"
-                git commit -m "chore: delete $feature spec (shipped)"
-            fi
+    # 3. Delete Merged Branches
+    info "🗑️  Deleting merged branches..."
+    echo ""
+
+    merged_count=0
+    while IFS= read -r branch; do
+        # Trim whitespace
+        branch=$(echo "$branch" | xargs)
+        if [[ -n "$branch" ]]; then
+            echo "  Deleting: $branch"
+            git branch -d "$branch" 2>/dev/null || true
+            ((merged_count++))
         fi
-    done
+    done < <(git branch --merged | grep -v -E '^\*|main|master' || true)
 
-    success "✅ Workspace cleanup complete"
+    if [[ $merged_count -eq 0 ]]; then
+        success "✅ No merged branches to clean up"
+    else
+        success "✅ Deleted $merged_count merged branch(es)"
+    fi
+    echo ""
+
+    # 4. Create Cleanup Staging Branch
+    info "🌿 Creating cleanup/merged branch..."
+    git checkout -b cleanup/merged
+    success "✅ Branch created"
+    echo ""
+
+    # 5. Delete Shipped Spec Directories
+    if [[ -f "spec/SHIPPED.md" ]]; then
+        info "🧹 Cleaning up shipped specs..."
+        echo ""
+
+        cleaned_count=0
+        kept_count=0
+
+        # Find all spec.md files
+        while IFS= read -r spec_file; do
+            spec_dir=$(dirname "$spec_file")
+            feature_name=$(basename "$spec_dir")
+
+            # Skip if feature name matches patterns we should never delete
+            if [[ "$feature_name" == "backlog" ]] || [[ "$spec_dir" =~ spec/backlog/ ]]; then
+                continue
+            fi
+
+            # Check if feature is in SHIPPED.md
+            if grep -q "$feature_name" spec/SHIPPED.md 2>/dev/null; then
+                echo "  Cleaning up: $spec_dir (found '$feature_name' in SHIPPED.md)"
+                rm -rf "$spec_dir"
+                ((cleaned_count++))
+            else
+                echo "  Keeping: $spec_dir (not in SHIPPED.md)"
+                ((kept_count++))
+            fi
+        done < <(find spec -name "spec.md" -type f 2>/dev/null || true)
+
+        echo ""
+        success "✅ Cleaned up $cleaned_count spec(s), kept $kept_count spec(s)"
+    else
+        info "ℹ️  No SHIPPED.md found - skipping spec cleanup"
+    fi
+    echo ""
+
+    # 6. Commit Cleanup
+    # Only commit if there are changes
+    if ! git diff --quiet HEAD || ! git diff --cached --quiet; then
+        info "💾 Committing cleanup..."
+        git add spec/ 2>/dev/null || true
+        git commit -m "chore: cleanup shipped features"
+        success "✅ Cleanup committed"
+    else
+        info "ℹ️  No changes to commit"
+    fi
+    echo ""
+
+    # 7. Success Message
+    success "✅ Cleanup complete!"
+    echo ""
+    echo "📍 Current status:"
+    echo "   - Branch: cleanup/merged"
+    echo "   - Main synced: $(git log -1 --format='%h - %s' "$main_branch")"
+    echo "   - Ready for next feature"
+    echo ""
+    info "💡 Next step: Run /plan when ready for next feature"
+    echo "   The cleanup/merged branch will be renamed to feature/name"
 }
 
 main "$@"

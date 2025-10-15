@@ -43,32 +43,28 @@ The user will provide the path to a specification file (e.g., `spec/auth/spec.md
    - **First: Read `spec/README.md`** to understand workflow standards
    - This ensures consistency with project methodology
 
-2. **Cleanup Shipped Features** (Workspace Cleanup)
+2. **Cleanup Shipped Features** (Optional Pre-planning)
 
-   **Pre-flight branch check and cleanup**:
+   **Recommended workflow**:
 
-   The planning workflow automatically cleans up shipped features by running `scripts/cleanup.sh`:
+   Before running `/plan`, you may want to clean up shipped features:
 
-   1. **Detects if current branch is shipped**: Checks `spec/SHIPPED.md` for current branch
-   2. **Validates branch is merged**: Uses `git branch --merged main` for safety
-   3. **Switches to main and pulls**: Ensures clean starting point
-   4. **Deletes merged branch**: Safely removes shipped branch
-   5. **Deletes shipped spec**: Removes spec directory (preserved in git history)
-   6. **Scans for other shipped features**: Prompts to delete any remaining shipped specs
+   **Option A: Automatic cleanup** (Solo devs):
+   - Run `/cleanup` after merging a PR
+   - Creates `cleanup/merged` branch with specs deleted
+   - `/plan` will detect and rename this branch to `feature/new-name`
 
-   This happens automatically when you run `/plan`. The script ensures:
-   - ✅ Branch is actually merged (safety check)
-   - ✅ Spec directory exists before attempting deletion
-   - ✅ Clean workspace for next feature
+   **Option B: Manual cleanup** (Team conventions):
+   - Manually delete merged branches: `git branch -d feature/old`
+   - Manually delete shipped specs: `rm -rf spec/old-feature/`
+   - Checkout main before running `/plan`
 
-   **If no shipped features found**:
-   ```
-   ✅ Workspace clean - no shipped features to clean up
+   **Option C: Skip cleanup** (Works fine):
+   - Run `/plan` from main without cleanup
+   - Old specs remain (harmless, preserved in git)
+   - `/plan` creates new feature branch as usual
 
-   Proceeding to planning...
-   ```
-
-   **Note**: Specs are NOT moved to `spec/archive/`. They are DELETED and preserved in git history. `SHIPPED.md` provides the reference to find them.
+   **Note**: Specs are NOT moved to `spec/archive/`. When deleted, they're preserved in git history. `SHIPPED.md` provides the reference to find them.
 
 3. **Read and Understand Specification**
     - Read the specification file completely
