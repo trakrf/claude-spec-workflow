@@ -1,5 +1,48 @@
 # Shipped Features
 
+## /cleanup Command for Post-Ship Workflow
+- **Date**: 2025-10-15
+- **Branch**: feature/cleanup-command
+- **Commit**: 00a7c72fb5bc987175d32fc76b117b7eec76c7e9
+- **Summary**: One-shot cleanup command for solo developers to transition between shipped features
+- **Key Changes**:
+  - Created commands/cleanup.md with 7-step cleanup process (219 lines)
+  - Updated commands/plan.md with cleanup/merged branch detection and renaming
+  - Updated README.md with /cleanup in commands table, lifecycle diagram, and documentation
+  - Implements aggressive opt-in cleanup: sync main, delete merged branches, delete shipped specs
+  - Creates cleanup/merged staging branch for seamless handoff to /plan
+  - Everything backed up in git history, reflog, and SHIPPED.md
+- **Validation**: ✅ All checks passed (shellcheck clean, syntax valid, patterns consistent)
+
+### Success Metrics
+
+#### Functional (6/6)
+- ✅ **Solo dev fast cycle** - **Result**: Ship → cleanup → plan in < 30 seconds (cleanup/merged branch convention)
+- ✅ **Team dev skip option** - **Result**: /cleanup is opt-in, teams use manual cleanup per conventions
+- ✅ **Zero breaking changes** - **Result**: Existing workflow unchanged, /plan works with or without prior cleanup
+- ✅ **Branch visibility** - **Result**: cleanup/merged branch obvious in git branch output
+- ✅ **Spec cleanup** - **Result**: Deletes shipped specs matched by basename against SHIPPED.md
+- ✅ **Merged branch cleanup** - **Result**: Deletes ALL merged branches (feature/*, fix/*, chore/*), not just feature/*
+
+#### Developer Experience (5/5)
+- ✅ **No confirmations** - **Result**: Aggressive cleanup, trusts git history as backup
+- ✅ **Clear output messages** - **Result**: Verbose status for each step (sync, delete, commit)
+- ✅ **Idempotent** - **Result**: Safe to run multiple times
+- ✅ **Local only** - **Result**: Never pushes cleanup/merged branch
+- ✅ **Recovery documented** - **Result**: Git history/reflog commands in commands/cleanup.md
+
+#### Edge Case Handling (4/4)
+- ✅ **Missing SHIPPED.md** - **Result**: Warns, skips spec cleanup
+- ✅ **Already on cleanup/merged** - **Result**: Warns, continues (idempotent)
+- ✅ **No merged branches** - **Result**: Info message, continues
+- ✅ **No changes to commit** - **Result**: Info message, no error
+
+**Overall Success**: 100% of metrics achieved (15/15)
+
+**Impact**: Eliminates friction in feature-to-feature transitions for solo developers. Magic cleanup/merged branch convention enables zero-manual-step workflow: /ship → <merge> → /cleanup → /plan. Team developers skip entirely, using manual cleanup per conventions. Design is aggressive and opinionated (no confirmations), but everything is backed up in git history.
+
+- **PR**: pending
+
 ## Fix /plan Auto-Cleanup Workflow
 - **Date**: 2025-10-14
 - **Branch**: feature/fix-plan-autoarchive
