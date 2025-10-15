@@ -1,5 +1,35 @@
 # Shipped Features
 
+## Optimize SHIPPED.md Workflow
+- **Date**: 2025-10-15
+- **Branch**: feature/shipped-md-optimization
+- **Commit**: c219021
+- **PR**: https://github.com/trakrf/claude-spec-workflow/pull/14
+- **Summary**: Optimized /ship workflow to eliminate double-commit pattern for SHIPPED.md updates
+- **Key Changes**:
+  - Reordered workflow steps in commands/ship.md (push → PR → SHIPPED.md)
+  - Updated SHIPPED.md template to use short commit hash and full PR URL on separate line
+  - Updated commit message format: `docs: ship {feature} (#{pr-number})`
+  - Added CONTRIBUTING.md note about command update workflow (install.sh + restart)
+  - Method 4 (manual fallback) now fails fast instead of creating incomplete entries
+- **Validation**: ✅ All checks passed (shellcheck clean, syntax valid, ULTRATHINK complete)
+
+### Success Metrics
+
+#### Efficiency (3/3)
+- ✅ **One commit instead of two** - **Result**: SHIPPED.md updated in single commit after PR creation
+- ✅ **One push instead of two** - **Result**: Single push of SHIPPED.md commit
+- ✅ **No "PR: pending" temporary states** - **Result**: Fail-fast behavior prevents incomplete entries
+
+#### Code Quality (3/3)
+- ✅ **Cleaner git history** - **Result**: Eliminated noise commits from double-update pattern
+- ✅ **More scannable SHIPPED.md** - **Result**: PR field on separate line right after commit (related data together)
+- ✅ **Simpler command logic** - **Result**: Removed double-update logic from PR creation methods
+
+**Overall Success**: 100% of metrics achieved (6/6)
+
+**Impact**: Dogfooding validation - this very feature was shipped using the new workflow! The /ship command now creates cleaner git history with a single commit for SHIPPED.md updates after PR creation. The workflow reordering (push → PR → SHIPPED.md) eliminates temporary "PR: pending" states and reduces commit noise. Updated template format improves SHIPPED.md readability with short commit hash and full PR URL on separate line.
+
 ## Fix CSW Symlink Resolution
 - **Date**: 2025-10-15
 - **Branch**: feature/active-fix-csw-symlink-resolution
