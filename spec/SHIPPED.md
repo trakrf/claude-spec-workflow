@@ -38,7 +38,7 @@
 
 **Impact**: Fixes critical bug where csw commands failed when invoked via ~/.local/bin/csw symlink. The symlink wrapper was using ${BASH_SOURCE[0]} without resolution, causing it to look for scripts in ~/.local/scripts/ (wrong location). This fix implements the industry-standard symlink resolution pattern used by Node.js and Homebrew, ensuring cross-platform compatibility. Zero breaking changes - purely fixes existing broken behavior.
 
-- **PR**: pending
+- **PR**: https://github.com/trakrf/claude-spec-workflow/pull/13
 
 ## /cleanup Command for Post-Ship Workflow
 - **Date**: 2025-10-15
