@@ -299,6 +299,9 @@ Success case:
   State: {state}
 
 ✅ Ready for code review!
+
+---
+👉 Review your PR: {url}
 ```
 
 Failure case:
