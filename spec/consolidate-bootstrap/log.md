@@ -87,3 +87,33 @@ Status: ✅ Complete
 Completed: 2025-10-15 (Session 1)
 
 ---
+
+### Tasks 3-6: Add csw init subcommand (complete)
+Started: 2025-10-15 (Session 1)
+File: csw
+
+**Changes**:
+- Task 3: Argument parsing with CREATE_BOOTSTRAP=true default
+- Task 4: Bash fuzzy matching for presets (exact → case-insensitive → substring)
+- Task 5: Spec structure creation with overwrite prompts
+- Task 6: Symlink creation (direct path) + bootstrap spec generation
+
+**Features**:
+- Directory creation with confirmation prompt
+- Reinitialize existing spec/ with confirmation
+- Fuzzy preset matching: "shell" → "shell-scripts", "python" → "python-fastapi"
+- Bootstrap spec created by default (--no-bootstrap-spec to opt out)
+- Variable substitution in bootstrap spec template
+- .gitignore update for log files
+
+**Validation**:
+✅ shellcheck csw - passed
+✅ csw init . shell - works, fuzzy matches to shell-scripts
+✅ csw init . python --no-bootstrap-spec - works, skips bootstrap
+✅ Verified file structure creation
+✅ Verified symlink creation
+
+Status: ✅ Complete
+Completed: 2025-10-15 (Session 1)
+
+---
