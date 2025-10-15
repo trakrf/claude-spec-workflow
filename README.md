@@ -641,6 +641,8 @@ MIT License - See LICENSE file
 
 Issues and PRs welcome! This is an evolving methodology based on real-world usage.
 
+**Hacking on CSW?** Use `@commands/plan.md` instead of `/plan` for instant feedback without install/restart. See CONTRIBUTING.md for rapid iteration workflow.
+
 ## About TrakRF
 
 [TrakRF](https://trakrf.id) provides RFID asset tracking solutions for manufacturing and logistics. We use AI-assisted development to accelerate our platform development while maintaining high code quality.
