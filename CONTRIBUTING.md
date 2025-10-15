@@ -60,6 +60,20 @@ Thank you for your interest in contributing! This project is an evolving methodo
    - Verify the plan is generated correctly
    - Test other commands as applicable
 
+4. **After merging command changes**
+
+   If you modify files in `commands/` (slash command prompts):
+
+   ```bash
+   # Re-run install to update global commands
+   ./install.sh
+
+   # Restart Claude Code to pick up changes
+   # (Command palette > "Reload Window" or restart application)
+   ```
+
+   **Why**: Slash commands (`/plan`, `/build`, `/ship`, etc.) are installed globally in Claude's commands directory. Changes only take effect after reinstalling and restarting Claude Code.
+
 See TESTING.md for comprehensive test procedures.
 
 ## Contribution Guidelines

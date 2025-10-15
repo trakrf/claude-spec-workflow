@@ -162,13 +162,77 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
 
    **Commit your changes**: Stage all changes with git add, create conventional commit with appropriate type, scope, and description.
 
-7. **Update Shipped Log**
-   Create/append to `spec/SHIPPED.md`:
+7. **Push Branch**
+   Push feature branch to remote with git push -u origin.
+
+   **Note**: We push before updating SHIPPED.md so the branch exists when creating PR.
+
+8. **Create Pull Request**
+
+   Try authentication methods in order until one succeeds:
+
+   **Method 1: GitHub CLI (if available)**
+   - Check if gh CLI is installed: `command -v gh`
+   - Check if authenticated: `gh auth status`
+   - If both true, create PR: `gh pr create --title "..." --body "..."`
+   - Capture PR URL from output
+   - If successful: Display success, continue to Step 9
+
+   **Method 2: GH_TOKEN environment variable**
+   - Check if GH_TOKEN is set: `[ -n "$GH_TOKEN" ]`
+   - Extract repo info: `git remote get-url origin`
+   - Parse owner/repo from URL (format: `owner/repo` from `git@github.com:owner/repo.git` or `https://github.com/owner/repo.git`)
+   - Get base branch: `git remote show origin | grep 'HEAD branch'`
+   - Call GitHub API with curl POST to create pull request
+   - Parse html_url from JSON response
+   - If successful: Display success, continue to Step 9
+
+   **Method 3: gh config file**
+   - Check if ~/.config/gh/hosts.yml exists
+   - Extract oauth_token: `grep -A 2 'github.com:' ~/.config/gh/hosts.yml | grep 'oauth_token:' | awk '{print $2}'`
+   - If token found, use same curl approach as Method 2
+   - If successful: Display success, continue to Step 9
+
+   **Method 4: Manual fallback (halt on failure)**
+   - Show clear error message listing all methods tried
+   - Provide instructions for gh auth login or setting GH_TOKEN
+   - Provide the manual PR creation URL
+   - HALT execution with error
+   - Do NOT update SHIPPED.md (no incomplete entries)
+   - User must create PR manually, then can manually update SHIPPED.md if desired
+
+   **Success output format** (when PR created):
+   ```
+   🔍 Checking GitHub authentication...
+   ✅ Found: [method that worked - e.g., "GitHub CLI authenticated"]
+   🚀 Creating pull request...
+
+   🔗 Pull Request:
+
+     PR #{number}: {url}
+     Title: {title}
+     State: {state}
+
+   ✅ PR created successfully, proceeding to update SHIPPED.md...
+   ```
+
+   **Key principles**:
+   - Show what you're trying at each step (transparency)
+   - Clear success/failure for each method
+   - Actionable error messages (tell user exactly how to fix)
+   - Only try next method if current one fails
+   - After PR creation, proceed to Step 9 to update SHIPPED.md
+
+9. **Update Shipped Log**
+
+   After PR is created and URL is captured, create/append to `spec/SHIPPED.md` with complete information in a single commit.
+
    ```markdown
    ## {Feature Name}
    - **Date**: {YYYY-MM-DD}
    - **Branch**: feature/{name}
-   - **Commit**: {git rev-parse HEAD}
+   - **Commit**: {git rev-parse --short HEAD}
+   - **PR**: {full-pr-url}
    - **Summary**: {one-line description}
    - **Key Changes**:
      - {major change 1}
@@ -183,70 +247,17 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
    - ❌ {Metric 4} - **Result**: Did not meet target, needs follow-up
 
    **Overall Success**: {percentage}% of metrics achieved
-
-   - **PR**: {pending|url}
    ```
 
-   Commit SHIPPED.md update with git add and git commit.
+   Extract PR number from URL: `https://github.com/user/repo/pull/13` → `#13`
 
-   **Note**: The spec directory (`spec/active/{feature}/`) remains in place through PR review. It will be archived when starting the next feature via `/plan`.
+   Commit with message: `docs: ship {feature-display-name} (#{pr-number})`
 
-8. **Push Branch**
-   Push to remote with git push -u origin.
+   Example: `docs: ship Optimize SHIPPED.md Workflow (#14)`
 
-9. **Create Pull Request**
+   Push the single SHIPPED.md commit: `git push`
 
-   Try authentication methods in order until one succeeds:
-
-   **Method 1: GitHub CLI (if available)**
-   - Check if gh CLI is installed: `command -v gh`
-   - Check if authenticated: `gh auth status`
-   - If both true, create PR: `gh pr create --title "..." --body "..."`
-   - Capture PR URL from output
-   - If successful: Update SHIPPED.md, display success, exit
-
-   **Method 2: GH_TOKEN environment variable**
-   - Check if GH_TOKEN is set: `[ -n "$GH_TOKEN" ]`
-   - Extract repo info: `git remote get-url origin`
-   - Parse owner/repo from URL (format: `owner/repo` from `git@github.com:owner/repo.git` or `https://github.com/owner/repo.git`)
-   - Get base branch: `git remote show origin | grep 'HEAD branch'`
-   - Call GitHub API with curl POST to create pull request
-   - Parse html_url from JSON response
-   - If successful: Update SHIPPED.md, display success, exit
-
-   **Method 3: gh config file**
-   - Check if ~/.config/gh/hosts.yml exists
-   - Extract oauth_token: `grep -A 2 'github.com:' ~/.config/gh/hosts.yml | grep 'oauth_token:' | awk '{print $2}'`
-   - If token found, use same curl approach as Method 2
-   - If successful: Update SHIPPED.md, display success, exit
-
-   **Method 4: Manual fallback (last resort)**
-   - Show clear error message listing all methods tried
-   - Provide instructions for gh auth login or setting GH_TOKEN
-   - Suggest manual PR creation URL
-   - Leave SHIPPED.md with "PR: pending"
-
-   **Success output format** (when PR created):
-   ```
-   🔍 Checking GitHub authentication...
-   ✅ Found: [method that worked - e.g., "GitHub CLI authenticated"]
-   🚀 Creating pull request...
-
-   🔗 Pull Request:
-
-     PR #{number}: {url}
-     Title: {title}
-     State: {state}
-
-   📦 Updated SHIPPED.md with PR URL
-   ```
-
-   **Key principles**:
-   - Show what you're trying at each step (transparency)
-   - Clear success/failure for each method
-   - Actionable error messages (tell user exactly how to fix)
-   - Only try next method if current one fails
-   - Update SHIPPED.md immediately upon success
+   **Note**: The spec directory (`spec/{feature}/`) remains in place through PR review. It will be cleaned up when starting the next feature via `/plan`.
 
 ## Validation Gates Before Ship
 
