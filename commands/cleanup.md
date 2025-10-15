@@ -21,140 +21,44 @@ None required. The command operates on the current git repository state.
 
 ## Process
 
+The cleanup workflow is implemented in `scripts/cleanup.sh` with the following steps:
+
 1. **Pre-flight Checks**
-
-   Check for potential issues and warn user (but don't block):
-
-   ```bash
-   # Warn if SHIPPED.md doesn't exist
-   if [[ ! -f "spec/SHIPPED.md" ]]; then
-     echo "⚠️  Warning: spec/SHIPPED.md not found"
-     echo "   Spec cleanup will be skipped (no reference for what's shipped)"
-     echo ""
-   fi
-
-   # Warn if already on cleanup/merged
-   current_branch=$(git branch --show-current)
-   if [[ $current_branch == "cleanup/merged" ]]; then
-     echo "⚠️  Warning: Already on cleanup/merged branch"
-     echo "   This will re-run cleanup (idempotent)"
-     echo ""
-   fi
-   ```
+   - Warn if SHIPPED.md doesn't exist (spec cleanup will be skipped)
+   - Warn if already on cleanup/merged branch (idempotent - safe to re-run)
+   - Never blocks - just informs user
 
 2. **Sync with Main**
-
-   Get latest changes from remote:
-
-   ```bash
-   echo "📥 Syncing with main..."
-   git checkout main
-   git pull
-   ```
+   - Checkout main/master branch
+   - Pull latest changes from remote
+   - Ensures clean starting point
 
 3. **Delete Merged Branches**
-
-   Remove all local branches that have been merged to main:
-
-   ```bash
-   echo "🗑️  Deleting merged branches..."
-
-   # Find all merged branches (exclude current branch, main, master)
-   merged_count=0
-   git branch --merged | grep -v -E '^\*|main|master' | while read branch; do
-     # Trim whitespace
-     branch=$(echo "$branch" | xargs)
-     echo "  Deleting: $branch"
-     git branch -d "$branch"
-     ((merged_count++))
-   done
-
-   if [[ $merged_count -eq 0 ]]; then
-     echo "✅ No merged branches to clean up"
-   else
-     echo "✅ Deleted $merged_count merged branch(es)"
-   fi
-   ```
+   - Find all local branches merged to main
+   - Exclude current branch, main, and master
+   - Delete all merged branches (feature/*, fix/*, chore/*, etc.)
+   - Report count of deleted branches
 
 4. **Create Cleanup Staging Branch**
-
-   Create the magic `cleanup/merged` branch:
-
-   ```bash
-   echo "🌿 Creating cleanup/merged branch..."
-   git checkout -b cleanup/merged
-   ```
+   - Create `cleanup/merged` branch
+   - This is the magic branch that `/plan` will detect and rename
 
 5. **Delete Shipped Spec Directories**
-
-   Find and remove spec directories for features that have been shipped:
-
-   ```bash
-   if [[ -f "spec/SHIPPED.md" ]]; then
-     echo "🧹 Cleaning up shipped specs..."
-
-     cleaned_count=0
-     kept_count=0
-
-     # Find all spec.md files
-     find spec -name "spec.md" -type f | while read spec_file; do
-       spec_dir=$(dirname "$spec_file")
-       feature_name=$(basename "$spec_dir")
-
-       # Skip if feature name matches patterns we should never delete
-       if [[ "$feature_name" == "backlog" ]] || [[ "$spec_dir" =~ spec/backlog/ ]]; then
-         continue
-       fi
-
-       # Check if feature is in SHIPPED.md
-       if grep -q "$feature_name" spec/SHIPPED.md; then
-         echo "  Cleaning up: $spec_dir (found '$feature_name' in SHIPPED.md)"
-         rm -rf "$spec_dir"
-         ((cleaned_count++))
-       else
-         echo "  Keeping: $spec_dir (not in SHIPPED.md)"
-         ((kept_count++))
-       fi
-     done
-
-     echo "✅ Cleaned up $cleaned_count spec(s), kept $kept_count spec(s)"
-   else
-     echo "ℹ️  No SHIPPED.md found - skipping spec cleanup"
-   fi
-   ```
+   - Find all spec.md files in spec/
+   - Skip spec/backlog/ (future work)
+   - Check if basename matches entry in SHIPPED.md
+   - Delete matched specs (kept in git history)
+   - Report count of cleaned vs kept specs
 
 6. **Commit Cleanup**
-
-   Stage and commit the cleanup:
-
-   ```bash
-   # Only commit if there are changes
-   if ! git diff --quiet HEAD || ! git diff --cached --quiet; then
-     echo "💾 Committing cleanup..."
-     git add spec/
-     git commit -m "chore: cleanup shipped features"
-     echo "✅ Cleanup committed"
-   else
-     echo "ℹ️  No changes to commit"
-   fi
-   ```
+   - Stage spec/ changes
+   - Commit with "chore: cleanup shipped features" message
+   - Skip if no changes (idempotent)
 
 7. **Success Message**
-
-   Show final status:
-
-   ```bash
-   echo ""
-   echo "✅ Cleanup complete!"
-   echo ""
-   echo "📍 Current status:"
-   echo "   - Branch: cleanup/merged"
-   echo "   - Main synced: $(git log -1 --format='%h - %s' main)"
-   echo "   - Ready for next feature"
-   echo ""
-   echo "💡 Next step: Run /plan when ready for next feature"
-   echo "   The cleanup/merged branch will be renamed to feature/name"
-   ```
+   - Show current status
+   - Report main branch sync status
+   - Show next step hint (/plan to start next feature)
 
 ## Characteristics
 
