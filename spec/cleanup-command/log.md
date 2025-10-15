@@ -121,11 +121,36 @@ Duration: ~5 minutes
 - Pattern consistency: Follows existing command structure
 
 **Next Steps**:
-1. Commit all changes
-2. Push to remote
+1. Commit all changes ✅
+2. Push to remote ✅
 3. Test the full workflow manually:
    - Ship and merge a feature
    - Run /cleanup
    - Verify cleanup/merged branch created
    - Run /plan
    - Verify branch renamed to feature/new-feature
+
+---
+
+## Post-Ship Refactoring
+Completed: 2025-10-15T01:00:00Z
+
+**Refactor: Consistency with other slash commands**
+
+Changed inline bash blocks to external script:
+- Moved ~190 lines of bash from commands/cleanup.md to scripts/cleanup.sh
+- Updated commands/cleanup.md to use csw execution pattern (like other commands)
+- Simplified commands/plan.md cleanup documentation
+- Removed misleading claim that /plan calls scripts/cleanup.sh
+
+**Pattern Achieved**:
+- commands/*.md: Prompts and process documentation only
+- scripts/*.sh: Actual implementation
+- bin/csw: Routes commands to scripts
+
+**Validation**:
+- shellcheck: Clean (SC1091 info warnings expected)
+- syntax check: Valid
+- Consistent with spec, plan, build, check, ship commands
+
+**Commit**: 82f666f - refactor: move /cleanup inline bash to scripts/cleanup.sh
