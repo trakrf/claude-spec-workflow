@@ -48,51 +48,96 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.0] - 2025-10-15
 
-> **Bootstrap Consolidation**: Unified CLI experience with self-contained csw command
+> **Bootstrap & Workflow Consolidation**: Unified CLI + workflow automation + infrastructure refactoring
+
+This release consolidates 10 shipped features since v0.2.2, including major bootstrap improvements, new workflow commands, bug fixes, and internal refactoring. All changes have been dogfooded and validated.
 
 ### Added
 
-- `csw install` subcommand - Replaces `install.sh` with idempotent installation
+#### Bootstrap & Installation (PR #15, #10, #5)
+- **`csw install` subcommand** - Replaces `install.sh` with idempotent installation
   - Installs commands to `~/.claude/commands/`
   - Creates `~/.local/bin/csw` symlink
   - Checks PATH and provides setup guidance
-- `csw init` subcommand - Replaces `init-project.sh` with enhanced project initialization
-  - Fuzzy preset matching (exact → case-insensitive → substring)
-  - Bootstrap spec generation by default for all users (beginners + monorepos)
-  - `--no-bootstrap-spec` flag to opt out of bootstrap
+- **`csw init` subcommand** - Replaces `init-project.sh` with enhanced project initialization
+  - Fuzzy preset matching (exact → case-insensitive → substring): "shell" → "shell-scripts"
+  - Bootstrap spec generation by default for all users (teaches workflow + monorepo customization)
+  - `--no-bootstrap-spec` flag to opt out
   - Interactive prompts for directory creation and reinit confirmation
   - Creates `spec/csw` symlink for project-local usage
   - Auto-updates `.gitignore` with spec log patterns
-- `csw uninstall` subcommand - Replaces `uninstall.sh` with clean removal
+- **`csw uninstall` subcommand** - Replaces `uninstall.sh` with clean removal
   - Removes commands from `~/.claude/commands/`
   - Removes `~/.local/bin/csw` symlink
   - Preserves project `spec/` directories
-- Bootstrap validation spec template (`templates/bootstrap-spec.md`)
-  - Validates installation and project initialization
-  - Teaches workflow to newcomers
-  - Enables stack customization for monorepos
-  - Variable substitution ({{STACK_NAME}}, {{PRESET_NAME}}, {{INSTALL_DATE}})
+- **Bootstrap validation spec template** (`templates/bootstrap-spec.md`)
+  - Auto-generated during `csw init` to guide first workflow experience
+  - Variable substitution: {{STACK_NAME}}, {{PRESET_NAME}}, {{INSTALL_DATE}}
+  - Validates installation and teaches /plan → /build → /check → /ship cycle
+
+#### Workflow Automation (PR #12, #11)
+- **`/cleanup` command** - Post-ship workflow automation for solo developers
+  - One-shot cleanup: sync main, delete merged branches, delete shipped specs
+  - Creates `cleanup/merged` staging branch for seamless handoff to `/plan`
+  - Aggressive and opinionated (no confirmations), trusts git history as backup
+  - Optional for teams (can use manual cleanup per conventions)
+- **`/plan` auto-cleanup** - Pre-flight cleanup of shipped features
+  - Detects shipped branches via SHIPPED.md
+  - Automatic branch deletion with safety checks
+  - Prompts for each shipped feature found
+
+#### Script Library Infrastructure (PR #6, #7, #9)
+- **scripts/lib/** modules: common.sh, git.sh, validation.sh, cleanup.sh (456 lines, 29 functions)
+- **bin/csw** CLI wrapper with command routing
+- Three access methods work identically: `/command`, `csw command`, `./spec/csw command`
 
 ### Changed
 
-- **BREAKING**: Moved `bin/csw` to project root as `csw`
-  - Simpler bootstrap: `./csw install` instead of `./bin/csw install`
+#### Breaking Changes
+- **BREAKING**: Moved `bin/csw` to project root as `csw` (PR #15)
+  - Simpler bootstrap: `./csw install` vs `./bin/csw install`
   - Maximum discoverability: visible immediately after clone
   - Follows industry patterns (gradlew, mvnw, configure)
 - **BREAKING**: Removed `bin/` directory (empty after csw move)
-- Updated help text with Bootstrap Commands and Workflow Commands sections
-- Updated all documentation to reference new csw commands
-  - README.md: Installation, uninstall, troubleshooting sections
-  - CONTRIBUTING.md: Development setup instructions
+- **BREAKING**: Deleted `install.sh`, `init-project.sh`, `uninstall.sh` (replaced by csw subcommands)
+- **BREAKING**: EOL PowerShell installation scripts (PR #5)
+  - Removed install.ps1, init-project.ps1, uninstall.ps1
+  - Windows users must use Git Bash or WSL2
+  - Reduces installer codebase by 50%
+
+#### Workflow Improvements
+- **`/ship` workflow** - Single-commit SHIPPED.md update (PR #14)
+  - Reordered steps: push → PR → SHIPPED.md (eliminates "PR: pending" states)
+  - Updated template: short commit hash, full PR URL on separate line
+  - Commit format: `docs: ship {feature} (#{pr-number})`
+  - Method 4 (manual fallback) now fails fast
+- **Commands simplified** - From ~100 lines to ~15 lines each (PR #9)
+  - Replaced 28 embedded bash blocks with 5 clean csw calls
+  - All instructional prompt text preserved
+- **Paths simplified** - `spec/active/` → `spec/` throughout codebase (PR #7)
+- **Documentation updates** (13 files across all PRs)
+  - README.md: Installation, troubleshooting, Feature Lifecycle diagram
+  - CONTRIBUTING.md: Development setup
   - TESTING.md: All test procedures
   - commands/*.md: All command references
-  - templates/stack-template.md: Customization instructions
+  - templates/: stack-template.md, bootstrap-spec.md
 
-### Removed
+### Fixed
 
-- **BREAKING**: `install.sh` (replaced by `csw install`)
-- **BREAKING**: `init-project.sh` (replaced by `csw init`)
-- **BREAKING**: `uninstall.sh` (replaced by `csw uninstall`)
+- **CSW symlink resolution** (PR #13)
+  - Fixed critical bug where commands failed when invoked via `~/.local/bin/csw` symlink
+  - Implemented industry-standard symlink resolution (Node.js/Homebrew pattern)
+  - Handles absolute/relative symlinks, multi-level chains
+  - POSIX compliant (Linux, macOS, WSL, Git Bash)
+
+### Internal
+
+- **Script library refactoring** (PR #6, #7, #9)
+  - Extracted ~400 lines from commands into standalone scripts
+  - Created 6 executable scripts: spec.sh, plan.sh, build.sh, check.sh, ship.sh, cleanup.sh
+  - Zero duplication: all use Phase 1 library functions
+  - All scripts pass shellcheck with zero errors/warnings
+- **Terminology shift**: "archive" → "cleanup" throughout codebase (PR #11)
 
 ### Migration Guide
 
@@ -102,7 +147,7 @@ If upgrading from v0.2.x:
    ```bash
    cd claude-spec-workflow
    git pull
-   ./csw install  # New command
+   ./csw install  # New command location and syntax
    ```
 
 2. **Update existing projects** (optional):
@@ -115,7 +160,11 @@ If upgrading from v0.2.x:
    - Replace `init-project.sh /path/to/project` → `csw init /path/to/project`
    - Replace `./uninstall.sh` → `csw uninstall`
 
+4. **Windows users**: Use Git Bash or WSL2 (PowerShell no longer supported)
+
 **No data loss**: All existing `spec/` directories and SHIPPED.md files preserved.
+
+**See SHIPPED.md** for detailed success metrics (10 features, 100% metrics achieved on most)
 
 _No other unreleased changes. See README.md Roadmap section for planned features._
 
