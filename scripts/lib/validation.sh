@@ -90,22 +90,22 @@ run_validation_suite() {
 
     if ! run_tests; then
         error "Tests failed"
-        ((failed++))
+        failed=$((failed + 1))
     fi
 
     if ! run_linter; then
         error "Linter failed"
-        ((failed++))
+        failed=$((failed + 1))
     fi
 
     if ! run_type_checker; then
         error "Type checking failed"
-        ((failed++))
+        failed=$((failed + 1))
     fi
 
     if ! run_build; then
         error "Build failed"
-        ((failed++))
+        failed=$((failed + 1))
     fi
 
     echo ""

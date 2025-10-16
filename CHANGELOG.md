@@ -46,6 +46,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix `csw install` failing to create CLI symlink due to arithmetic operator bug with `set -e`
+- Fix similar counter increment bugs in `csw uninstall`, validation suite, and cleanup workflow
+- All bash scripts now use `var=$((var + 1))` instead of `((var++))` for `set -e` compatibility
+
 ## [0.3.0] - 2025-10-15
 
 > **Bootstrap & Workflow Consolidation**: Unified CLI + workflow automation + infrastructure refactoring

@@ -83,10 +83,10 @@ case "${1:-}" in
                 target="$CLAUDE_COMMANDS_DIR/$filename"
                 if [ -f "$target" ]; then
                     echo "   ↻ Updated $filename"
-                    ((updated++))
+                    updated=$((updated + 1))
                 else
                     echo "   ✓ Installed $filename"
-                    ((installed++))
+                    installed=$((installed + 1))
                 fi
                 cp "$cmd" "$target"
             fi
@@ -402,7 +402,7 @@ case "${1:-}" in
             if [ -f "$cmd_path" ]; then
                 rm "$cmd_path"
                 echo "   ✓ Removed $cmd"
-                ((removed++))
+                removed=$((removed + 1))
             fi
         done
 

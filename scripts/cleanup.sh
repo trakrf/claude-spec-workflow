@@ -44,7 +44,7 @@ main() {
         if [[ -n "$branch" ]]; then
             echo "  Deleting: $branch"
             git branch -d "$branch" 2>/dev/null || true
-            ((merged_count++))
+            merged_count=$((merged_count + 1))
         fi
     done < <(git branch --merged | grep -v -E '^\*|main|master' || true)
 
@@ -83,10 +83,10 @@ main() {
             if grep -q "$feature_name" spec/SHIPPED.md 2>/dev/null; then
                 echo "  Cleaning up: $spec_dir (found '$feature_name' in SHIPPED.md)"
                 rm -rf "$spec_dir"
-                ((cleaned_count++))
+                cleaned_count=$((cleaned_count + 1))
             else
                 echo "  Keeping: $spec_dir (not in SHIPPED.md)"
-                ((kept_count++))
+                kept_count=$((kept_count + 1))
             fi
         done < <(find spec -name "spec.md" -type f 2>/dev/null || true)
 
