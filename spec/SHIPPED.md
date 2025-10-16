@@ -1,5 +1,32 @@
 # Shipped Features
 
+## Fix csw install Symlink Creation
+- **Date**: 2025-10-16
+- **Branch**: feature/active-fix-install-symlink
+- **Commit**: 921d2be
+- **PR**: https://github.com/trakrf/claude-spec-workflow/pull/17
+- **Summary**: Fix critical bug where bash scripts using `set -e` exit prematurely when incrementing counters from 0 using `((var++))` syntax
+- **Key Changes**:
+  - Fixed csw:86,89,405 - Install and uninstall counters
+  - Fixed scripts/lib/validation.sh:93,98,103,108 - Validation suite counters (4 instances)
+  - Fixed scripts/cleanup.sh:47,86,89 - Cleanup workflow counters (3 instances)
+  - Updated CHANGELOG.md with bug fix documentation
+  - Changed pattern from `((var++))` to `var=$((var + 1))` for `set -e` compatibility
+- **Validation**: ✅ All checks passed (shellcheck clean, syntax valid, 3/3 integration tests passed)
+
+### Success Metrics
+
+- ✅ **Install completes successfully** - **Result**: Symlink created at ~/.local/bin/csw, all 6 commands processed
+- ✅ **Reinstall works without errors** - **Result**: Reports "Already installed", no premature exit
+- ✅ **Uninstall works correctly** - **Result**: Symlink removed, all 6 commands cleaned up
+- ✅ **All counters accurate** - **Result**: Summary reports show correct counts (0 installed, 6 updated)
+- ✅ **No premature script exits** - **Result**: All workflow steps complete as designed
+- ✅ **Pattern applied consistently** - **Result**: All 7 locations fixed with same pattern
+
+**Overall Success**: 100% of metrics achieved (6/6)
+
+**Impact**: Eliminates critical installation failure that prevented users from accessing csw commands globally. The `csw install` command would stop after processing only the first file, never creating the CLI symlink in ~/.local/bin. Comprehensive audit found 6 additional instances of the same bug pattern across validation and cleanup workflows, all fixed preventatively. The root cause was bash treating post-increment operator `((var++))` returning 0 as a failure with `set -e` enabled. Simple pattern change to explicit arithmetic `var=$((var + 1))` ensures reliable counter incrementation across all scripts.
+
 ## Interactive Clarifying Questions
 - **Date**: 2025-10-15
 - **Branch**: feature/active-interactive-clarification
