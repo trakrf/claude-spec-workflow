@@ -235,6 +235,22 @@ The user will provide the path to a specification file (e.g., `spec/auth/spec.md
    - Testing strategy and coverage expectations
    - Error handling approach
 
+---
+## OUTPUT FORMATTING RULES
+
+**CRITICAL**: When displaying clarifying questions with multiple choice options, each choice MUST appear on its own line. Do NOT concatenate choices together.
+
+✅ CORRECT:
+   a) First option
+   b) Second option
+   c) Third option
+
+❌ WRONG:
+   a) First optionb) Second optionc) Third option
+
+This applies to ALL multiple choice questions. Preserve line breaks exactly as shown in the examples below.
+---
+
    **Example ONE-AT-A-TIME flow**:
    ```
    Question 1/5: Should this follow the pattern in auth-service.ts:45-67?

@@ -276,6 +276,24 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
 
 If any blocking gate fails, you MUST fix before shipping.
 
+---
+## OUTPUT FORMATTING RULES
+
+**CRITICAL**: When displaying ship summaries, PR information, and validation gates, each item MUST appear on its own line. Do NOT concatenate list items together.
+
+✅ CORRECT:
+   🌿 Git Status:
+   - Branch: feature/auth
+   - Commits: 3 ahead of main
+   - Pushed to origin
+
+❌ WRONG:
+   🌿 Git Status:
+   - Branch: feature/auth- Commits: 3 ahead of main- Pushed to origin
+
+This applies to ALL output examples below, including validation gates, error messages, and success summaries. Preserve line breaks exactly as shown.
+---
+
 ## Output Format
 
 Success case:

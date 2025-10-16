@@ -22,7 +22,7 @@ auto_tag_release() {
     # Try VERSION file first
     if [[ -f "VERSION" ]]; then
         local version
-        version=$(cat VERSION | tr -d '[:space:]')
+        version=$(tr -d '[:space:]' < VERSION)
         local tag="v$version"
 
         if ! git tag | grep -q "^$tag$"; then
