@@ -48,6 +48,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix output formatting across all workflow commands (/plan, /check, /build, /ship)
+  - Added explicit OUTPUT FORMATTING RULES sections to prevent list item concatenation
+  - Each command now includes visual examples (✅ correct vs ❌ wrong) for clear guidance
+  - Resolves issue where multiple choice options, checkmarks, and bullet points were rendered as walls of text
 - Fix `csw install` failing to create CLI symlink due to arithmetic operator bug with `set -e`
 - Fix similar counter increment bugs in `csw uninstall`, validation suite, and cleanup workflow
 - All bash scripts now use `var=$((var + 1))` instead of `((var++))` for `set -e` compatibility

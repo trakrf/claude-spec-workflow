@@ -220,6 +220,23 @@ These should be addressed but don't block merge:
 - All gates pass + warnings → Status: **READY WITH WARNINGS** (can ship, should fix)
 - All gates pass + no warnings → Status: **READY** (ship it!)
 
+---
+## OUTPUT FORMATTING RULES
+
+**CRITICAL**: When displaying validation results and check summaries, each checkmark item MUST appear on its own line. Do NOT concatenate items together.
+
+✅ CORRECT:
+   ✅ Feature validation: 7/7 tasks complete
+   ✅ Code quality: Clean (no issues)
+   ✅ Git status: On feature branch, 1 commit ahead
+   ✅ Ready to ship: YES
+
+❌ WRONG:
+   ✅ Feature validation: 7/7 tasks complete✅ Code quality: Clean (no issues)✅ Git status: On feature branch, 1 commit ahead✅ Ready to ship: YES
+
+This applies to ALL output examples below. Each line in tables, lists, and summaries must be rendered on its own line.
+---
+
 ## Output Format
 
 **For full validation (no workspace specified):**

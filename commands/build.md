@@ -248,6 +248,23 @@ The log.md file should be detailed enough that another session can resume work b
 - What's left to do
 - Any open questions/blockers
 
+---
+## OUTPUT FORMATTING RULES
+
+**CRITICAL**: When displaying task progress and build summaries, each status line MUST appear on its own line. Do NOT concatenate consecutive updates together.
+
+✅ CORRECT:
+   📝 Task 1/5: Setup database schema
+   ✅ Implementation complete
+   ✅ Validation passed
+   💾 Progress saved to log.md
+
+❌ WRONG:
+   📝 Task 1/5: Setup database schema✅ Implementation complete✅ Validation passed💾 Progress saved to log.md
+
+This applies to ALL output examples below. Preserve line breaks exactly as shown.
+---
+
 ## Output Format
 After each task:
 ```
