@@ -102,12 +102,12 @@ Final validation and PR preparation:
 
 ## Command Reference
 
-| Command | Purpose | Input |
+| Command | Purpose | Notes |
 |---------|---------|-------|
-| `/plan` | Generate implementation plan | `spec/{feature}/spec.md` or fragment |
-| `/build` | Execute implementation | `spec/{feature}/` or auto-detect |
-| `/check` | Validate PR readiness | None |
-| `/ship` | Complete and ship | `spec/{feature}/` or auto-detect |
+| `/plan` | Generate implementation plan | Auto-detects spec or accepts fragment |
+| `/build` | Execute implementation | Validates continuously; full suite at end |
+| `/check` | Validate PR readiness (optional) | /ship runs this automatically |
+| `/ship` | Complete and ship | Creates PR; runs /check first |
 
 ## Feature Lifecycle & Cleanup Workflow
 
