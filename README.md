@@ -238,14 +238,14 @@ The system uses workspace-specific validation commands from `spec/stack.md`:
 
 ## Commands
 
-| Command | Purpose | When to Use |
-|---------|---------|-------------|
-| `/spec` | Convert conversation to specification | After exploring an idea interactively |
-| `/plan` | Generate implementation plan | When you have a clear spec |
-| `/build` | Execute the plan | After plan is approved |
-| `/check` | Validate everything | Before creating PR |
-| `/ship` | Complete and PR | When ready to merge |
-| `/cleanup` | Clean up shipped features | After merging PR (optional solo dev tool) |
+| Command | What It Does | When to Use |
+|---------|--------------|-------------|
+| `/spec` | **Define WHAT** - Gather requirements and desired outcomes | After exploring bugs, reading tickets, or discussing ideas |
+| `/plan` | **Define HOW** - Generate detailed implementation approach | When you have clear requirements in spec.md |
+| `/build` | **Execute** - Implement the plan with continuous validation | After reviewing and approving the plan |
+| `/check` | **Validate** - Comprehensive pre-ship audit (optional) | For detailed readiness report or pre-ship review |
+| `/ship` | **Finalize** - Commit, push, create PR (runs /check automatically) | When ready to merge |
+| `/cleanup` | **Reset** - Clean up shipped work for next feature | After merging PR (optional solo dev workflow) |
 
 ## Feature Lifecycle
 
@@ -307,6 +307,60 @@ Complete a feature? `/ship` logs it to SHIPPED.md. After merging, the spec/ scaf
 2. **Clarify Before Coding** - Interactive planning prevents false starts
 3. **Validate Continuously** - Fix issues immediately, not in a big cleanup
 4. **Ship Clean** - Comprehensive checks ensure professional results
+
+## Optimizing Command Flow
+
+### Understanding the Contract Model
+
+CSW commands read from disk artifacts (spec.md, plan.md, etc.) which enables:
+- **Resumable workflows** - Pick up hours or days later
+- **Clear contracts** - Each stage produces a complete artifact for the next
+- **Team collaboration** - Multiple people can work on different stages
+
+### When to Clear Context
+
+Each workflow stage has different context requirements:
+
+| Transition | Context Strategy | Why |
+|------------|------------------|-----|
+| /spec → /plan | **Keep context** | Natural flow from exploration to planning |
+| /plan → /build | **Clear context** | plan.md is complete contract; tests completeness |
+| /build → /check | **Clear context** | Independent review with fresh perspective |
+| /check → /ship | **Clear context** | Mechanical operation from artifacts |
+
+**Rapid flow example**:
+```bash
+# Exploration and specification
+/spec my-feature
+
+# Planning (keeps context from /spec conversation)
+/plan
+
+# Clear context, build from plan.md
+/clear
+/build
+
+# Skip /check, go straight to ship (it re-validates anyway)
+/ship
+```
+
+### When to Skip /check
+
+**/build already validates everything** before allowing commits:
+- Lint must be clean
+- Types must be correct
+- Tests must pass
+- Build must succeed
+
+**/ship runs /check automatically** before creating PR, so in rapid flow you can safely skip it.
+
+**Run /check explicitly when:**
+- You want a detailed readiness report before deciding to ship
+- Time has passed since /build (hours/days)
+- You made manual edits after /build completed
+- Someone else is reviewing your work
+
+**Bottom line**: Trust /build's validation. In rapid flow, skip /check and go straight to /ship - it will re-validate everything anyway.
 
 ## Complexity Assessment & Scope Protection
 
