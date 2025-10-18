@@ -1,5 +1,36 @@
 # Shipped Features
 
+## WHAT vs HOW Documentation & Context Management
+- **Date**: 2025-10-18
+- **Branch**: feature/context-docs
+- **Commit**: eeac0c9
+- **PR**: https://github.com/trakrf/claude-spec-workflow/pull/29
+- **Summary**: Clarify WHAT vs HOW distinction and optimize workflow guidance for better user understanding
+- **Key Changes**:
+  - Enhanced command tables in README.md and spec/README.md with WHAT vs HOW distinction
+  - Added "Optimizing Command Flow" section to README.md explaining context management
+  - Added HTML comment to spec/template.md clarifying spec.md purpose (WHAT to build)
+  - Documented when to skip /check in rapid workflow
+  - Explained contract model: disk artifacts enable resumable workflows
+  - Provided context strategy guidance for each workflow transition
+- **Validation**: ✅ All checks passed (shellcheck clean, bash syntax valid, no errors)
+
+### Success Metrics
+
+- ✅ **spec/template.md includes WHAT vs HOW explanation** - **Result**: HTML comment added at top explaining spec.md purpose
+- ✅ **README.md command table clarifies WHAT vs HOW distinction** - **Result**: Command descriptions enhanced with bold WHAT/HOW labels
+- ✅ **Users understand when to edit spec vs plan** - **Result**: Clear guidance in template and README
+- ✅ **"Optimizing Command Flow" section added to README.md** - **Result**: ~55 lines added with 3 subsections
+- ✅ **Command tables enhanced in both READMEs** - **Result**: Both README.md and spec/README.md tables updated
+- ✅ **Context management guidance is clear and actionable** - **Result**: Table showing when to clear context between stages
+- ✅ **/check optional nature is documented** - **Result**: Marked as "(optional)" in tables, explained in workflow section
+- ✅ **All formatting matches existing README style** - **Result**: Follows existing patterns and proportionality
+- ✅ **Markdown renders correctly** - **Result**: Tables align properly, HTML comment invisible when rendered
+
+**Overall Success**: 100% of metrics achieved (9/9)
+
+**Impact**: Eliminates confusion around fundamental CSW workflow concepts. New users now understand the critical distinction between spec.md (WHAT outcomes to achieve) and plan.md (HOW to implement). Context management guidance helps users optimize their workflow by understanding when to /clear between stages and when to skip /check in rapid flow. The "Optimizing Command Flow" section documents the contract model (disk artifacts enable resumable workflows) and provides actionable guidance for efficient development. Documentation changes are purely additive, following existing README tone and formatting style.
+
 ## Fix Output Formatting Across All Workflow Commands
 - **Date**: 2025-10-16
 - **Branch**: feature/fix-plan-formatting
