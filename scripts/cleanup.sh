@@ -27,33 +27,20 @@ main() {
         echo ""
     fi
 
-    # 2. Sync with Main
+    # 2. Sync Remote State
+    # Fetch all remote refs and prune deleted branches (fixes timing issues)
+    info "📡 Syncing remote refs..."
+    git fetch --prune origin
+    echo ""
+
+    # Sync local main branch
     main_branch=$(get_main_branch)
     info "📥 Syncing with $main_branch..."
     git checkout "$main_branch"
     git pull
 
     # 3. Delete Merged Branches
-    info "🗑️  Deleting merged branches..."
-    echo ""
-
-    merged_count=0
-    while IFS= read -r branch; do
-        # Trim whitespace
-        branch=$(echo "$branch" | xargs)
-        if [[ -n "$branch" ]]; then
-            echo "  Deleting: $branch"
-            git branch -d "$branch" 2>/dev/null || true
-            merged_count=$((merged_count + 1))
-        fi
-    done < <(git branch --merged | grep -v -E '^\*|main|master' || true)
-
-    if [[ $merged_count -eq 0 ]]; then
-        success "✅ No merged branches to clean up"
-    else
-        success "✅ Deleted $merged_count merged branch(es)"
-    fi
-    echo ""
+    cleanup_merged_branches "$main_branch"
 
     # 4. Create Cleanup Staging Branch
     info "🌿 Creating cleanup/merged branch..."
