@@ -48,6 +48,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **`/cleanup` command**: Fixed branch detection to handle squash-merged and rebase-merged PRs (Issues #20, #30)
+  - Added `git fetch --prune origin` to sync remote state before detection (fixes timing issues)
+  - Implemented dual detection: traditional `--merged` check + remote tracking verification
+  - Now reliably detects branches merged via any GitHub strategy (merge commit, squash, rebase)
+  - Eliminates manual cleanup for orphaned local branches after merging PRs
+
 - Fix output formatting across all workflow commands (/plan, /check, /build, /ship)
   - Added explicit OUTPUT FORMATTING RULES sections to prevent list item concatenation
   - Each command now includes visual examples (✅ correct vs ❌ wrong) for clear guidance

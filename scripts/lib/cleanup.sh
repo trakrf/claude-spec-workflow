@@ -83,3 +83,72 @@ cleanup_shipped_feature() {
     # Auto-tag the release
     auto_tag_release
 }
+
+cleanup_merged_branches() {
+    local main_branch="$1"
+    local deleted_count=0
+
+    info "🗑️  Deleting branches merged to $main_branch..."
+    echo ""
+
+    # Method 1: Delete branches merged via traditional merge commit
+    local merged_branches
+    merged_branches=$(git branch --merged "$main_branch" | grep -v -E '^\*|main|master|cleanup/merged' || true)
+
+    if [[ -n "$merged_branches" ]]; then
+        while IFS= read -r branch; do
+            branch=$(echo "$branch" | xargs)  # trim whitespace
+            if [[ -n "$branch" ]]; then
+                echo "  Deleting: $branch (merged to $main_branch)"
+                git branch -d "$branch" 2>/dev/null || true
+                deleted_count=$((deleted_count + 1))
+            fi
+        done <<< "$merged_branches"
+    fi
+
+    # Method 2: Delete branches whose remote was deleted (handles squash/rebase)
+    for branch in $(git branch --format='%(refname:short)'); do
+        # Skip special branches
+        if [[ "$branch" == "main" || "$branch" == "master" || "$branch" == "cleanup/merged" ]]; then
+            continue
+        fi
+
+        # Skip if already deleted by Method 1
+        if ! git show-ref --verify --quiet "refs/heads/$branch"; then
+            continue
+        fi
+
+        # Get remote tracking information
+        local remote_branch
+        local remote_name
+        remote_branch=$(git config --get "branch.$branch.merge" 2>/dev/null | sed 's|refs/heads/||')
+        remote_name=$(git config --get "branch.$branch.remote" 2>/dev/null)
+
+        if [[ -n "$remote_name" && -n "$remote_branch" ]]; then
+            # Check if remote branch still exists
+            if git ls-remote --exit-code --heads "$remote_name" "$remote_branch" &>/dev/null; then
+                # Remote still exists, don't delete
+                continue
+            else
+                # Check ls-remote exit code for proper error handling
+                local ls_exit=$?
+                if [[ $ls_exit -eq 2 ]]; then
+                    # Exit code 2 means remote doesn't exist (what we want)
+                    echo "  Deleting: $branch (remote deleted)"
+                    git branch -D "$branch" 2>/dev/null || true
+                    deleted_count=$((deleted_count + 1))
+                else
+                    # Network error or other failure
+                    warning "  Skipping: $branch (could not verify remote status)"
+                fi
+            fi
+        fi
+    done
+
+    if [[ $deleted_count -eq 0 ]]; then
+        success "✅ No merged branches to clean up"
+    else
+        success "✅ Deleted $deleted_count branch(es)"
+    fi
+    echo ""
+}
