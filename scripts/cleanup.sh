@@ -52,30 +52,37 @@ main() {
     if [[ -f "spec/SHIPPED.md" ]]; then
         info "🧹 Cleaning up shipped specs..."
         echo ""
+        # Note: Uses log.md as proof of completion (not SHIPPED.md text matching)
+        # log.md on main proves: /build ran → committed → PR merged → complete
 
         cleaned_count=0
         kept_count=0
 
-        # Find all spec.md files
-        while IFS= read -r spec_file; do
-            spec_dir=$(dirname "$spec_file")
-            feature_name=$(basename "$spec_dir")
+        # Find all spec directories (both with and without log.md)
+        all_specs=$(find spec -name "spec.md" -type f 2>/dev/null || true)
+        # Find spec directories with log.md (definitive proof of completion)
+        completed_specs=$(find spec -name "log.md" -type f 2>/dev/null || true)
 
-            # Skip if feature name matches patterns we should never delete
-            if [[ "$feature_name" == "backlog" ]] || [[ "$spec_dir" =~ spec/backlog/ ]]; then
+        # Process all specs
+        while IFS= read -r spec_file; do
+            [[ -z "$spec_file" ]] && continue
+            spec_dir=$(dirname "$spec_file")
+
+            # Skip backlog
+            if [[ "$spec_dir" =~ spec/backlog/ ]]; then
                 continue
             fi
 
-            # Check if feature is in SHIPPED.md
-            if grep -q "$feature_name" spec/SHIPPED.md 2>/dev/null; then
-                echo "  Cleaning up: $spec_dir (found '$feature_name' in SHIPPED.md)"
+            # Check if this spec has log.md (definitive proof of completion)
+            if echo "$completed_specs" | grep -q "^${spec_dir}/log.md$"; then
+                echo "  ✓ Removing completed spec: $spec_dir (has log.md)"
                 rm -rf "$spec_dir"
                 cleaned_count=$((cleaned_count + 1))
             else
-                echo "  Keeping: $spec_dir (not in SHIPPED.md)"
+                echo "  → Preserving: $spec_dir (no log.md)"
                 kept_count=$((kept_count + 1))
             fi
-        done < <(find spec -name "spec.md" -type f 2>/dev/null || true)
+        done <<< "$all_specs"
 
         echo ""
         success "✅ Cleaned up $cleaned_count spec(s), kept $kept_count spec(s)"

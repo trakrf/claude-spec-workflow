@@ -46,7 +46,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_No unreleased changes._
+
+## [0.3.1] - 2025-10-23
+
+> **Critical Bug Fix**: Prevents data loss from cleanup script
+
 ### Fixed
+
+- **CRITICAL: `/cleanup` spec deletion logic** (Issue #35)
+  - Fixed false positive deletions where specs mentioned in SHIPPED.md descriptions were incorrectly deleted
+  - Root cause: `grep -q "$feature_name"` matched feature names anywhere in SHIPPED.md, not just section headers
+  - Example: Spec `3.3.2/` was deleted because a different feature's entry contained "Foundation for: Phase 3.3.2"
+  - **Solution**: Use `log.md` filesystem existence as definitive proof of completion instead of text parsing
+  - `log.md` on main proves: `/build` ran → committed → PR merged → feature complete
+  - Eliminates all text-matching edge cases and simplifies cleanup logic
+  - Backward compatible: all shipped specs have log.md; unshipped specs are preserved
+  - **Impact**: Prevents data loss for work-in-progress specs referenced in shipped feature descriptions
+  - Changed in: `scripts/cleanup.sh:59-83`
 
 - **`/cleanup` command**: Fixed branch detection to handle squash-merged and rebase-merged PRs (Issues #20, #30)
   - Added `git fetch --prune origin` to sync remote state before detection (fixes timing issues)
@@ -58,9 +75,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added explicit OUTPUT FORMATTING RULES sections to prevent list item concatenation
   - Each command now includes visual examples (✅ correct vs ❌ wrong) for clear guidance
   - Resolves issue where multiple choice options, checkmarks, and bullet points were rendered as walls of text
+
 - Fix `csw install` failing to create CLI symlink due to arithmetic operator bug with `set -e`
 - Fix similar counter increment bugs in `csw uninstall`, validation suite, and cleanup workflow
 - All bash scripts now use `var=$((var + 1))` instead of `((var++))` for `set -e` compatibility
+
+### Migration Notes
+
+**If you have been using v0.3.0**:
+- No action required - the fix is backward compatible
+- All existing shipped specs already have `log.md` on main branch
+- Update immediately to prevent potential data loss from cleanup operations
+
+**Recommended**: Pull and reinstall:
+```bash
+cd claude-spec-workflow
+git pull
+./csw install
+```
 
 ## [0.3.0] - 2025-10-15
 
