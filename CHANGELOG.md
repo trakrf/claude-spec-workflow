@@ -48,6 +48,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 _No unreleased changes._
 
+## [0.4.0] - 2025-10-23
+
+> **Workflow Improvement**: Streamlined cleanup automation
+
+### Changed
+
+- **`/cleanup` SHIPPED.md handling**
+  - Removed interactive confirmation prompt for deleting retired SHIPPED.md file
+  - SHIPPED.md is now deleted automatically if present during cleanup
+  - Shows info message: "Removed retired SHIPPED.md (preserved in git history)"
+  - Rationale: SHIPPED.md is retired; no need to ask permission each time
+  - One-time migration concern removed from workflow context
+  - Changed in: `scripts/cleanup.sh:16-21`, `commands/cleanup.md:26-29,101`
+
 ## [0.3.2] - 2025-10-23
 
 > **Bug Fix**: Cleanup script branch detection
