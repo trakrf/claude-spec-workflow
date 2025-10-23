@@ -280,7 +280,7 @@ flowchart LR
 2. **plan** - Generate implementation plan
 3. **build** - Implement the feature
 4. **[check]** - Validate (optional: tests, lint, types, build)
-5. **ship** - Create PR (logs to SHIPPED.md)
+5. **ship** - Create PR
 6. **`<merge>`** - Merge the PR (manual)
 7. **[cleanup]** - Clean up shipped features (optional solo dev tool)
 8. **repeat** - Start next feature
@@ -290,16 +290,16 @@ flowchart LR
 CSW focuses on *current* work, not completed work.
 
 - **spec/** - Workspace for active/planned features (transient)
-- **SHIPPED.md** - Record of completed work (durable)
-- **Git** - Full history and context
+- **Git + GitHub PRs** - Full history and record of shipped features
+- **log.md** - Local proof that `/build` succeeded
 
-Complete a feature? `/ship` logs it to SHIPPED.md. After merging, the spec/ scaffolding can be cleaned up manually or left in place - it's already preserved in git history.
+Complete a feature? `/ship` creates the PR. After merging, the spec/ scaffolding can be cleaned up - it's already preserved in git history.
 
 **Optional `/cleanup` step**:
 - **Solo devs**: Use `/cleanup` for zero-friction transition to next feature (deletes merged branches and shipped specs)
 - **Team devs**: Handle cleanup manually per team conventions
 - **Skippable**: `/plan` still works without prior cleanup
-- Everything is backed up: specs in git history, branches in reflog, features in SHIPPED.md
+- Everything is backed up: specs in git history, branches in reflog, shipped features tracked in GitHub PRs
 
 ## Workflow Philosophy
 
@@ -497,8 +497,7 @@ your-project/
     │       └── log.md    # Progress tracking (generated)
     ├── stack.md          # Validation commands for your tech stack
     ├── template.md       # Spec template for new features
-    ├── README.md         # Workflow documentation
-    └── SHIPPED.md        # Log of completed features
+    └── README.md         # Workflow documentation
 ```
 
 ## Uninstalling
@@ -639,14 +638,7 @@ export GH_TOKEN=your_token_here
 ```
 
 **After creating PR manually**:
-Update SHIPPED.md:
-```bash
-# Find "PR: pending" in spec/SHIPPED.md and replace with actual URL
-sed -i 's|PR: pending|PR: https://github.com/owner/repo/pull/123|' spec/SHIPPED.md
-git add spec/SHIPPED.md
-git commit -m "docs: update SHIPPED.md with PR URL"
-git push
-```
+Your PR is ready for review! The spec directory remains in your working tree until you run `/cleanup` after the PR is merged.
 
 ### Getting Help
 

@@ -2,12 +2,12 @@
 
 ## Persona: Efficient Solo Developer
 
-**Adopt this mindset**: You are a solo developer who values speed and automation. Your strength is **aggressive cleanup** without asking permission. You trust that everything is backed up (git history + SHIPPED.md).
+**Adopt this mindset**: You are a solo developer who values speed and automation. Your strength is **aggressive cleanup** without asking permission. You trust that everything is backed up in git history.
 
 **Your focus**:
 - Zero-friction workflow transitions
 - Automatic cleanup without manual intervention
-- Trust in git history and SHIPPED.md as backup
+- Trust in git history as backup
 - Speed over safety (but informed speed)
 
 ---
@@ -24,8 +24,8 @@ None required. The command operates on the current git repository state.
 The cleanup workflow is implemented in `scripts/cleanup.sh` with the following steps:
 
 1. **Pre-flight Checks**
-   - Warn if SHIPPED.md doesn't exist (spec cleanup will be skipped)
    - Warn if already on cleanup/merged branch (idempotent - safe to re-run)
+   - Check for retired SHIPPED.md file and offer to delete it
    - Never blocks - just informs user
 
 2. **Sync with Main**
@@ -44,10 +44,10 @@ The cleanup workflow is implemented in `scripts/cleanup.sh` with the following s
    - This is the magic branch that `/plan` will detect and rename
 
 5. **Delete Shipped Spec Directories**
-   - Find all spec.md files in spec/
+   - Find all spec directories in spec/
    - Skip spec/backlog/ (future work)
-   - Check if basename matches entry in SHIPPED.md
-   - Delete matched specs (kept in git history)
+   - Check if directory contains log.md (proof of completed /build)
+   - Delete specs with log.md (kept in git history)
    - Report count of cleaned vs kept specs
 
 6. **Commit Cleanup**
@@ -63,7 +63,7 @@ The cleanup workflow is implemented in `scripts/cleanup.sh` with the following s
 ## Characteristics
 
 This command is **aggressive** and **opinionated**:
-- **No confirmation prompts** - Trusts git history and SHIPPED.md as backup
+- **No confirmation prompts** - Trusts git history as backup
 - **Deletes without asking** - Everything is recoverable from git
 - **Opt-in only** - Never runs automatically
 - **Idempotent** - Safe to run multiple times
@@ -77,7 +77,7 @@ This command is **aggressive** and **opinionated**:
 - Excludes: current branch, main, master
 
 **Specs**:
-- Any `spec/**/` directory where the basename matches an entry in SHIPPED.md
+- Any `spec/**/` directory that contains `log.md` (completed /build)
 - Excludes: `spec/backlog/*` (future work)
 - Preserved: Git history shows the spec before deletion
 
@@ -101,9 +101,9 @@ git checkout -b recovered-branch <commit>
 - If not in a git repository: Exit with error
 - If main doesn't exist: Exit with error
 - If git pull fails: Exit with error
-- If SHIPPED.md doesn't exist: Warn, skip spec cleanup
 - If already on cleanup/merged: Warn, continue (idempotent)
 - If no changes to commit: Info message, no error
+- If SHIPPED.md exists: Offer to delete (one-time migration)
 
 ## Execution
 

@@ -33,7 +33,7 @@ So that the team can use specification-driven development
 ## Success Metrics
 - [ ] Directory structure matches spec/README.md documentation
 - [ ] Template can be copied to create new specs
-- [ ] This bootstrap spec itself gets shipped to SHIPPED.md
+- [ ] This bootstrap spec creates a merged PR (visible in `gh pr list --state merged`)
 - [ ] First hands-on experience with CSW workflow completed successfully
 
 ## References

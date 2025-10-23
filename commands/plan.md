@@ -64,7 +64,7 @@ The user will provide the path to a specification file (e.g., `spec/auth/spec.md
    - Old specs remain (harmless, preserved in git)
    - `/plan` creates new feature branch as usual
 
-   **Note**: Specs are NOT moved to `spec/archive/`. When deleted, they're preserved in git history. `SHIPPED.md` provides the reference to find them.
+   **Note**: Specs are NOT moved to `spec/archive/`. When deleted by /cleanup, they're preserved in git history. Use `gh pr list --state merged` to see shipped features.
 
 3. **Read and Understand Specification**
     - Read the specification file completely
