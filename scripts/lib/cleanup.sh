@@ -59,31 +59,6 @@ auto_tag_release() {
     return 0
 }
 
-cleanup_shipped_feature() {
-    local feature="$1"
-    local spec_dir
-    local shipped_md
-
-    info "Cleaning up shipped feature: $feature"
-
-    cleanup_spec_directory "$feature"
-
-    spec_dir=$(get_spec_dir)
-    shipped_md="$spec_dir/SHIPPED.md"
-
-    # Commit the deletion if SHIPPED.md exists
-    if [[ -f "$shipped_md" ]]; then
-        git add "$spec_dir"
-        git commit -m "chore: cleanup $feature spec (shipped)"
-        success "Feature $feature cleaned up"
-    else
-        warning "SHIPPED.md not found, skipping commit"
-    fi
-
-    # Auto-tag the release
-    auto_tag_release
-}
-
 cleanup_merged_branches() {
     local main_branch="$1"
     local deleted_count=0

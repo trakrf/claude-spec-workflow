@@ -253,11 +253,6 @@ case "${1:-}" in
         echo "📁 Creating spec directories..."
         mkdir -p "$PROJECT_DIR/spec/active"
 
-        # Initialize SHIPPED.md if it doesn't exist
-        if [ ! -f "$PROJECT_DIR/spec/SHIPPED.md" ]; then
-            touch "$PROJECT_DIR/spec/SHIPPED.md"
-        fi
-
         # Check for existing files and prompt for overwrite
         FILES_TO_OVERWRITE=()
         [ -f "$PROJECT_DIR/spec/stack.md" ] && FILES_TO_OVERWRITE+=("spec/stack.md")
@@ -365,7 +360,6 @@ case "${1:-}" in
         echo "   ├── README.md       # Workflow documentation"
         echo "   ├── template.md     # Spec template"
         echo "   ├── stack.md        # Validation commands"
-        echo "   ├── SHIPPED.md      # Completed features log"
 
         if [ "$CREATE_BOOTSTRAP" = true ]; then
             echo "   └── bootstrap/      # Bootstrap validation spec ⭐"
