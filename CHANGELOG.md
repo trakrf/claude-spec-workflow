@@ -50,20 +50,20 @@ _No unreleased changes._
 
 ## [0.4.0] - 2025-10-23
 
-> **Workflow Improvement**: Streamlined cleanup automation
+> **Workflow Simplification**: Complete SHIPPED.md retirement
 
 ### Changed
 
-- **`/cleanup` SHIPPED.md handling**
-  - Removed interactive confirmation prompt for deleting retired SHIPPED.md file
-  - SHIPPED.md is now deleted automatically if present during cleanup
-  - Shows info message: "Removed retired SHIPPED.md (preserved in git history)"
-  - **Why SHIPPED.md was retired** (see PR #40):
+- **Complete SHIPPED.md retirement**
+  - **Background**: SHIPPED.md was removed from the workflow in PR #40 because:
     - Stored commit SHAs that became invalid after squash/rebase merges
     - Content was never actually read by any workflow command
     - Redundant: GitHub PRs are the canonical source of truth (`gh pr list --state merged`)
     - `log.md` presence is the real proof a spec is complete
-  - **Why remove the prompt**: Interactive prompts block automation. No need to ask permission to delete a retired file that's preserved in git history.
+  - **This change**: Completes the retirement by removing the interactive deletion prompt
+  - Cleanup script now auto-deletes leftover SHIPPED.md files (no prompt)
+  - Shows info message: "Removed retired SHIPPED.md (preserved in git history)"
+  - Rationale: Interactive prompts block automation; no need to ask permission for a deprecated file
   - Changed in: `scripts/cleanup.sh:16-21`, `commands/cleanup.md:26-29,101`
 
 ## [0.3.2] - 2025-10-23
