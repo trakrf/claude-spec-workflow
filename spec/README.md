@@ -57,7 +57,6 @@ spec/
 ├── backlog/           # Optional: Future specs not ready to work on
 │   └── onboarding-bootstrap/
 │       └── spec.md
-└── SHIPPED.md         # Log of completed features
 ```
 
 **Note**: Organize specs however makes sense for your project. The system supports arbitrary nesting after `spec/`.
@@ -117,23 +116,33 @@ CSW uses **rebase workflow** (linear history), not merge commits.
 
 **When you run `/ship`**:
 1. Creates PR from feature branch
-2. **Updates SHIPPED.md** with entry (commit hash is known before merge)
-3. Commits on feature branch before final merge
+2. Commits and pushes to remote
+3. PR is ready for review and merge
+
+**When you run `/cleanup` (after PR is merged)**:
+1. Syncs with main branch
+2. Deletes merged feature branches
+3. Creates `cleanup/merged` staging branch
+4. **DELETES** spec directories that have `log.md` (proof of completion)
+5. Commits the cleanup
 
 **When you run `/plan` (next feature)**:
-1. Detects if current branch is in SHIPPED.md
-2. Switches to main, pulls latest
-3. **DELETES** the spec directory (`spec/feature-name/`)
-4. Creates new feature branch
+1. Detects `cleanup/merged` branch and renames it to new feature name
+2. Or creates new feature branch from main
+3. Ready to start next feature
 
 ### Cleanup = DELETE
 
-When `/plan` detects shipped features, the "cleanup" operation:
-1. Checks SHIPPED.md for shipped features
-2. **DELETES** the spec directory (`spec/feature-name/`)
-3. Commits the deletion on the new feature branch
+The `/cleanup` command deletes shipped specs from your working tree:
+1. Finds all spec directories with `log.md` files
+2. **DELETES** those spec directories (`spec/feature-name/`)
+3. Commits the deletion on `cleanup/merged` branch
 
-**Important**: There is no `spec/archive/` directory. Specs are preserved in git history. SHIPPED.md provides the reference to find them.
+**Truth**: If a spec has `log.md`, it means `/build` succeeded and the feature is complete.
+
+**Source of record**: Use `gh pr list --state merged` to see shipped features. GitHub PRs are the canonical source of truth.
+
+**Important**: There is no `spec/archive/` directory. Specs are deleted from working tree but preserved in git history.
 
 ### Workflow Diagram
 
@@ -142,19 +151,18 @@ sequenceDiagram
     participant U as User
     participant F as Feature Branch
     participant M as Main
-    participant N as Next Feature
+    participant C as Cleanup Branch
 
-    U->>F: /build
+    U->>F: /build (creates log.md)
     U->>F: /ship (creates PR)
-    F->>F: Update SHIPPED.md with entry
     F->>F: Commit all changes
-    F->>M: Rebase and merge PR (linear history)
-    U->>N: /plan (new feature)
-    N->>N: Detect current branch is shipped
-    N->>M: Switch to main, pull latest
-    N->>N: DELETE spec/old-feature/
-    N->>N: Create new feature branch
-    N->>N: Continue with new planning
+    F->>M: Merge PR
+    U->>C: /cleanup
+    C->>M: Sync with main
+    C->>C: Delete specs with log.md
+    C->>C: Create cleanup/merged branch
+    U->>C: /plan (new feature)
+    C->>F: Rename to feature branch
 ```
 
 ### Path Simplification

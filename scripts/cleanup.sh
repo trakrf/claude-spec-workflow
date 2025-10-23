@@ -14,9 +14,21 @@ main() {
     echo ""
 
     # 1. Pre-flight Checks
-    if [[ ! -f "spec/SHIPPED.md" ]]; then
-        warning "⚠️  Warning: spec/SHIPPED.md not found"
-        echo "   Spec cleanup will be skipped (no reference for what's shipped)"
+    # Check if retired SHIPPED.md exists and offer to delete
+    if [[ -f "spec/SHIPPED.md" ]]; then
+        echo ""
+        info "📋 SHIPPED.md Retirement Notice"
+        echo "   SHIPPED.md has been retired from the workflow."
+        echo "   Use GitHub PRs as the source of truth: gh pr list --state merged"
+        echo ""
+        read -p "   Delete spec/SHIPPED.md? (y/n) " -n 1 -r
+        echo ""
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            rm spec/SHIPPED.md
+            info "   ✓ Deleted spec/SHIPPED.md"
+        else
+            info "   ✓ Kept spec/SHIPPED.md (can delete manually anytime)"
+        fi
         echo ""
     fi
 
@@ -49,46 +61,42 @@ main() {
     echo ""
 
     # 5. Delete Shipped Spec Directories
-    if [[ -f "spec/SHIPPED.md" ]]; then
-        info "🧹 Cleaning up shipped specs..."
-        echo ""
-        # Note: Uses log.md as proof of completion (not SHIPPED.md text matching)
-        # log.md on main proves: /build ran → committed → PR merged → complete
+    info "🧹 Cleaning up shipped specs..."
+    echo ""
+    # Note: Uses log.md as proof of completion
+    # log.md on main proves: /build ran → committed → PR merged → complete
 
-        cleaned_count=0
-        kept_count=0
+    cleaned_count=0
+    kept_count=0
 
-        # Find all spec directories (both with and without log.md)
-        all_specs=$(find spec -name "spec.md" -type f 2>/dev/null || true)
-        # Find spec directories with log.md (definitive proof of completion)
-        completed_specs=$(find spec -name "log.md" -type f 2>/dev/null || true)
+    # Find all spec directories (both with and without log.md)
+    all_specs=$(find spec -name "spec.md" -type f 2>/dev/null || true)
+    # Find spec directories with log.md (definitive proof of completion)
+    completed_specs=$(find spec -name "log.md" -type f 2>/dev/null || true)
 
-        # Process all specs
-        while IFS= read -r spec_file; do
-            [[ -z "$spec_file" ]] && continue
-            spec_dir=$(dirname "$spec_file")
+    # Process all specs
+    while IFS= read -r spec_file; do
+        [[ -z "$spec_file" ]] && continue
+        spec_dir=$(dirname "$spec_file")
 
-            # Skip backlog
-            if [[ "$spec_dir" =~ spec/backlog/ ]]; then
-                continue
-            fi
+        # Skip backlog
+        if [[ "$spec_dir" =~ spec/backlog/ ]]; then
+            continue
+        fi
 
-            # Check if this spec has log.md (definitive proof of completion)
-            if echo "$completed_specs" | grep -q "^${spec_dir}/log.md$"; then
-                echo "  ✓ Removing completed spec: $spec_dir (has log.md)"
-                rm -rf "$spec_dir"
-                cleaned_count=$((cleaned_count + 1))
-            else
-                echo "  → Preserving: $spec_dir (no log.md)"
-                kept_count=$((kept_count + 1))
-            fi
-        done <<< "$all_specs"
+        # Check if this spec has log.md (definitive proof of completion)
+        if echo "$completed_specs" | grep -q "^${spec_dir}/log.md$"; then
+            echo "  ✓ Removing completed spec: $spec_dir (has log.md)"
+            rm -rf "$spec_dir"
+            cleaned_count=$((cleaned_count + 1))
+        else
+            echo "  → Preserving: $spec_dir (no log.md)"
+            kept_count=$((kept_count + 1))
+        fi
+    done <<< "$all_specs"
 
-        echo ""
-        success "✅ Cleaned up $cleaned_count spec(s), kept $kept_count spec(s)"
-    else
-        info "ℹ️  No SHIPPED.md found - skipping spec cleanup"
-    fi
+    echo ""
+    success "✅ Cleaned up $cleaned_count spec(s), kept $kept_count spec(s)"
     echo ""
 
     # 6. Commit Cleanup

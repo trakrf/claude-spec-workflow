@@ -165,8 +165,6 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
 7. **Push Branch**
    Push feature branch to remote with git push -u origin.
 
-   **Note**: We push before updating SHIPPED.md so the branch exists when creating PR.
-
 8. **Create Pull Request**
 
    Try authentication methods in order until one succeeds:
@@ -176,7 +174,7 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
    - Check if authenticated: `gh auth status`
    - If both true, create PR: `gh pr create --title "..." --body "..."`
    - Capture PR URL from output
-   - If successful: Display success, continue to Step 9
+   - If successful: Display success and complete
 
    **Method 2: GH_TOKEN environment variable**
    - Check if GH_TOKEN is set: `[ -n "$GH_TOKEN" ]`
@@ -185,21 +183,20 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
    - Get base branch: `git remote show origin | grep 'HEAD branch'`
    - Call GitHub API with curl POST to create pull request
    - Parse html_url from JSON response
-   - If successful: Display success, continue to Step 9
+   - If successful: Display success and complete
 
    **Method 3: gh config file**
    - Check if ~/.config/gh/hosts.yml exists
    - Extract oauth_token: `grep -A 2 'github.com:' ~/.config/gh/hosts.yml | grep 'oauth_token:' | awk '{print $2}'`
    - If token found, use same curl approach as Method 2
-   - If successful: Display success, continue to Step 9
+   - If successful: Display success and complete
 
    **Method 4: Manual fallback (halt on failure)**
    - Show clear error message listing all methods tried
    - Provide instructions for gh auth login or setting GH_TOKEN
    - Provide the manual PR creation URL
    - HALT execution with error
-   - Do NOT update SHIPPED.md (no incomplete entries)
-   - User must create PR manually, then can manually update SHIPPED.md if desired
+   - User must create PR manually
 
    **Success output format** (when PR created):
    ```
@@ -213,7 +210,7 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
      Title: {title}
      State: {state}
 
-   ✅ PR created successfully, proceeding to update SHIPPED.md...
+   ✅ PR created successfully!
    ```
 
    **Key principles**:
@@ -221,43 +218,9 @@ The user will provide the path to a feature directory (e.g., `spec/active/auth/`
    - Clear success/failure for each method
    - Actionable error messages (tell user exactly how to fix)
    - Only try next method if current one fails
-   - After PR creation, proceed to Step 9 to update SHIPPED.md
+   - PR creation completes the ship workflow
 
-9. **Update Shipped Log**
-
-   After PR is created and URL is captured, create/append to `spec/SHIPPED.md` with complete information in a single commit.
-
-   ```markdown
-   ## {Feature Name}
-   - **Date**: {YYYY-MM-DD}
-   - **Branch**: feature/{name}
-   - **Commit**: {git rev-parse --short HEAD}
-   - **PR**: {full-pr-url}
-   - **Summary**: {one-line description}
-   - **Key Changes**:
-     - {major change 1}
-     - {major change 2}
-   - **Validation**: ✅ All checks passed
-
-   ### Success Metrics
-   (Copy from spec.md and mark actual results)
-   - ✅ {Metric 1} - **Result**: {actual outcome}
-   - ✅ {Metric 2} - **Result**: {actual outcome}
-   - ⏳ {Metric 3} - **Result**: To be measured in production
-   - ❌ {Metric 4} - **Result**: Did not meet target, needs follow-up
-
-   **Overall Success**: {percentage}% of metrics achieved
-   ```
-
-   Extract PR number from URL: `https://github.com/user/repo/pull/13` → `#13`
-
-   Commit with message: `docs: ship {feature-display-name} (#{pr-number})`
-
-   Example: `docs: ship Optimize SHIPPED.md Workflow (#14)`
-
-   Push the single SHIPPED.md commit: `git push`
-
-   **Note**: The spec directory (`spec/{feature}/`) remains in place through PR review. It will be cleaned up when starting the next feature via `/plan`.
+   **Note**: The spec directory (`spec/{feature}/`) remains in place through PR review. It will be cleaned up by `/cleanup` after the PR is merged.
 
 ## Validation Gates Before Ship
 
@@ -299,11 +262,6 @@ This applies to ALL output examples below, including validation gates, error mes
 Success case:
 ```
 🚀 Feature Shipped Successfully!
-
-📦 Archive Summary:
-- Spec archived in commit: {hash}
-- Entry added to SHIPPED.md
-- Feature directory cleaned
 
 🌿 Git Status:
 - Branch: feature/{name}
