@@ -50,21 +50,23 @@ _No unreleased changes._
 
 ## [0.4.0] - 2025-10-23
 
-> **Workflow Simplification**: Complete SHIPPED.md retirement
+> **Workflow Simplification**: Removed SHIPPED.md tracking
 
 ### Changed
 
-- **Complete SHIPPED.md retirement**
-  - **Background**: SHIPPED.md was removed from the workflow in PR #40 because:
+- **Removed SHIPPED.md from workflow**
+  - **Why remove it**:
     - Stored commit SHAs that became invalid after squash/rebase merges
     - Content was never actually read by any workflow command
     - Redundant: GitHub PRs are the canonical source of truth (`gh pr list --state merged`)
     - `log.md` presence is the real proof a spec is complete
-  - **This change**: Completes the retirement by removing the interactive deletion prompt
-  - Cleanup script now auto-deletes leftover SHIPPED.md files (no prompt)
-  - Shows info message: "Removed retired SHIPPED.md (preserved in git history)"
-  - Rationale: Interactive prompts block automation; no need to ask permission for a deprecated file
-  - Changed in: `scripts/cleanup.sh:16-21`, `commands/cleanup.md:26-29,101`
+  - **What changed**:
+    - `/ship` no longer creates SHIPPED.md
+    - `/cleanup` automatically removes any leftover SHIPPED.md files
+    - `csw init` no longer initializes SHIPPED.md
+    - All documentation updated to reflect simpler workflow
+  - **Migration**: Existing SHIPPED.md files are automatically cleaned up (preserved in git history)
+  - Changed in: `scripts/cleanup.sh:16-21`, `commands/cleanup.md:26-29,101`, `scripts/ship.sh` (PR #40)
 
 ## [0.3.2] - 2025-10-23
 
