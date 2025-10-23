@@ -104,25 +104,25 @@ csw init /path/to/your/project python-fastapi
 
 2. **Generate implementation plan**
    ```
-   /plan spec/active/my-feature/spec.md
+   plan/ spec/active/my-feature/spec.md
    ```
    Claude will ask clarifying questions to ensure a solid plan.
 
 3. **Build with validation**
    ```
-   /build spec/active/my-feature/
+   build/ spec/active/my-feature/
    ```
    Implementation happens with continuous testing and progress tracking.
 
 4. **Check readiness**
    ```
-   /check
+   check/
    ```
    Comprehensive validation ensures your code is PR-ready.
 
 5. **Ship it**
    ```
-   /ship spec/active/my-feature/
+   ship/ spec/active/my-feature/
    ```
    Prepares for pull request with validation and git workflow.
 
@@ -597,7 +597,7 @@ Your project `spec/` directories remain untouched. To remove the installation di
 - Review log.md for patterns in failures
 - Consider if spec needs clarification
 
-**`/check` finds unexpected issues**
+**`check/` finds unexpected issues**
 - Review code quality patterns in config
 - Some warnings are informational only
 - Fix critical issues, decide on warnings
@@ -616,9 +616,9 @@ Your project `spec/` directories remain untouched. To remove the installation di
 
 ### PR Creation Issues
 
-**`/ship` doesn't create PR automatically**
+**`ship/` doesn't create PR automatically**
 
-The `/ship` command tries multiple authentication methods in order:
+The `ship/` command tries multiple authentication methods in order:
 1. GitHub CLI (if authenticated)
 2. GH_TOKEN environment variable
 3. Token from gh config
@@ -635,7 +635,7 @@ export GH_TOKEN=your_token_here
 # Add to ~/.bashrc or ~/.zshrc for persistence
 
 # Then re-run
-/ship spec/active/your-feature/
+ship/ spec/active/your-feature/
 ```
 
 **After creating PR manually**:
