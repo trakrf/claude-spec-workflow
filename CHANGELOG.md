@@ -48,6 +48,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 _No unreleased changes._
 
+## [0.3.2] - 2025-10-23
+
+> **Bug Fix**: Cleanup script branch detection
+
+### Fixed
+
+- **`/cleanup` branch detection exit code handling**
+  - Fixed critical bug where ls-remote exit codes were captured incorrectly
+  - Root cause: `local ls_exit=$?` inside else block captured exit code of if evaluation (0), not ls-remote command (2)
+  - Impact: Branches with deleted remotes (squash/rebase merges) weren't being cleaned up
+  - Solution: Capture exit code before conditional logic, use elif chain for clarity
+  - Now correctly deletes branches merged via GitHub squash/rebase strategies
+  - Changed in: `scripts/lib/cleanup.sh:127-145`
+
 ## [0.3.1] - 2025-10-23
 
 > **Critical Bug Fix**: Prevents data loss from cleanup script
