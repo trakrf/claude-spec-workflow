@@ -126,21 +126,22 @@ cleanup_merged_branches() {
 
         if [[ -n "$remote_name" && -n "$remote_branch" ]]; then
             # Check if remote branch still exists
-            if git ls-remote --exit-code --heads "$remote_name" "$remote_branch" &>/dev/null; then
-                # Remote still exists, don't delete
+            # Capture exit code BEFORE any conditional to avoid bash $? timing issue
+            git ls-remote --exit-code --heads "$remote_name" "$remote_branch" &>/dev/null
+            ls_exit=$?
+
+            # Handle exit codes: 0 = exists, 2 = deleted, other = error
+            if [[ $ls_exit -eq 0 ]]; then
+                # Remote exists, keep branch
                 continue
+            elif [[ $ls_exit -eq 2 ]]; then
+                # Remote doesn't exist (squash/rebase merged), delete branch
+                echo "  Deleting: $branch (remote deleted)"
+                git branch -D "$branch" 2>/dev/null || true
+                deleted_count=$((deleted_count + 1))
             else
-                # Check ls-remote exit code for proper error handling
-                local ls_exit=$?
-                if [[ $ls_exit -eq 2 ]]; then
-                    # Exit code 2 means remote doesn't exist (what we want)
-                    echo "  Deleting: $branch (remote deleted)"
-                    git branch -D "$branch" 2>/dev/null || true
-                    deleted_count=$((deleted_count + 1))
-                else
-                    # Network error or other failure
-                    warning "  Skipping: $branch (could not verify remote status)"
-                fi
+                # Network error or auth failure (exit code 1, 128, etc.)
+                warning "  Skipping: $branch (could not verify remote status)"
             fi
         fi
     done
