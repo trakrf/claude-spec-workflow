@@ -1,5 +1,29 @@
 # Shipped Features
 
+## Fix Cleanup Script Shipped Detection
+- **Date**: 2025-10-23
+- **Branch**: feature/active-fix-cleanup-shipped-detection
+- **Commit**: 4fd6433
+- **PR**: https://github.com/trakrf/claude-spec-workflow/pull/36
+- **Summary**: Critical bug fix preventing data loss from cleanup script deleting unshipped specs mentioned in SHIPPED.md descriptions (Issue #35)
+- **Key Changes**:
+  - Replaced SHIPPED.md text matching with log.md filesystem check in scripts/cleanup.sh
+  - log.md existence is now definitive proof of completion (eliminates all text-matching edge cases)
+  - Added explanatory comments about proof chain: /build ran → committed → PR merged → complete
+  - Simplified logic from regex parsing to simple file existence check
+  - Bumped VERSION to 0.3.1 (patch release for critical bug fix)
+  - Updated CHANGELOG.md with detailed migration notes
+- **Validation**: ✅ All checks passed (shellcheck clean, syntax valid, manual testing verified fix)
+
+### Success Metrics
+
+- ✅ **Data Safety: Zero unintended spec deletions after fix** - **Result**: Manual testing confirmed specs without log.md are preserved, even when mentioned in SHIPPED.md
+- ✅ **Simplicity: Simpler code (file check vs regex parsing)** - **Result**: Reduced from 20+ lines with grep/regex to simple file existence check, easier to understand and maintain
+- ✅ **Reliability: Filesystem ground truth eliminates all text-matching edge cases** - **Result**: No regex complexity, no partial matches, no inline mention confusion - binary file exists or doesn't
+- ✅ **Workflow Trust: Users can confidently run cleanup without verification** - **Result**: Backward compatible, all shipped specs have log.md, unshipped specs preserved regardless of SHIPPED.md content
+
+**Overall Success**: 100% of metrics achieved (4/4)
+
 ## Add Code of Conduct
 - **Date**: 2025-10-22
 - **Branch**: feature/active-code-of-conduct
