@@ -23,39 +23,34 @@ None required. The command operates on the current git repository state.
 
 The cleanup workflow is implemented in `scripts/cleanup.sh` with the following steps:
 
-1. **Pre-flight Checks**
-   - Warn if already on cleanup/merged branch (idempotent - safe to re-run)
-   - Check for retired SHIPPED.md file and offer to delete it
-   - Never blocks - just informs user
-
-2. **Sync with Main**
+1. **Sync with Main**
    - Checkout main/master branch
    - Pull latest changes from remote
    - Ensures clean starting point
 
-3. **Delete Merged Branches**
+2. **Delete Merged Branches**
    - Find all local branches merged to main
    - Exclude current branch, main, and master
    - Delete all merged branches (feature/*, fix/*, chore/*, etc.)
    - Report count of deleted branches
 
-4. **Create Cleanup Staging Branch**
+3. **Create Cleanup Staging Branch**
    - Create `cleanup/merged` branch
    - This is the magic branch that `/plan` will detect and rename
 
-5. **Delete Shipped Spec Directories**
+4. **Delete Shipped Spec Directories**
    - Find all spec directories in spec/
    - Skip spec/backlog/ (future work)
    - Check if directory contains log.md (proof of completed /build)
    - Delete specs with log.md (kept in git history)
    - Report count of cleaned vs kept specs
 
-6. **Commit Cleanup**
+5. **Commit Cleanup**
    - Stage spec/ changes
    - Commit with "chore: cleanup shipped features" message
    - Skip if no changes (idempotent)
 
-7. **Success Message**
+6. **Success Message**
    - Show current status
    - Report main branch sync status
    - Show next step hint (/plan to start next feature)
@@ -103,7 +98,7 @@ git checkout -b recovered-branch <commit>
 - If git pull fails: Exit with error
 - If already on cleanup/merged: Warn, continue (idempotent)
 - If no changes to commit: Info message, no error
-- If SHIPPED.md exists: Offer to delete (one-time migration)
+- If SHIPPED.md exists: Auto-delete with info message
 
 ## Execution
 

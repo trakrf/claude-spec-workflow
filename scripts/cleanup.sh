@@ -13,22 +13,10 @@ main() {
     info "🧹 Starting cleanup workflow..."
     echo ""
 
-    # 1. Pre-flight Checks
-    # Check if retired SHIPPED.md exists and offer to delete
+    # Auto-delete retired SHIPPED.md if it exists
     if [[ -f "spec/SHIPPED.md" ]]; then
-        echo ""
-        info "📋 SHIPPED.md Retirement Notice"
-        echo "   SHIPPED.md has been retired from the workflow."
-        echo "   Use GitHub PRs as the source of truth: gh pr list --state merged"
-        echo ""
-        read -p "   Delete spec/SHIPPED.md? (y/n) " -n 1 -r
-        echo ""
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            rm spec/SHIPPED.md
-            info "   ✓ Deleted spec/SHIPPED.md"
-        else
-            info "   ✓ Kept spec/SHIPPED.md (can delete manually anytime)"
-        fi
+        rm spec/SHIPPED.md
+        info "Removed retired SHIPPED.md (preserved in git history)"
         echo ""
     fi
 
